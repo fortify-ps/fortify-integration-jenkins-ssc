@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.jenkins-ci.plugins</groupId>
+		<artifactId>plugin</artifactId>
+		<version>2.36</version>
+		<relativePath />
+	</parent>
+	<artifactId>fortify-jenkins-plugin</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>hpi</packaging>
+	<properties>
+		<jenkins.version>2.60.3</jenkins.version>
+		<java.level>8</java.level>
+	</properties>
+	<name>Fortify SSC Plugin</name>
+	<description>Plugin for working with Fortify SSC, like uploading scan results</description>
+	<url>https://wiki.jenkins-ci.org/display/JENKINS/TODO+Plugin</url>
+	<!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for 
+		the applicable one if needed. -->
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://opensource.org/licenses/MIT</url>
+		</license>
+	</licenses>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.jenkins-ci.tools</groupId>
+				<artifactId>maven-hpi-plugin</artifactId>
+				<configuration>
+					<pluginFirstClassLoader>true</pluginFirstClassLoader>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+
+	<!-- If you want this to appear on the wiki page: <developers> <developer> 
+		<id>bhacker</id> <name>Bob Q. Hacker</name> <email>bhacker@nowhere.net</email> 
+		</developer> </developers> -->
+
+	<!-- Assuming you want to host on @jenkinsci: <scm> <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection> 
+		<developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection> 
+		<url>https://github.com/jenkinsci/${project.artifactId}-plugin</url> </scm> -->
+	<repositories>
+		<repository>
+			<id>repo.jenkins-ci.org</id>
+			<url>https://repo.jenkins-ci.org/public/</url>
+		</repository>
+		<repository>
+			<id>FortifyMavenRepo</id>
+			<url>https://raw.githubusercontent.com/rsenden/FortifyMavenRepo/master</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>repo.jenkins-ci.org</id>
+			<url>https://repo.jenkins-ci.org/public/</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.fortify.client.api</groupId>
+				<artifactId>client-api-master</artifactId>
+				<version>4.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.fortify.client.api</groupId>
+			<artifactId>ssc-client-api</artifactId>
+		</dependency>
+
+		<!-- These dependencies are transitively included by ssc-client-api, but 
+			we need to explicitly list them in order for Jenkins to use the correct versions, 
+			instead of the versions included with Jenkins itself. -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-expression</artifactId>
+		</dependency>
+	</dependencies>
+</project>

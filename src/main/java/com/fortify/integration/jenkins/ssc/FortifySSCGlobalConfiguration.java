@@ -1,4 +1,4 @@
-package com.fortify.integration.jenkins.ssc.config;
+package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
 
@@ -11,6 +11,8 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameGlobalConfig;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionGlobalConfig;
 
 import hudson.Extension;
 import hudson.util.FormValidation;
@@ -21,19 +23,19 @@ import net.sf.json.JSONObject;
  * Example of Jenkins global configuration.
  */
 @Extension
-public class FortifySSCConfiguration extends GlobalConfiguration {
+public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
 	private String sscUrl ="";
-	private FortifySSCApplicationVersionNameConfig applicationVersionNameConfig = null;
-	private FortifySSCApplicationVersionCreationConfig applicationVersionCreationConfig = null;
+	private FortifySSCApplicationAndVersionNameGlobalConfig applicationAndVersionNameConfig = null;
+	private FortifySSCCreateApplicationVersionGlobalConfig createApplicationVersionConfig = null;
 	
 	private transient SSCAuthenticatingRestConnection conn = null;
 	
     /** @return the singleton instance */
-    public static FortifySSCConfiguration get() {
-        return GlobalConfiguration.all().get(FortifySSCConfiguration.class);
+    public static FortifySSCGlobalConfiguration get() {
+        return GlobalConfiguration.all().get(FortifySSCGlobalConfiguration.class);
     }
 
-    public FortifySSCConfiguration() {
+    public FortifySSCGlobalConfiguration() {
         // When Jenkins is restarted, load any saved configuration from disk.
         load();
     }
@@ -52,36 +54,36 @@ public class FortifySSCConfiguration extends GlobalConfiguration {
     @DataBoundSetter
     public void setSscUrl(String sscUrl) {
         this.sscUrl = sscUrl;
+        save(); // Save immediately, so other global config sections can access SSC
     }
-    
-    public FortifySSCApplicationVersionNameConfig getApplicationVersionNameConfig() {
-    	return applicationVersionNameConfig;
-	}
 
-    @DataBoundSetter
-	public void setApplicationVersionNameConfig(FortifySSCApplicationVersionNameConfig applicationVersionNameConfig) {
-    	this.applicationVersionNameConfig = applicationVersionNameConfig;
-	}
-
-	
-	public FortifySSCApplicationVersionCreationConfig getApplicationVersionCreationConfig() {
-		return applicationVersionCreationConfig;
+	public FortifySSCApplicationAndVersionNameGlobalConfig getApplicationAndVersionNameConfig() {
+		return applicationAndVersionNameConfig;
 	}
 
 	@DataBoundSetter
-	public void setApplicationVersionCreationConfig(FortifySSCApplicationVersionCreationConfig applicationVersionCreationConfig) {
-		this.applicationVersionCreationConfig = applicationVersionCreationConfig;
+	public void setApplicationAndVersionNameConfig(FortifySSCApplicationAndVersionNameGlobalConfig applicationAndVersionNameConfig) {
+		this.applicationAndVersionNameConfig = applicationAndVersionNameConfig;
+	}
+
+	public FortifySSCCreateApplicationVersionGlobalConfig getCreateApplicationVersionConfig() {
+		return createApplicationVersionConfig;
+	}
+
+	@DataBoundSetter
+	public void setCreateApplicationVersionConfig(FortifySSCCreateApplicationVersionGlobalConfig createApplicationVersionConfig) {
+		this.createApplicationVersionConfig = createApplicationVersionConfig;
 	}
 
 	@Override
 	public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
-		if ( !json.containsKey("applicationVersionNameConfig") ) {
+		if ( !json.containsKey("applicationAndVersionNameConfig") ) {
 			// Set field to null if de-selected in configuration page 
-			setApplicationVersionNameConfig(null);
+			setApplicationAndVersionNameConfig(null);
 		}
-		if ( !json.containsKey("applicationVersionCreationConfig") ) {
+		if ( !json.containsKey("createApplicationVersionConfig") ) {
 			// Set field to null if de-selected in configuration page 
-			setApplicationVersionCreationConfig(null);
+			setCreateApplicationVersionConfig(null);
 		}
 		super.configure(req, json);
 		save();

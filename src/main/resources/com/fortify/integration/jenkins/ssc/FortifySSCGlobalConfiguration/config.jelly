@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:section title="${%Fortify SSC Jenkins Plugin}">
+    <f:section title="${%Title}">
         <f:entry field="sscUrl" title="${%SSCUrl}">
             <f:textbox/>
         </f:entry>
         <f:validateButton title="${%Validate}" progress="${%Testing...}" method="testConnection" with="sscUrl" />
         
-        <f:optionalProperty field="applicationVersionNameConfig" title="${%ApplicationVersionName}" />
-	    <f:optionalProperty field="applicationVersionCreationConfig" title="${%ApplicationVersionCreation}" />
+        <f:optionalProperty field="applicationAndVersionNameConfig" title="${%ApplicationAndVersionNameConfig}" />
+	    <f:optionalProperty field="createApplicationVersionConfig" title="${%CreateApplicationVersionConfig}" />
     </f:section>
 </j:jelly>

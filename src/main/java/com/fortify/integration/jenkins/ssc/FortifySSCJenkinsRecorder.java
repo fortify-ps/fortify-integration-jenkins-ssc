@@ -28,21 +28,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
 
-import com.fortify.client.ssc.api.SSCApplicationAPI;
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.api.SSCArtifactAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
-import com.fortify.integration.jenkins.ssc.config.FortifySSCApplicationVersionNameConfig;
-import com.fortify.integration.jenkins.ssc.config.FortifySSCConfiguration;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameJobConfig;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionJobConfig;
 import com.fortify.util.rest.json.JSONMap;
-import com.fortify.util.rest.json.processor.AbstractJSONMapProcessor;
 
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -58,50 +54,41 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import hudson.util.ComboBoxModel;
 import jenkins.tasks.SimpleBuildStep;
 
 public class FortifySSCJenkinsRecorder extends Recorder implements SimpleBuildStep {
-	private String applicationName;
-	private String versionName;
+	private FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameConfig;
+	private FortifySSCCreateApplicationVersionJobConfig createApplicationVersionConfig;
 
 	@DataBoundConstructor
-	public FortifySSCJenkinsRecorder() {
-		// TODO Auto-generated constructor stub
-	}
+	public FortifySSCJenkinsRecorder() {}
 
-	public String getApplicationName() {
-		return StringUtils.isNotBlank(applicationName) ? applicationName : getDescriptor().getDefaultApplicationName();
+	public FortifySSCApplicationAndVersionNameJobConfig getApplicationAndVersionNameConfig() {
+		return applicationAndVersionNameConfig;
 	}
 
 	@DataBoundSetter
-	public void setApplicationName(String applicationName) {
-		checkApplicationVersionNameOverrideEnabled(applicationName, getDescriptor().getDefaultApplicationName());
-		this.applicationName = applicationName;
+	public void setApplicationAndVersionNameConfig(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameConfig) {
+		this.applicationAndVersionNameConfig = applicationAndVersionNameConfig;
 	}
 
-	public String getVersionName() {
-		return StringUtils.isNotBlank(versionName) ? versionName : getDescriptor().getDefaultVersionName();
+	public FortifySSCCreateApplicationVersionJobConfig getCreateApplicationVersionConfig() {
+		return createApplicationVersionConfig;
 	}
 
 	@DataBoundSetter
-	public void setVersionName(String versionName) {
-		checkApplicationVersionNameOverrideEnabled(versionName, getDescriptor().getDefaultVersionName());
-		this.versionName = versionName;
+	public void setCreateApplicationVersionConfig(FortifySSCCreateApplicationVersionJobConfig createApplicationVersionConfig) {
+		this.createApplicationVersionConfig = createApplicationVersionConfig;
 	}
-	
-	private void checkApplicationVersionNameOverrideEnabled(String value, String defaultValue) {
-		if ( !getDescriptor().isDefaultApplicationVersionNameOverrideAllowed() && !defaultValue.equals(value) ) {
-			throw new IllegalArgumentException("Application/version name may not be overridden in build job settings");
-		}
-	}
+
+
 
 	@Override
 	public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		log.println("HPE Security Fortify Jenkins plugin: " + FortifySSCConfiguration.get().getSscUrl());
+		log.println("HPE Security Fortify Jenkins plugin: " + FortifySSCGlobalConfiguration.get().getSscUrl());
 		EnvVars env = run.getEnvironment(listener);
-		SSCAuthenticatingRestConnection conn = FortifySSCConfiguration.get().conn();
+		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		final String applicationVersionId = getApplicationVersionId(env, conn);
 		FilePath[] list = workspace.list("**/*.fpr");
 		if ( list.length == 0 ) {
@@ -125,12 +112,12 @@ public class FortifySSCJenkinsRecorder extends Recorder implements SimpleBuildSt
 	}
 
 	private String getApplicationVersionId(EnvVars env, SSCAuthenticatingRestConnection conn) throws AbortException {
-		String applicationName = env.expand(getApplicationName());
-		String versionName = env.expand(getVersionName());
+		String applicationName = env.expand(getApplicationAndVersionNameConfig().getApplicationName());
+		String versionName = env.expand(getApplicationAndVersionNameConfig().getVersionName());
 		JSONMap applicationVersion = conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions()
 			.applicationName(applicationName).versionName(versionName).build().getUnique();
 		if ( applicationVersion == null ) {
-			if ( FortifySSCConfiguration.get().getApplicationVersionCreationConfig() == null ) {
+			if ( FortifySSCGlobalConfiguration.get().getCreateApplicationVersionConfig() == null ) {
 				throw new AbortException("Application version "+applicationName+":"+versionName+" not found");
 			} else {
 				throw new AbortException("Creating new application versions not yet implemented"); // TODO
@@ -158,54 +145,10 @@ public class FortifySSCJenkinsRecorder extends Recorder implements SimpleBuildSt
 		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
 			return true;
 		}
-
+		
 		@Override
 		public String getDisplayName() {
 			return "Fortify SSC Jenkins Plugin";
-		}
-
-		public ComboBoxModel doFillApplicationNameItems() {
-			final ComboBoxModel items = new ComboBoxModel();
-			SSCAuthenticatingRestConnection conn = FortifySSCConfiguration.get().conn();
-			conn.api(SSCApplicationAPI.class).queryApplications().build()
-					.processAll(new AddNamesAndIdsToComboBoxModel(items));
-			return items;
-		}
-		
-		public String getDefaultApplicationName() {
-			FortifySSCApplicationVersionNameConfig config = FortifySSCConfiguration.get().getApplicationVersionNameConfig();
-			return config==null ? null : config.getDefaultApplicationName();	
-		}
-
-		public ComboBoxModel doFillVersionNameItems(@QueryParameter String applicationName) {
-			final ComboBoxModel items = new ComboBoxModel();
-			SSCAuthenticatingRestConnection conn = FortifySSCConfiguration.get().conn();
-			conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions().applicationName(applicationName).build()
-					.processAll(new AddNamesAndIdsToComboBoxModel(items));
-			return items;
-		}
-		
-		public String getDefaultVersionName() {
-			FortifySSCApplicationVersionNameConfig config = FortifySSCConfiguration.get().getApplicationVersionNameConfig();
-			return config==null ? null : config.getDefaultVersionName();	
-		}
-		
-		public boolean isDefaultApplicationVersionNameOverrideAllowed() {
-			FortifySSCApplicationVersionNameConfig config = FortifySSCConfiguration.get().getApplicationVersionNameConfig();
-			return config == null || config.isDefaultApplicationVersionNameOverrideAllowed();
-		}
-
-		private static final class AddNamesAndIdsToComboBoxModel extends AbstractJSONMapProcessor {
-			private final ComboBoxModel items;
-
-			public AddNamesAndIdsToComboBoxModel(ComboBoxModel items) {
-				this.items = items;
-			}
-
-			@Override
-			public void process(JSONMap json) {
-				items.add(json.get("name", String.class));
-			}
 		}
 	}
 

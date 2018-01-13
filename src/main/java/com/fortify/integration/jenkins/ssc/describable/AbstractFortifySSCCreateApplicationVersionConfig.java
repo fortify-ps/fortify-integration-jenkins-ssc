@@ -22,54 +22,50 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.config;
+package com.fortify.integration.jenkins.ssc.describable;
 
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import com.fortify.client.ssc.api.SSCIssueTemplateAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
+import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.util.rest.json.JSONList;
 import com.fortify.util.rest.json.JSONMap;
 
-import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.util.ListBoxModel;
 
-public final class FortifySSCApplicationVersionCreationConfig extends AbstractDescribableImpl<FortifySSCApplicationVersionCreationConfig> {
-	private String defaultIssueTemplateName;
-	private boolean defaultIssueTemplateNameOverrideAllowed;
+public abstract class AbstractFortifySSCCreateApplicationVersionConfig<T extends AbstractFortifySSCCreateApplicationVersionConfig<T>> extends AbstractDescribableImpl<T> {
+	private String issueTemplateName;
+	private boolean issueTemplateNameOverrideAllowed;
 	
-	@DataBoundConstructor
-	public FortifySSCApplicationVersionCreationConfig() {}
-	
-	public String getDefaultIssueTemplateName() {
-		return defaultIssueTemplateName;
+	public AbstractFortifySSCCreateApplicationVersionConfig() {}
+
+	public String getIssueTemplateName() {
+		return issueTemplateName;
 	}
 
 	@DataBoundSetter
-	public void setDefaultIssueTemplateName(String defaultIssueTemplateName) {
-		this.defaultIssueTemplateName = defaultIssueTemplateName;
+	public void setIssueTemplateName(String issueTemplateName) {
+		this.issueTemplateName = issueTemplateName;
 	}
 
-	public boolean isDefaultIssueTemplateNameOverrideAllowed() {
-		return defaultIssueTemplateNameOverrideAllowed;
+	public boolean isIssueTemplateNameOverrideAllowed() {
+		return issueTemplateNameOverrideAllowed;
 	}
 
-	@DataBoundSetter
-	public void setDefaultIssueTemplateNameOverrideAllowed(boolean defaultIssueTemplateNameOverrideAllowed) {
-		this.defaultIssueTemplateNameOverrideAllowed = defaultIssueTemplateNameOverrideAllowed;
+	protected void setIssueTemplateNameOverrideAllowed(boolean issueTemplateNameOverrideAllowed) {
+		this.issueTemplateNameOverrideAllowed = issueTemplateNameOverrideAllowed;
 	}
 
-	@Extension
-    public static class DescriptorImpl extends Descriptor<FortifySSCApplicationVersionCreationConfig> {
+	public abstract static class AbstractFortifySSCCreateApplicationVersionConfigDescriptor<T extends AbstractFortifySSCCreateApplicationVersionConfig<T>> extends Descriptor<T> {
         @Override
         public String getDisplayName() {
             return this.getClass().getSimpleName();
         }
         
-        public ListBoxModel doFillDefaultIssueTemplateNameItems() {
+        public ListBoxModel doFillIssueTemplateNameItems() {
 			final ListBoxModel items = new ListBoxModel();
 			JSONList issueTemplates = getIssueTemplates();
 			for ( JSONMap issueTemplate : issueTemplates.asValueType(JSONMap.class) ) {
@@ -83,7 +79,7 @@ public final class FortifySSCApplicationVersionCreationConfig extends AbstractDe
         }
         
         protected JSONList getIssueTemplates() {
-			SSCAuthenticatingRestConnection conn = FortifySSCConfiguration.get().conn();
+			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 			return conn.api(SSCIssueTemplateAPI.class).getIssueTemplates(true);
 		}
     }

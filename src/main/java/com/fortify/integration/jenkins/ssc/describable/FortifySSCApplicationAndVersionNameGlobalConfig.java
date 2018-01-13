@@ -22,55 +22,36 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.config;
+package com.fortify.integration.jenkins.ssc.describable;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import hudson.Extension;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 
-public final class FortifySSCApplicationVersionNameConfig extends AbstractDescribableImpl<FortifySSCApplicationVersionNameConfig> {
-	private String defaultApplicationName;
-	private String defaultVersionName;
-	private boolean defaultApplicationVersionNameOverrideAllowed;
-	
+public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFortifySSCApplicationAndVersionNameConfig<FortifySSCApplicationAndVersionNameGlobalConfig> {
 	@DataBoundConstructor
-	public FortifySSCApplicationVersionNameConfig() {}
+	public FortifySSCApplicationAndVersionNameGlobalConfig() {}
 	
-    public String getDefaultApplicationName() {
-		return defaultApplicationName;
+	/**
+	 * Allow property to be configured in global config
+	 */
+	@Override @DataBoundSetter
+	public void setApplicationNameOverrideAllowed(boolean applicationNameOverrideAllowed) {
+		super.setApplicationNameOverrideAllowed(applicationNameOverrideAllowed);
 	}
-
-    @DataBoundSetter
-	public void setDefaultApplicationName(String defaultApplicationName) {
-		this.defaultApplicationName = defaultApplicationName;
-	}
-
-	public String getDefaultVersionName() {
-		return defaultVersionName;
-	}
-
-	@DataBoundSetter
-	public void setDefaultVersionName(String defaultVersionName) {
-		this.defaultVersionName = defaultVersionName;
-	}
-
-	public boolean isDefaultApplicationVersionNameOverrideAllowed() {
-		return defaultApplicationVersionNameOverrideAllowed;
-	}
-
-	@DataBoundSetter
-	public void setDefaultApplicationVersionNameOverrideAllowed(boolean defaultApplicationVersionNameOverrideAllowed) {
-		this.defaultApplicationVersionNameOverrideAllowed = defaultApplicationVersionNameOverrideAllowed;
+	
+	/**
+	 * Allow property to be configured in global config
+	 */
+	@Override @DataBoundSetter
+	protected void setVersionNameOverrideAllowed(boolean versionNameOverrideAllowed) {
+		super.setVersionNameOverrideAllowed(versionNameOverrideAllowed);
 	}
 	
 	@Extension
-    public static class DescriptorImpl extends Descriptor<FortifySSCApplicationVersionNameConfig> {
-        @Override
-        public String getDisplayName() {
-            return this.getClass().getSimpleName();
-        }
-    }
+	public static final class DescriptorImpl extends Descriptor<FortifySSCApplicationAndVersionNameGlobalConfig> {}
+	
+
 }

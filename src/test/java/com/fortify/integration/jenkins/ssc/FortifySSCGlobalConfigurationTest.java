@@ -1,6 +1,5 @@
 package com.fortify.integration.jenkins.ssc;
 
-import com.fortify.integration.jenkins.ssc.config.FortifySSCConfiguration;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import org.junit.Test;
@@ -8,7 +7,7 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
-public class FortifySSCConfigurationTest {
+public class FortifySSCGlobalConfigurationTest {
 
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
@@ -26,15 +25,15 @@ public class FortifySSCConfigurationTest {
     public void uiAndStorage() {
     	final String sscUrl = "https://user:password@somehost.com/ssc";
         rr.then(r -> {
-            assertNull("not set initially", FortifySSCConfiguration.get().getSscUrl());
+            assertNull("not set initially", FortifySSCGlobalConfiguration.get().getSscUrl());
             HtmlForm config = r.createWebClient().goTo("configure").getFormByName("config");
             HtmlTextInput textbox = config.getInputByName("_.sscUrl");
             textbox.setText(sscUrl);
             r.submit(config);
-            assertEquals("global config page let us edit it", sscUrl, FortifySSCConfiguration.get().getSscUrl());
+            assertEquals("global config page let us edit it", sscUrl, FortifySSCGlobalConfiguration.get().getSscUrl());
         });
         rr.then(r -> {
-            assertEquals("still there after restart of Jenkins", sscUrl, FortifySSCConfiguration.get().getSscUrl());
+            assertEquals("still there after restart of Jenkins", sscUrl, FortifySSCGlobalConfiguration.get().getSscUrl());
         });
     }
 

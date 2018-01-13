@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+
+	<style type="text/css">
+		.readOnly {
+			background-color: lightgrey;
+		}
+	</style>
+
+	<f:entry field="applicationName" title="${%ApplicationName}">
+		<j:choose>
+			<j:when test="${descriptor.getInstanceOrDefault(instance).applicationNameOverrideAllowed}">
+			   <f:combobox value="${descriptor.getInstanceOrDefault(instance).applicationName}" />
+			</j:when>
+			<j:otherwise>
+				<f:readOnlyTextbox value="${descriptor.getInstanceOrDefault(instance).applicationName}" clazz="readOnly"/>
+			</j:otherwise>
+		</j:choose>   
+	</f:entry>
+			
+	<f:entry field="versionName" title="${%VersionName}">
+		<j:choose>
+			<j:when test="${descriptor.getInstanceOrDefault(instance).versionNameOverrideAllowed}">
+			   <f:combobox value="${descriptor.getInstanceOrDefault(instance).versionName}"/>
+			</j:when>
+			<j:otherwise>
+				<f:readOnlyTextbox value="${descriptor.getInstanceOrDefault(instance).versionName}"  clazz="readOnly"/>
+			</j:otherwise>
+		</j:choose>   
+	</f:entry>
+	-->
+</j:jelly>

@@ -1,24 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:section title="${%Fortify SSC Jenkins Plugin}">
-    	<j:choose>
-			<j:when test="${descriptor.defaultApplicationVersionNameOverrideAllowed}">
-				<f:entry field="applicationName" title="${%ApplicationName}">
-				   <f:combobox />
-				</f:entry>
-				<f:entry field="versionName" title="${%VersionName}">
-				   <f:combobox />
-				</f:entry>
-			</j:when>
-			<j:otherwise>
-				<f:entry field="applicationName" title="${%ApplicationName}">
-				   <f:readOnlyTextbox />
-				</f:entry>
-				<f:entry field="versionName" title="${%VersionName}">
-				   <f:readOnlyTextbox />
-				</f:entry>
-			</j:otherwise>
-		</j:choose>
-    </f:section>
+	<f:entry field="applicationAndVersionNameConfig">
+    	<f:property />
+    </f:entry>
+    
+    <f:entry field="createApplicationVersionConfig">
+    	<f:property />
+    </f:entry>
 </j:jelly>

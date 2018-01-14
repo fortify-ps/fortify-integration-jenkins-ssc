@@ -55,4 +55,11 @@ public abstract class AbstractFortifySSCUploadFPRConfig<T extends AbstractFortif
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
+	
+	public abstract static class AbstractFortifySSCUploadFPRConfigDescriptor<T extends AbstractFortifySSCUploadFPRConfig<T>> extends AbstractInstanceOrDefaultDescriptor<T> {
+        @Override
+        public final String getPropertyName() {
+        	return "uploadFPRConfig";
+        }
+	}
 }

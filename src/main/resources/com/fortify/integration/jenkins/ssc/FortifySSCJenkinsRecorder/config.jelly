@@ -5,11 +5,7 @@
     	<f:property />
     </f:entry>
     
-    <j:if test="${descriptor.isEnabled('createApplicationVersion')}">
-	    <f:optionalProperty field="createApplicationVersionConfig" title="${%CreateApplicationVersionConfig}"/>
-	</j:if>
-	
-	<j:if test="${descriptor.isEnabled('uploadFPR')}">
-	    <f:optionalProperty field="uploadFPRConfig" title="${%UploadFPRConfig}"/>
-	</j:if>
+    <j:forEach items="${descriptor.enabledDescriptors}" var="enabledDescriptor">
+    	<f:optionalProperty field="${enabledDescriptor.propertyName}" title="${enabledDescriptor.displayName}"/>
+    </j:forEach>
 </j:jelly>

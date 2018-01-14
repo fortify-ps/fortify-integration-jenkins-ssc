@@ -42,4 +42,6 @@ public abstract class AbstractInstanceOrDefaultDescriptor<T extends AbstractDesc
 	}
 	
 	public abstract T createDefaultInstance();
+	
+	public abstract String getPropertyName();
 }

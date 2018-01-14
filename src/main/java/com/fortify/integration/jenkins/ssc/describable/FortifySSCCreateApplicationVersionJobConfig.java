@@ -95,5 +95,11 @@ public class FortifySSCCreateApplicationVersionJobConfig
 		public FortifySSCCreateApplicationVersionJobConfig createDefaultInstance() {
 			return new FortifySSCCreateApplicationVersionJobConfig(FortifySSCGlobalConfiguration.get().getCreateApplicationVersionConfig());
 		}
+		
+		@Override
+		public String getDisplayName() {
+			// TODO Internationalize this
+			return "Create application version if it does not yet exist";
+		}
 	}
 }

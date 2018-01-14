@@ -40,7 +40,13 @@ public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFort
 	}
 	
 	@Extension
-	public static final class DescriptorImpl extends AbstractFortifySSCCreateApplicationVersionConfigDescriptor<FortifySSCCreateApplicationVersionGlobalConfig> {
+	public static final class FortifySSCCreateApplicationVersionGlobalConfigDescriptor extends AbstractFortifySSCCreateApplicationVersionConfigDescriptor<FortifySSCCreateApplicationVersionGlobalConfig> {
+		@Override
+		public String getDisplayName() {
+			// TODO Internationalize this
+			return "Enable creation of non-existing application versions";
+		}
+		
 		@Override
 		public FortifySSCCreateApplicationVersionGlobalConfig createDefaultInstance() {
 			return new FortifySSCCreateApplicationVersionGlobalConfig();

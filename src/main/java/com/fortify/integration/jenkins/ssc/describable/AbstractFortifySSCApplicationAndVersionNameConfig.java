@@ -73,4 +73,11 @@ public abstract class AbstractFortifySSCApplicationAndVersionNameConfig<T extend
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
+	
+	public abstract static class AbstractFortifySSCApplicationAndVersionNameConfigDescriptor<T extends AbstractFortifySSCApplicationAndVersionNameConfig<T>> extends AbstractInstanceOrDefaultDescriptor<T> {
+        @Override
+        public final String getPropertyName() {
+        	return "applicationAndVersionNameConfig";
+        }
+	}
 }

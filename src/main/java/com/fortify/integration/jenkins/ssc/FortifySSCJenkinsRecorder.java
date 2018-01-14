@@ -26,8 +26,8 @@ package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.List;
 
-import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -36,25 +36,28 @@ import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicati
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRJobConfig;
 import com.fortify.integration.jenkins.ssc.describable.IFortifySSCPerformWithApplicationAndVersionNameJobConfig;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Run;
+import hudson.model.BuildListener;
+import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import jenkins.tasks.SimpleBuildStep;
 
-public class FortifySSCJenkinsRecorder extends Recorder implements SimpleBuildStep {
+public class FortifySSCJenkinsRecorder extends Recorder {
 	private FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameConfig;
 	private FortifySSCCreateApplicationVersionJobConfig createApplicationVersionConfig;
 	private FortifySSCUploadFPRJobConfig uploadFPRConfig;
 
 	@DataBoundConstructor
-	public FortifySSCJenkinsRecorder() {}
+	public FortifySSCJenkinsRecorder() {
+	}
 
 	public FortifySSCApplicationAndVersionNameJobConfig getApplicationAndVersionNameConfig() {
 		System.out.println(applicationAndVersionNameConfig);
@@ -62,7 +65,8 @@ public class FortifySSCJenkinsRecorder extends Recorder implements SimpleBuildSt
 	}
 
 	@DataBoundSetter
-	public void setApplicationAndVersionNameConfig(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameConfig) {
+	public void setApplicationAndVersionNameConfig(
+			FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameConfig) {
 		this.applicationAndVersionNameConfig = applicationAndVersionNameConfig;
 	}
 
@@ -72,7 +76,8 @@ public class FortifySSCJenkinsRecorder extends Recorder implements SimpleBuildSt
 	}
 
 	@DataBoundSetter
-	public void setCreateApplicationVersionConfig(FortifySSCCreateApplicationVersionJobConfig createApplicationVersionConfig) {
+	public void setCreateApplicationVersionConfig(
+			FortifySSCCreateApplicationVersionJobConfig createApplicationVersionConfig) {
 		this.createApplicationVersionConfig = createApplicationVersionConfig;
 	}
 
@@ -87,18 +92,25 @@ public class FortifySSCJenkinsRecorder extends Recorder implements SimpleBuildSt
 	}
 
 	@Override
-	public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+			throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		log.println("HPE Security Fortify Jenkins plugin: " + FortifySSCGlobalConfiguration.get().conn().getBaseResource());
-		perform(run, workspace, launcher, listener, 
-				getCreateApplicationVersionConfig(),
-				getUploadFPRConfig() );
+		log.println(
+				"HPE Security Fortify Jenkins plugin: " + FortifySSCGlobalConfiguration.get().conn().getBaseResource());
+		perform(build, launcher, listener, getCreateApplicationVersionConfig(), getUploadFPRConfig());
+		return true;
 	}
-	
-	private void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, IFortifySSCPerformWithApplicationAndVersionNameJobConfig... performers) throws InterruptedException, IOException {
-		for ( IFortifySSCPerformWithApplicationAndVersionNameJobConfig performer : performers ) {
-			if ( performer != null ) {
-				performer.perform(getApplicationAndVersionNameConfig(), run, workspace, launcher, listener);
+
+	private void perform(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener,
+			IFortifySSCPerformWithApplicationAndVersionNameJobConfig... performers)
+			throws InterruptedException, IOException {
+		FilePath workspace = build.getWorkspace();
+		if (workspace == null) {
+			throw new AbortException("no workspace for " + build);
+		}
+		for (IFortifySSCPerformWithApplicationAndVersionNameJobConfig performer : performers) {
+			if (performer != null) {
+				performer.perform(getApplicationAndVersionNameConfig(), build, workspace, launcher, listener);
 			}
 		}
 	}
@@ -113,7 +125,6 @@ public class FortifySSCJenkinsRecorder extends Recorder implements SimpleBuildSt
 		return (DescriptorImpl) super.getDescriptor();
 	}
 
-	@Symbol("fortifySSC") //TODO How do we make this symbol available for pipeline jobs?
 	@Extension
 	public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
@@ -122,17 +133,15 @@ public class FortifySSCJenkinsRecorder extends Recorder implements SimpleBuildSt
 		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
 			return true;
 		}
-		
+
 		@Override
 		public String getDisplayName() {
 			return "Fortify SSC Jenkins Plugin";
 		}
-		
-		public static final boolean isEnabled(String name) {
-			return FortifySSCGlobalConfiguration.get().isEnabled(name);
+
+		public static final List<Descriptor<?>> getEnabledDescriptors() {
+			return FortifySSCGlobalConfiguration.get().getEnabledJobDescriptors();
 		}
 	}
-
-	
 
 }

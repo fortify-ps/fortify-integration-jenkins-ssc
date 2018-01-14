@@ -1,8 +1,9 @@
 package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.ServletException;
 
@@ -14,10 +15,16 @@ import org.kohsuke.stapler.StaplerRequest;
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameGlobalConfig;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameGlobalConfig.FortifySSCApplicationAndVersionNameGlobalConfigDescriptor;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionGlobalConfig;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionGlobalConfig.FortifySSCCreateApplicationVersionGlobalConfigDescriptor;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionJobConfig.FortifySSCCreateApplicationVersionJobConfigDescriptor;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRGlobalConfig;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRGlobalConfig.FortifySSCUploadFPRGlobalConfigDescriptor;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRJobConfig.FortifySSCUploadFPRJobConfigDescriptor;
 
 import hudson.Extension;
+import hudson.model.Descriptor;
 import hudson.util.FormValidation;
 import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
@@ -91,23 +98,22 @@ public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
 		this.uploadFPRConfig = uploadFPRConfig;
 	}
 	
-	public boolean isEnabled(String name) {
-		Boolean result = getEnabledMap().get(name);
-		if ( result == null ) {
-			throw new RuntimeException("Unknown name "+name);
-		}
+	public List<Descriptor<?>> getAllGlobalConfigDescriptors() {
+		return Arrays.asList(
+			new FortifySSCApplicationAndVersionNameGlobalConfigDescriptor(),
+			new FortifySSCCreateApplicationVersionGlobalConfigDescriptor(),
+			new FortifySSCUploadFPRGlobalConfigDescriptor());
+	}
+	
+	public List<Descriptor<?>> getEnabledJobDescriptors() {
+		List<Descriptor<?>> result = new ArrayList<>();
+		addToEnabledList(result, new FortifySSCCreateApplicationVersionJobConfigDescriptor(), createApplicationVersionConfig);
+		addToEnabledList(result, new FortifySSCUploadFPRJobConfigDescriptor(), uploadFPRConfig);
 		return result;
 	}
 
-	private Map<String, Boolean> getEnabledMap() {
-		Map<String, Boolean> result = new HashMap<>();
-		addToEnabledMap(result, "createApplicationVersion", createApplicationVersionConfig);
-		addToEnabledMap(result, "uploadFPR", uploadFPRConfig);
-		return result;
-	}
-
-	private void addToEnabledMap(Map<String, Boolean> enabledMap, String name, Object config) {
-		enabledMap.put(name, config!=null);
+	private void addToEnabledList(List<Descriptor<?>> enabledList, Descriptor<?> descriptor, Object config) {
+		if ( config != null ) { enabledList.add(descriptor); }
 	}
 
 	@Override

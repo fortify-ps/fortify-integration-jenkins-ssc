@@ -28,7 +28,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import hudson.Extension;
-import hudson.model.Descriptor;
 
 public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFortifySSCApplicationAndVersionNameConfig<FortifySSCApplicationAndVersionNameGlobalConfig> {
 	@DataBoundConstructor
@@ -53,7 +52,13 @@ public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFor
 	}
 	
 	@Extension
-	public static final class DescriptorImpl extends AbstractInstanceOrDefaultDescriptor<FortifySSCApplicationAndVersionNameGlobalConfig> {
+	public static final class FortifySSCApplicationAndVersionNameGlobalConfigDescriptor extends AbstractFortifySSCApplicationAndVersionNameConfigDescriptor<FortifySSCApplicationAndVersionNameGlobalConfig> {
+		@Override
+		public String getDisplayName() {
+			// TODO Internationalize this
+			return "Configure default application/version name";
+		}
+		
 		@Override
 		public FortifySSCApplicationAndVersionNameGlobalConfig createDefaultInstance() {
 			return new FortifySSCApplicationAndVersionNameGlobalConfig();

@@ -113,7 +113,7 @@ public class FortifySSCApplicationAndVersionNameJobConfig extends AbstractFortif
 	}
 	
 	@Extension
-	public static final class DescriptorImpl extends AbstractInstanceOrDefaultDescriptor<FortifySSCApplicationAndVersionNameJobConfig> {
+	public static final class DescriptorImpl extends AbstractFortifySSCApplicationAndVersionNameConfigDescriptor<FortifySSCApplicationAndVersionNameJobConfig> {
         public ComboBoxModel doFillApplicationNameItems() {
 			final ComboBoxModel items = new ComboBoxModel();
 			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
@@ -130,6 +130,12 @@ public class FortifySSCApplicationAndVersionNameJobConfig extends AbstractFortif
 						.processAll(new AddNamesToComboBoxModel(items));
 			}
 			return items;
+		}
+		
+		@Override
+		public String getDisplayName() {
+			// TODO Internationalize this
+			return "Configure application and version name";
 		}
 		
 		@Override

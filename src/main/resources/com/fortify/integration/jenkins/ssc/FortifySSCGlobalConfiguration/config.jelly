@@ -7,8 +7,8 @@
         </f:entry>
         <f:validateButton title="${%Validate}" progress="${%Testing...}" method="testConnection" with="sscUrl" />
         
-        <f:optionalProperty field="applicationAndVersionNameConfig" title="${%ApplicationAndVersionNameConfig}" />
-	    <f:optionalProperty field="createApplicationVersionConfig" title="${%CreateApplicationVersionConfig}" />
-	    <f:optionalProperty field="uploadFPRConfig" title="${%UploadFPRConfig}" />
+        <j:forEach items="${descriptor.allGlobalConfigDescriptors}" var="globalConfigDescriptor">
+    		<f:optionalProperty field="${globalConfigDescriptor.propertyName}" title="${globalConfigDescriptor.displayName}"/>
+    	</j:forEach>
     </f:section>
 </j:jelly>

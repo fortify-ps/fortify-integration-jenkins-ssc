@@ -64,11 +64,11 @@ public abstract class AbstractFortifySSCCreateApplicationVersionConfig<T extends
 
 	public abstract static class AbstractFortifySSCCreateApplicationVersionConfigDescriptor<T extends AbstractFortifySSCCreateApplicationVersionConfig<T>> extends AbstractInstanceOrDefaultDescriptor<T> {
         @Override
-        public String getDisplayName() {
-            return this.getClass().getSimpleName();
+        public final String getPropertyName() {
+        	return "createApplicationVersionConfig";
         }
-        
-        public ListBoxModel doFillIssueTemplateNameItems() {
+		
+		public ListBoxModel doFillIssueTemplateNameItems() {
 			final ListBoxModel items = new ListBoxModel();
 			JSONList issueTemplates = getIssueTemplates();
 			for ( JSONMap issueTemplate : issueTemplates.asValueType(JSONMap.class) ) {

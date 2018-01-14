@@ -40,7 +40,6 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
-import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
@@ -96,10 +95,16 @@ public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCUploadFPRCon
 	}
 	
 	@Extension
-	public static final class FortifySSCUploadFPRJobConfigDescriptor extends AbstractInstanceOrDefaultDescriptor<FortifySSCUploadFPRJobConfig> {
+	public static final class FortifySSCUploadFPRJobConfigDescriptor extends AbstractFortifySSCUploadFPRConfigDescriptor<FortifySSCUploadFPRJobConfig> {
 		@Override
 		public FortifySSCUploadFPRJobConfig createDefaultInstance() {
 			return new FortifySSCUploadFPRJobConfig(FortifySSCGlobalConfiguration.get().getUploadFPRConfig());
+		}
+		
+		@Override
+		public String getDisplayName() {
+			// TODO Internationalize this
+			return "Upload FPR file";
 		}
     }
 }

@@ -33,7 +33,13 @@ public class FortifySSCUploadFPRGlobalConfig extends AbstractFortifySSCUploadFPR
 	public FortifySSCUploadFPRGlobalConfig() {}
 	
 	@Extension
-	public static final class DescriptorImpl extends AbstractInstanceOrDefaultDescriptor<FortifySSCUploadFPRGlobalConfig> {
+	public static final class FortifySSCUploadFPRGlobalConfigDescriptor extends AbstractFortifySSCUploadFPRConfigDescriptor<FortifySSCUploadFPRGlobalConfig> {
+		@Override
+		public String getDisplayName() {
+			// TODO Internationalize this
+			return "Enable upload of FPR files";
+		}
+		
 		@Override
 		public FortifySSCUploadFPRGlobalConfig createDefaultInstance() {
 			return new FortifySSCUploadFPRGlobalConfig();

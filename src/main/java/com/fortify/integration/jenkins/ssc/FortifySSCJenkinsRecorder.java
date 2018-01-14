@@ -97,7 +97,9 @@ public class FortifySSCJenkinsRecorder extends Recorder implements SimpleBuildSt
 	
 	private void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, IFortifySSCPerformWithApplicationAndVersionNameJobConfig... performers) throws InterruptedException, IOException {
 		for ( IFortifySSCPerformWithApplicationAndVersionNameJobConfig performer : performers ) {
-			performer.perform(getApplicationAndVersionNameConfig(), run, workspace, launcher, listener);
+			if ( performer != null ) {
+				performer.perform(getApplicationAndVersionNameConfig(), run, workspace, launcher, listener);
+			}
 		}
 	}
 

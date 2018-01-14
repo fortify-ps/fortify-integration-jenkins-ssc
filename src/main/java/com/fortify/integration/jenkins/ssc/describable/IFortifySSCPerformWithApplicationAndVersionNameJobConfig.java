@@ -24,27 +24,13 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
+import java.io.IOException;
 
-import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 
-public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFortifySSCCreateApplicationVersionConfig<FortifySSCCreateApplicationVersionGlobalConfig> {
-	@DataBoundConstructor
-	public FortifySSCCreateApplicationVersionGlobalConfig() {}
-	
-	@Override @DataBoundSetter
-	public void setIssueTemplateNameOverrideAllowed(boolean issueTemplateNameOverrideAllowed) {
-		System.out.println("setIssueTemplateNameOverrideAllowed: "+issueTemplateNameOverrideAllowed);
-		super.setIssueTemplateNameOverrideAllowed(issueTemplateNameOverrideAllowed);
-	}
-	
-	@Extension
-	public static final class DescriptorImpl extends AbstractFortifySSCCreateApplicationVersionConfigDescriptor<FortifySSCCreateApplicationVersionGlobalConfig> {
-		@Override
-		public FortifySSCCreateApplicationVersionGlobalConfig createDefaultInstance() {
-			return new FortifySSCCreateApplicationVersionGlobalConfig();
-		}
-	}
-
+public interface IFortifySSCPerformWithApplicationAndVersionNameJobConfig {
+	public void perform(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
 }

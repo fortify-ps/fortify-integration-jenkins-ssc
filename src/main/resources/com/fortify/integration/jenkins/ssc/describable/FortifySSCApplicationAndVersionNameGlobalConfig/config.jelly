@@ -2,15 +2,15 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
         <f:entry field="applicationName" title="${%ApplicationName}">
-            <f:textbox/>
+            <f:textbox value="${descriptor.getInstanceOrDefault(instance).applicationName}"/>
         </f:entry>
-        <f:entry field="applicationNameOverrideAllowed" title="${%ApplicationNameOverrideAllowed}">
-            <f:checkbox default="true"/>
+        <f:entry field="applicationNameOverrideAllowed" title="${%ApplicationNameOverrideAllowed}" >
+            <f:checkbox checked="${descriptor.getInstanceOrDefault(instance).applicationNameOverrideAllowed}"/>
         </f:entry>
         <f:entry field="versionName" title="${%VersionName}">
-            <f:textbox/>
+            <f:textbox value="${descriptor.getInstanceOrDefault(instance).versionName}"/>
         </f:entry>
         <f:entry field="versionNameOverrideAllowed" title="${%VersionNameOverrideAllowed}">
-            <f:checkbox default="true"/>
+            <f:checkbox checked="${descriptor.getInstanceOrDefault(instance).versionNameOverrideAllowed}"/>
         </f:entry>
 </j:jelly>

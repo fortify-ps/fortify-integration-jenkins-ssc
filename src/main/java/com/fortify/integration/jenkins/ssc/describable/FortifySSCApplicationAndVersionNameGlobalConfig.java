@@ -39,6 +39,7 @@ public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFor
 	 */
 	@Override @DataBoundSetter
 	public void setApplicationNameOverrideAllowed(boolean applicationNameOverrideAllowed) {
+		System.out.println("setApplicationNameOverrideAllowed: "+applicationNameOverrideAllowed);
 		super.setApplicationNameOverrideAllowed(applicationNameOverrideAllowed);
 	}
 	
@@ -46,12 +47,18 @@ public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFor
 	 * Allow property to be configured in global config
 	 */
 	@Override @DataBoundSetter
-	protected void setVersionNameOverrideAllowed(boolean versionNameOverrideAllowed) {
+	public void setVersionNameOverrideAllowed(boolean versionNameOverrideAllowed) {
+		System.out.println("setVersionNameOverrideAllowed: "+versionNameOverrideAllowed);
 		super.setVersionNameOverrideAllowed(versionNameOverrideAllowed);
 	}
 	
 	@Extension
-	public static final class DescriptorImpl extends Descriptor<FortifySSCApplicationAndVersionNameGlobalConfig> {}
+	public static final class DescriptorImpl extends AbstractInstanceOrDefaultDescriptor<FortifySSCApplicationAndVersionNameGlobalConfig> {
+		@Override
+		public FortifySSCApplicationAndVersionNameGlobalConfig createDefaultInstance() {
+			return new FortifySSCApplicationAndVersionNameGlobalConfig();
+		}
+	}
 	
 
 }

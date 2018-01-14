@@ -29,46 +29,28 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 import hudson.model.AbstractDescribableImpl;
 
-public abstract class AbstractFortifySSCApplicationAndVersionNameConfig<T extends AbstractFortifySSCApplicationAndVersionNameConfig<T>> extends AbstractDescribableImpl<T> {
-	private String applicationName = "";
-	private String versionName = "";
-	private boolean applicationNameOverrideAllowed = true;
-	private boolean versionNameOverrideAllowed = true;
+public abstract class AbstractFortifySSCUploadFPRConfig<T extends AbstractFortifySSCUploadFPRConfig<T>> extends AbstractDescribableImpl<T> {
+	private static final String DEFAULT_FPR_ANT_FILTER = "**/*.fpr";
+	private String fprAntFilter = DEFAULT_FPR_ANT_FILTER;
+	private int processingTimeOutSeconds = 60;
 	
-	public String getApplicationName() {
-		return applicationName;
+	public String getFprAntFilter() {
+		return fprAntFilter;
 	}
-
+	
 	@DataBoundSetter
-	public void setApplicationName(String applicationName) {
-		this.applicationName = applicationName;
+	public void setFprAntFilter(String fprAntFilter) {
+		this.fprAntFilter = fprAntFilter;
 	}
-
-	public String getVersionName() {
-		return versionName;
+	public int getProcessingTimeOutSeconds() {
+		return processingTimeOutSeconds;
 	}
-
+	
 	@DataBoundSetter
-	public void setVersionName(String versionName) {
-		this.versionName = versionName;
+	public void setProcessingTimeOutSeconds(int processingTimeOutSeconds) {
+		this.processingTimeOutSeconds = processingTimeOutSeconds;
 	}
-
-	public boolean isApplicationNameOverrideAllowed() {
-		return applicationNameOverrideAllowed;
-	}
-
-	protected void setApplicationNameOverrideAllowed(boolean applicationNameOverrideAllowed) {
-		this.applicationNameOverrideAllowed = applicationNameOverrideAllowed;
-	}
-
-	public boolean isVersionNameOverrideAllowed() {
-		return versionNameOverrideAllowed;
-	}
-
-	protected void setVersionNameOverrideAllowed(boolean versionNameOverrideAllowed) {
-		this.versionNameOverrideAllowed = versionNameOverrideAllowed;
-	}
-
+	
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);

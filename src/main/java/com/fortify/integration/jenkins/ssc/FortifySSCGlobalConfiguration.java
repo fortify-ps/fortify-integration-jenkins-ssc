@@ -1,6 +1,8 @@
 package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 
@@ -13,6 +15,7 @@ import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameGlobalConfig;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionGlobalConfig;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRGlobalConfig;
 
 import hudson.Extension;
 import hudson.util.FormValidation;
@@ -27,6 +30,7 @@ public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
 	private String sscUrl ="";
 	private FortifySSCApplicationAndVersionNameGlobalConfig applicationAndVersionNameConfig = null;
 	private FortifySSCCreateApplicationVersionGlobalConfig createApplicationVersionConfig = null;
+	private FortifySSCUploadFPRGlobalConfig uploadFPRConfig = null;
 	
 	private transient SSCAuthenticatingRestConnection conn = null;
 	
@@ -58,6 +62,7 @@ public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
     }
 
 	public FortifySSCApplicationAndVersionNameGlobalConfig getApplicationAndVersionNameConfig() {
+		System.out.println(applicationAndVersionNameConfig);
 		return applicationAndVersionNameConfig;
 	}
 
@@ -67,6 +72,7 @@ public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
 	}
 
 	public FortifySSCCreateApplicationVersionGlobalConfig getCreateApplicationVersionConfig() {
+		System.out.println(createApplicationVersionConfig);
 		return createApplicationVersionConfig;
 	}
 
@@ -75,16 +81,45 @@ public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
 		this.createApplicationVersionConfig = createApplicationVersionConfig;
 	}
 
+	public FortifySSCUploadFPRGlobalConfig getUploadFPRConfig() {
+		System.out.println(uploadFPRConfig);
+		return uploadFPRConfig;
+	}
+
+	@DataBoundSetter
+	public void setUploadFPRConfig(FortifySSCUploadFPRGlobalConfig uploadFPRConfig) {
+		this.uploadFPRConfig = uploadFPRConfig;
+	}
+	
+	public boolean isEnabled(String name) {
+		Boolean result = getEnabledMap().get(name);
+		if ( result == null ) {
+			throw new RuntimeException("Unknown name "+name);
+		}
+		return result;
+	}
+
+	private Map<String, Boolean> getEnabledMap() {
+		Map<String, Boolean> result = new HashMap<>();
+		addToEnabledMap(result, "createApplicationVersion", createApplicationVersionConfig);
+		addToEnabledMap(result, "uploadFPR", uploadFPRConfig);
+		return result;
+	}
+
+	private void addToEnabledMap(Map<String, Boolean> enabledMap, String name, Object config) {
+		enabledMap.put(name, config!=null);
+	}
+
 	@Override
 	public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
-		if ( !json.containsKey("applicationAndVersionNameConfig") ) {
-			// Set field to null if de-selected in configuration page 
-			setApplicationAndVersionNameConfig(null);
-		}
-		if ( !json.containsKey("createApplicationVersionConfig") ) {
-			// Set field to null if de-selected in configuration page 
-			setCreateApplicationVersionConfig(null);
-		}
+		// Clear existing values 
+		// (if de-selected in UI, json will not contain object and thus not overwrite previous config)
+		setApplicationAndVersionNameConfig(null);
+		setCreateApplicationVersionConfig(null);
+		setUploadFPRConfig(null);
+		
+		System.out.println(json);
+		
 		super.configure(req, json);
 		save();
 		return true;

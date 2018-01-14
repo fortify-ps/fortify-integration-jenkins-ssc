@@ -33,9 +33,11 @@ import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.json.processor.AddNamesToComboBoxModel;
+import com.fortify.util.rest.json.JSONMap;
 
+import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.Descriptor;
 import hudson.util.ComboBoxModel;
 
 // TODO Override set* methods to check whether values are being overridden when not allowed
@@ -78,8 +80,40 @@ public class FortifySSCApplicationAndVersionNameJobConfig extends AbstractFortif
 		return super.isVersionNameOverrideAllowed() || globalConfig==null || globalConfig.isVersionNameOverrideAllowed();
 	}
 	
+	public JSONMap getApplicationVersion(EnvVars env, boolean failIfNotFound) throws AbortException {
+		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
+		String applicationName = getExpandedApplicationName(env);
+		String versionName = getExpandedVersionName(env);
+		checkNotBlank(applicationName, "Application name cannot be blank");
+		checkNotBlank(versionName, "Version name cannot be blank");
+		JSONMap applicationVersion = conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions()
+			.applicationName(applicationName).versionName(versionName).useCache(true).build().getUnique();
+		if ( applicationVersion == null && failIfNotFound ) {
+			throw new AbortException("Application version "+applicationName+":"+versionName+" not found");
+		}
+		return applicationVersion;
+	}
+	
+	public String getApplicationVersionId(EnvVars env) throws AbortException {
+		return getApplicationVersion(env, true).get("id", String.class);
+	}
+
+	public String getExpandedVersionName(EnvVars env) {
+		return env.expand(getVersionName());
+	}
+
+	public String getExpandedApplicationName(EnvVars env) {
+		return env.expand(getApplicationName());
+	}
+	
+	private void checkNotBlank(String stringToCheck, String messageIfBlank) throws AbortException {
+		if ( StringUtils.isBlank(stringToCheck) ) {
+			throw new AbortException(messageIfBlank);
+		}
+	}
+	
 	@Extension
-	public static final class DescriptorImpl extends Descriptor<FortifySSCApplicationAndVersionNameJobConfig> {
+	public static final class DescriptorImpl extends AbstractInstanceOrDefaultDescriptor<FortifySSCApplicationAndVersionNameJobConfig> {
         public ComboBoxModel doFillApplicationNameItems() {
 			final ComboBoxModel items = new ComboBoxModel();
 			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
@@ -98,10 +132,9 @@ public class FortifySSCApplicationAndVersionNameJobConfig extends AbstractFortif
 			return items;
 		}
 		
-		public FortifySSCApplicationAndVersionNameJobConfig getInstanceOrDefault(FortifySSCApplicationAndVersionNameJobConfig instance) {
-			return instance != null ? instance : new FortifySSCApplicationAndVersionNameJobConfig(FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig());
+		@Override
+		public FortifySSCApplicationAndVersionNameJobConfig createDefaultInstance() {
+			return new FortifySSCApplicationAndVersionNameJobConfig(FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig());
 		}
     }
-	
-
 }

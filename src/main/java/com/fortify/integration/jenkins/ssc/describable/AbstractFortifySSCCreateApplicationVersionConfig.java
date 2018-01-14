@@ -24,6 +24,7 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import com.fortify.client.ssc.api.SSCIssueTemplateAPI;
@@ -33,14 +34,11 @@ import com.fortify.util.rest.json.JSONList;
 import com.fortify.util.rest.json.JSONMap;
 
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.Descriptor;
 import hudson.util.ListBoxModel;
 
 public abstract class AbstractFortifySSCCreateApplicationVersionConfig<T extends AbstractFortifySSCCreateApplicationVersionConfig<T>> extends AbstractDescribableImpl<T> {
 	private String issueTemplateName;
-	private boolean issueTemplateNameOverrideAllowed;
-	
-	public AbstractFortifySSCCreateApplicationVersionConfig() {}
+	private boolean issueTemplateNameOverrideAllowed = false;
 
 	public String getIssueTemplateName() {
 		return issueTemplateName;
@@ -59,7 +57,12 @@ public abstract class AbstractFortifySSCCreateApplicationVersionConfig<T extends
 		this.issueTemplateNameOverrideAllowed = issueTemplateNameOverrideAllowed;
 	}
 
-	public abstract static class AbstractFortifySSCCreateApplicationVersionConfigDescriptor<T extends AbstractFortifySSCCreateApplicationVersionConfig<T>> extends Descriptor<T> {
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
+
+	public abstract static class AbstractFortifySSCCreateApplicationVersionConfigDescriptor<T extends AbstractFortifySSCCreateApplicationVersionConfig<T>> extends AbstractInstanceOrDefaultDescriptor<T> {
         @Override
         public String getDisplayName() {
             return this.getClass().getSimpleName();

@@ -24,53 +24,22 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.kohsuke.stapler.DataBoundSetter;
-
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
 
-public abstract class AbstractFortifySSCApplicationAndVersionNameConfig<T extends AbstractFortifySSCApplicationAndVersionNameConfig<T>> extends AbstractDescribableImpl<T> {
-	private String applicationName = "";
-	private String versionName = "";
-	private boolean applicationNameOverrideAllowed = true;
-	private boolean versionNameOverrideAllowed = true;
+public abstract class AbstractInstanceOrDefaultDescriptor<T extends AbstractDescribableImpl<T>> extends Descriptor<T> {
+
+	public AbstractInstanceOrDefaultDescriptor() {}
+
+	public AbstractInstanceOrDefaultDescriptor(Class<? extends T> clazz) {
+		super(clazz);
+	}
 	
-	public String getApplicationName() {
-		return applicationName;
+	public T getInstanceOrDefault(T instance) {
+		T result = instance!=null ? instance : createDefaultInstance();
+		System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
+		return result;
 	}
-
-	@DataBoundSetter
-	public void setApplicationName(String applicationName) {
-		this.applicationName = applicationName;
-	}
-
-	public String getVersionName() {
-		return versionName;
-	}
-
-	@DataBoundSetter
-	public void setVersionName(String versionName) {
-		this.versionName = versionName;
-	}
-
-	public boolean isApplicationNameOverrideAllowed() {
-		return applicationNameOverrideAllowed;
-	}
-
-	protected void setApplicationNameOverrideAllowed(boolean applicationNameOverrideAllowed) {
-		this.applicationNameOverrideAllowed = applicationNameOverrideAllowed;
-	}
-
-	public boolean isVersionNameOverrideAllowed() {
-		return versionNameOverrideAllowed;
-	}
-
-	protected void setVersionNameOverrideAllowed(boolean versionNameOverrideAllowed) {
-		this.versionNameOverrideAllowed = versionNameOverrideAllowed;
-	}
-
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
+	
+	public abstract T createDefaultInstance();
 }

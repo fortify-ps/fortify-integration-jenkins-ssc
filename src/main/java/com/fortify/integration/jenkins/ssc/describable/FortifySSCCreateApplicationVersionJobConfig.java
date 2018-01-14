@@ -24,15 +24,27 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
+import java.io.IOException;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import com.fortify.util.rest.json.JSONMap;
 
+import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 
 // TODO Override set* methods to check whether values are being overridden when not allowed
 // TODO Don't display if global configuration disallows creating application versions
-public class FortifySSCCreateApplicationVersionJobConfig extends AbstractFortifySSCCreateApplicationVersionConfig<FortifySSCCreateApplicationVersionJobConfig> {
+public class FortifySSCCreateApplicationVersionJobConfig 
+	extends AbstractFortifySSCCreateApplicationVersionConfig<FortifySSCCreateApplicationVersionJobConfig>
+	implements IFortifySSCPerformWithApplicationAndVersionNameJobConfig
+{
 	/**
 	 * Default constructor
 	 */
@@ -62,10 +74,26 @@ public class FortifySSCCreateApplicationVersionJobConfig extends AbstractFortify
 		return super.isIssueTemplateNameOverrideAllowed() || globalConfig==null || globalConfig.isIssueTemplateNameOverrideAllowed();
 	}
 	
+	@Override
+	public void perform(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameJobConfig, Run<?, ?> run,
+			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException 
+	{
+		EnvVars env = run.getEnvironment(listener);
+		JSONMap applicationVersion = applicationAndVersionNameJobConfig.getApplicationVersion(env, false);
+		if ( applicationVersion == null ) {
+			createApplicationVersion(applicationAndVersionNameJobConfig.getExpandedApplicationName(env), applicationAndVersionNameJobConfig.getExpandedVersionName(env));
+		}
+	}
+	
+	private void createApplicationVersion(String expandedApplicationName, String expandedVersionName) throws AbortException {
+		throw new AbortException("Creating application versions not yet implemented");
+	}
+
 	@Extension
-	public static final class DescriptorImpl extends AbstractFortifySSCCreateApplicationVersionConfigDescriptor<FortifySSCCreateApplicationVersionJobConfig> {
-		public FortifySSCCreateApplicationVersionJobConfig getInstanceOrDefault(FortifySSCCreateApplicationVersionJobConfig instance) {
-			return instance != null ? instance : new FortifySSCCreateApplicationVersionJobConfig(FortifySSCGlobalConfiguration.get().getCreateApplicationVersionConfig());
+	public static final class FortifySSCCreateApplicationVersionJobConfigDescriptor extends AbstractFortifySSCCreateApplicationVersionConfigDescriptor<FortifySSCCreateApplicationVersionJobConfig> {
+		@Override
+		public FortifySSCCreateApplicationVersionJobConfig createDefaultInstance() {
+			return new FortifySSCCreateApplicationVersionJobConfig(FortifySSCGlobalConfiguration.get().getCreateApplicationVersionConfig());
 		}
 	}
 }

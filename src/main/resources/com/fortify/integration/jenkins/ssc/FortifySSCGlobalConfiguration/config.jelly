@@ -9,5 +9,6 @@
         
         <f:optionalProperty field="applicationAndVersionNameConfig" title="${%ApplicationAndVersionNameConfig}" />
 	    <f:optionalProperty field="createApplicationVersionConfig" title="${%CreateApplicationVersionConfig}" />
+	    <f:optionalProperty field="uploadFPRConfig" title="${%UploadFPRConfig}" />
     </f:section>
 </j:jelly>

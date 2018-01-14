@@ -25,26 +25,18 @@
 package com.fortify.integration.jenkins.ssc.describable;
 
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
 
 import hudson.Extension;
 
-public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFortifySSCCreateApplicationVersionConfig<FortifySSCCreateApplicationVersionGlobalConfig> {
+public class FortifySSCUploadFPRGlobalConfig extends AbstractFortifySSCUploadFPRConfig<FortifySSCUploadFPRGlobalConfig> {
 	@DataBoundConstructor
-	public FortifySSCCreateApplicationVersionGlobalConfig() {}
-	
-	@Override @DataBoundSetter
-	public void setIssueTemplateNameOverrideAllowed(boolean issueTemplateNameOverrideAllowed) {
-		System.out.println("setIssueTemplateNameOverrideAllowed: "+issueTemplateNameOverrideAllowed);
-		super.setIssueTemplateNameOverrideAllowed(issueTemplateNameOverrideAllowed);
-	}
+	public FortifySSCUploadFPRGlobalConfig() {}
 	
 	@Extension
-	public static final class DescriptorImpl extends AbstractFortifySSCCreateApplicationVersionConfigDescriptor<FortifySSCCreateApplicationVersionGlobalConfig> {
+	public static final class DescriptorImpl extends AbstractInstanceOrDefaultDescriptor<FortifySSCUploadFPRGlobalConfig> {
 		@Override
-		public FortifySSCCreateApplicationVersionGlobalConfig createDefaultInstance() {
-			return new FortifySSCCreateApplicationVersionGlobalConfig();
+		public FortifySSCUploadFPRGlobalConfig createDefaultInstance() {
+			return new FortifySSCUploadFPRGlobalConfig();
 		}
 	}
-
 }

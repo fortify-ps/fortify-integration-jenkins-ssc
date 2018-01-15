@@ -25,7 +25,9 @@
 package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jenkinsci.plugins.workflow.steps.Step;
@@ -35,6 +37,7 @@ import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
 
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameJobConfig;
 import com.fortify.integration.jenkins.ssc.describable.IFortifySSCPerformWithApplicationAndVersionNameJobConfig;
@@ -43,9 +46,11 @@ import com.google.common.collect.ImmutableSet;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import net.sf.json.JSONObject;
 
 public class FortifySSCStep extends Step {
 	private FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameConfig = new FortifySSCApplicationAndVersionNameJobConfig();
@@ -131,8 +136,17 @@ public class FortifySSCStep extends Step {
 			return ImmutableSet.of(Run.class, FilePath.class, TaskListener.class, Launcher.class);
 		}
 		
-		public static final List<Descriptor<?>> getEnabledDescriptors() {
+		public final List<Descriptor<?>> getEnabledDescriptors() {
 			return FortifySSCGlobalConfiguration.get().getEnabledJobDescriptors();
+		}
+		
+		// TODO Remove this method if not used in jelly.config
+		public final Map<Descriptor<?>, Describable<?>> getEnabledDescriptorInstances() {
+			Map<Descriptor<?>, Describable<?>> result = new HashMap<>();
+			for ( Descriptor<?> descriptor : getEnabledDescriptors() ) {
+				result.put(descriptor, null);
+			}
+			return result;
 		}
 	}
 }

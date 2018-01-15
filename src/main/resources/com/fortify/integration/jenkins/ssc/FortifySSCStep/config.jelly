@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-<!-- TODO: Fix this
-	<f:entry field="applicationAndVersionNameConfig">
-    	<f:property />
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+	<f:entry field="applicationName" title="${%ApplicationName}">
+        <f:textbox />
+    </f:entry>
+    <f:entry field="versionName" title="${%VersionName}">
+        <f:textbox />
     </f:entry>
     
-    <j:forEach items="${descriptor.enabledDescriptors}" var="enabledDescriptor">
-    	<f:optionalProperty field="${enabledDescriptor.propertyName}" title="${enabledDescriptor.displayName}"/>
+	<!-- TODO: Fix databinding, simplify this with descriptorList? -->
+    <j:forEach items="${descriptor.enabledDescriptors}" var="d">
+    	${d}
+    	<f:optionalBlock name="${d.jsonSafeClassName}" help="${d.helpFile}"
+          title="${d.displayName}" checked="false">
+
+          <j:set var="descriptor" value="${d}" />
+          <st:include from="${d}" page="${d.configPage}" optional="true" />
+        </f:optionalBlock>
     </j:forEach>
--->
+    
 </j:jelly>

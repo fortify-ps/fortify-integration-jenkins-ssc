@@ -24,24 +24,4 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Descriptor;
-
-public abstract class AbstractInstanceOrDefaultDescriptor<T extends AbstractDescribableImpl<T>> extends Descriptor<T> {
-
-	public AbstractInstanceOrDefaultDescriptor() {}
-
-	public AbstractInstanceOrDefaultDescriptor(Class<? extends T> clazz) {
-		super(clazz);
-	}
-	
-	public T getInstanceOrDefault(T instance) {
-		T result = instance!=null ? instance : createDefaultInstance();
-		System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
-		return result;
-	}
-	
-	public abstract T createDefaultInstance();
-	
-	public abstract String getPropertyName();
-}
+public abstract class AbstractFortifySSCJobConfig<T extends AbstractFortifySSCJobConfig<T>> extends AbstractFortifySSCConfig<T> {}

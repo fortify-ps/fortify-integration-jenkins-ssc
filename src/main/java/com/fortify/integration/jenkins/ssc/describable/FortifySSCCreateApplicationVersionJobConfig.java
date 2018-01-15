@@ -28,8 +28,13 @@ import java.io.IOException;
 
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
+import com.fortify.client.ssc.api.SSCIssueTemplateAPI;
+import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCConfig.AbstractFortifySSCConfigDescriptor;
+import com.fortify.util.rest.json.JSONList;
 import com.fortify.util.rest.json.JSONMap;
 
 import hudson.AbortException;
@@ -39,40 +44,42 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.util.ListBoxModel;
 
 // TODO Override set* methods to check whether values are being overridden when not allowed
 // TODO Don't display if global configuration disallows creating application versions
-public class FortifySSCCreateApplicationVersionJobConfig 
-	extends AbstractFortifySSCCreateApplicationVersionConfig<FortifySSCCreateApplicationVersionJobConfig>
-	implements IFortifySSCPerformWithApplicationAndVersionNameJobConfig
-{
+public class FortifySSCCreateApplicationVersionJobConfig extends AbstractFortifySSCJobConfigWithApplicationVersionAction<FortifySSCCreateApplicationVersionJobConfig> {
+	private String issueTemplateName;
+	
 	/**
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCCreateApplicationVersionJobConfig() {
-		FortifySSCCreateApplicationVersionGlobalConfig config = FortifySSCGlobalConfiguration.get().getCreateApplicationVersionConfig();
-		if ( config != null ) {
-			super.setIssueTemplateNameOverrideAllowed(config.isIssueTemplateNameOverrideAllowed());
-		}
-	}
+	public FortifySSCCreateApplicationVersionJobConfig() {}
 	
 	/**
 	 * Initialize with global config 
 	 * @param other
 	 */
 	public FortifySSCCreateApplicationVersionJobConfig(FortifySSCCreateApplicationVersionGlobalConfig globalConfig) {
-		this();
 		if ( globalConfig != null ) {
 			setIssueTemplateName(globalConfig.getIssueTemplateName());
 		}
 	}
 	
-	@Override
+	public String getIssueTemplateName() {
+		return issueTemplateName;
+	}
+
+	@DataBoundSetter
+	public void setIssueTemplateName(String issueTemplateName) {
+		this.issueTemplateName = issueTemplateName;
+	}
+	
 	public boolean isIssueTemplateNameOverrideAllowed() {
 		// Allow override if we either were previously configured to allow override, or if current global config allows override
 		FortifySSCCreateApplicationVersionGlobalConfig globalConfig = FortifySSCGlobalConfiguration.get().getCreateApplicationVersionConfig();
-		return super.isIssueTemplateNameOverrideAllowed() || globalConfig==null || globalConfig.isIssueTemplateNameOverrideAllowed();
+		return globalConfig==null || globalConfig.isIssueTemplateNameOverrideAllowed();
 	}
 	
 	@Override
@@ -93,7 +100,7 @@ public class FortifySSCCreateApplicationVersionJobConfig
 
 	@Symbol("sscCreateApplicationVersionIfNotExisting")
 	@Extension
-	public static final class FortifySSCCreateApplicationVersionJobConfigDescriptor extends AbstractFortifySSCCreateApplicationVersionConfigDescriptor<FortifySSCCreateApplicationVersionJobConfig> {
+	public static final class FortifySSCCreateApplicationVersionJobConfigDescriptor extends AbstractFortifySSCConfigDescriptor<FortifySSCCreateApplicationVersionJobConfig> {
 		@Override
 		public FortifySSCCreateApplicationVersionJobConfig createDefaultInstance() {
 			return new FortifySSCCreateApplicationVersionJobConfig(FortifySSCGlobalConfiguration.get().getCreateApplicationVersionConfig());
@@ -103,6 +110,24 @@ public class FortifySSCCreateApplicationVersionJobConfig
 		public String getDisplayName() {
 			// TODO Internationalize this
 			return "Create application version if it does not yet exist";
+		}
+		
+		public ListBoxModel doFillIssueTemplateNameItems() {
+			final ListBoxModel items = new ListBoxModel();
+			JSONList issueTemplates = getIssueTemplates();
+			for ( JSONMap issueTemplate : issueTemplates.asValueType(JSONMap.class) ) {
+				items.add(issueTemplate.get("name", String.class));
+			}
+			return items;
+		}
+        
+        public String getDefaultIssueTemplateName() {
+        	return getIssueTemplates().mapValue("defaultTemplate", true, "name", String.class);
+        }
+        
+        protected JSONList getIssueTemplates() {
+			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
+			return conn.api(SSCIssueTemplateAPI.class).getIssueTemplates(true);
 		}
 	}
 }

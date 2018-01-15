@@ -24,42 +24,13 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.kohsuke.stapler.DataBoundSetter;
+import java.io.IOException;
 
-import hudson.model.AbstractDescribableImpl;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 
-public abstract class AbstractFortifySSCUploadFPRConfig<T extends AbstractFortifySSCUploadFPRConfig<T>> extends AbstractDescribableImpl<T> {
-	private static final String DEFAULT_FPR_ANT_FILTER = "**/*.fpr";
-	private String fprAntFilter = DEFAULT_FPR_ANT_FILTER;
-	private int processingTimeOutSeconds = 60;
-	
-	public String getFprAntFilter() {
-		return fprAntFilter;
-	}
-	
-	@DataBoundSetter
-	public void setFprAntFilter(String fprAntFilter) {
-		this.fprAntFilter = fprAntFilter;
-	}
-	public int getProcessingTimeOutSeconds() {
-		return processingTimeOutSeconds;
-	}
-	
-	@DataBoundSetter
-	public void setProcessingTimeOutSeconds(int processingTimeOutSeconds) {
-		this.processingTimeOutSeconds = processingTimeOutSeconds;
-	}
-	
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-	
-	public abstract static class AbstractFortifySSCUploadFPRConfigDescriptor<T extends AbstractFortifySSCUploadFPRConfig<T>> extends AbstractInstanceOrDefaultDescriptor<T> {
-        @Override
-        public final String getPropertyName() {
-        	return "uploadFPRConfig";
-        }
-	}
+public abstract class AbstractFortifySSCJobConfigWithApplicationVersionAction<T extends AbstractFortifySSCJobConfigWithApplicationVersionAction<T>> extends AbstractFortifySSCJobConfig<T> {
+	public abstract void perform(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
 }

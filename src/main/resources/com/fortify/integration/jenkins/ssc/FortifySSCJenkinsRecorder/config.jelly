@@ -5,7 +5,9 @@
     	<f:property />
     </f:entry>
     
-    <j:forEach items="${descriptor.enabledDescriptors}" var="enabledDescriptor">
-    	<f:optionalProperty field="${enabledDescriptor.propertyName}" title="${enabledDescriptor.displayName}"/>
-    </j:forEach>
+    <f:nested>
+    	<f:hetero-list name="actions" items="${descriptor.getInstanceOrDefault(instance).actions}" 
+    		descriptors="${descriptor.enabledDescriptors}" targetType="${descriptor.targetType}" 
+    		hasHeader="true" addCaption="${%Add Action}" deleteCaption="${%Delete Action}" />
+    </f:nested>
 </j:jelly>

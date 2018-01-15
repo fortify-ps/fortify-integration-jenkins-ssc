@@ -29,30 +29,53 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 import hudson.Extension;
 
-public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFortifySSCApplicationAndVersionNameConfig<FortifySSCApplicationAndVersionNameGlobalConfig> {
+public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFortifySSCGlobalConfig<FortifySSCApplicationAndVersionNameGlobalConfig> {
+	private String applicationName = "";
+	private String versionName = "";
+	private boolean applicationNameOverrideAllowed = true;
+	private boolean versionNameOverrideAllowed = true;
+	
 	@DataBoundConstructor
 	public FortifySSCApplicationAndVersionNameGlobalConfig() {}
 	
-	/**
-	 * Allow property to be configured in global config
-	 */
-	@Override @DataBoundSetter
+	public String getApplicationName() {
+		return applicationName;
+	}
+
+	@DataBoundSetter
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
+	}
+
+	public String getVersionName() {
+		return versionName;
+	}
+
+	@DataBoundSetter
+	public void setVersionName(String versionName) {
+		this.versionName = versionName;
+	}
+
+	public boolean isApplicationNameOverrideAllowed() {
+		return applicationNameOverrideAllowed;
+	}
+
+	@DataBoundSetter
 	public void setApplicationNameOverrideAllowed(boolean applicationNameOverrideAllowed) {
-		System.out.println("setApplicationNameOverrideAllowed: "+applicationNameOverrideAllowed);
-		super.setApplicationNameOverrideAllowed(applicationNameOverrideAllowed);
+		this.applicationNameOverrideAllowed = applicationNameOverrideAllowed;
 	}
-	
-	/**
-	 * Allow property to be configured in global config
-	 */
-	@Override @DataBoundSetter
+
+	public boolean isVersionNameOverrideAllowed() {
+		return versionNameOverrideAllowed;
+	}
+
+	@DataBoundSetter
 	public void setVersionNameOverrideAllowed(boolean versionNameOverrideAllowed) {
-		System.out.println("setVersionNameOverrideAllowed: "+versionNameOverrideAllowed);
-		super.setVersionNameOverrideAllowed(versionNameOverrideAllowed);
+		this.versionNameOverrideAllowed = versionNameOverrideAllowed;
 	}
-	
+
 	@Extension
-	public static final class FortifySSCApplicationAndVersionNameGlobalConfigDescriptor extends AbstractFortifySSCApplicationAndVersionNameConfigDescriptor<FortifySSCApplicationAndVersionNameGlobalConfig> {
+	public static final class FortifySSCApplicationAndVersionNameGlobalConfigDescriptor extends AbstractFortifySSCConfigDescriptor<FortifySSCApplicationAndVersionNameGlobalConfig> {
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
@@ -64,6 +87,4 @@ public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFor
 			return new FortifySSCApplicationAndVersionNameGlobalConfig();
 		}
 	}
-	
-
 }

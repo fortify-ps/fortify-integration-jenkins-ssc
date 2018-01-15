@@ -24,47 +24,4 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-
-import hudson.Extension;
-
-public class FortifySSCUploadFPRGlobalConfig extends AbstractFortifySSCGlobalConfig<FortifySSCUploadFPRGlobalConfig> {
-	private static final String DEFAULT_FPR_ANT_FILTER = "**/*.fpr";
-	private String fprAntFilter = DEFAULT_FPR_ANT_FILTER;
-	private int processingTimeOutSeconds = 60;
-	
-	@DataBoundConstructor
-	public FortifySSCUploadFPRGlobalConfig() {}
-	
-	public String getFprAntFilter() {
-		return fprAntFilter;
-	}
-	
-	@DataBoundSetter
-	public void setFprAntFilter(String fprAntFilter) {
-		this.fprAntFilter = fprAntFilter;
-	}
-	public int getProcessingTimeOutSeconds() {
-		return processingTimeOutSeconds;
-	}
-	
-	@DataBoundSetter
-	public void setProcessingTimeOutSeconds(int processingTimeOutSeconds) {
-		this.processingTimeOutSeconds = processingTimeOutSeconds;
-	}
-	
-	@Extension
-	public static final class FortifySSCUploadFPRGlobalConfigDescriptor extends AbstractFortifySSCConfigDescriptor<FortifySSCUploadFPRGlobalConfig> {
-		@Override
-		public String getDisplayName() {
-			// TODO Internationalize this
-			return "Enable upload of FPR files";
-		}
-		
-		@Override
-		public FortifySSCUploadFPRGlobalConfig createDefaultInstance() {
-			return new FortifySSCUploadFPRGlobalConfig();
-		}
-	}
-}
+public abstract class AbstractFortifySSCGlobalConfig<T extends AbstractFortifySSCGlobalConfig<T>> extends AbstractFortifySSCConfig<T> {}

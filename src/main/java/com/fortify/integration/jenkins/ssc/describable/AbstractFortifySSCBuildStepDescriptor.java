@@ -24,13 +24,18 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
-import java.io.IOException;
+import hudson.model.Describable;
+import hudson.tasks.BuildStep;
+import hudson.tasks.BuildStepDescriptor;
 
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+public abstract class AbstractFortifySSCBuildStepDescriptor<T extends BuildStep & Describable<T>> extends BuildStepDescriptor<T> {
 
-public interface IFortifySSCPerformWithApplicationAndVersionNameJobConfig {
-	public void perform(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
+	public T getInstanceOrDefault(T instance) {
+		T result = instance!=null ? instance : createDefaultInstance();
+		System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
+		return result;
+	}
+	
+	public abstract T createDefaultInstance();
+
 }

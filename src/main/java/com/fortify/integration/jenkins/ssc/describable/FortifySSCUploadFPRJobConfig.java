@@ -31,6 +31,7 @@ import java.io.PrintStream;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import com.fortify.client.ssc.api.SSCArtifactAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
@@ -45,9 +46,10 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 
-public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCUploadFPRConfig<FortifySSCUploadFPRJobConfig> 
-	implements IFortifySSCPerformWithApplicationAndVersionNameJobConfig
-{
+public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCJobConfigWithApplicationVersionAction<FortifySSCUploadFPRJobConfig> {
+	private String fprAntFilter = "";
+	private int processingTimeOutSeconds = 60;
+	
 	/**
 	 * Default constructor
 	 */
@@ -59,13 +61,30 @@ public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCUploadFPRCon
 	 * @param other
 	 */
 	public FortifySSCUploadFPRJobConfig(FortifySSCUploadFPRGlobalConfig globalConfig) {
-		this();
 		if ( globalConfig != null ) {
 			setFprAntFilter(globalConfig.getFprAntFilter());
 			setProcessingTimeOutSeconds(globalConfig.getProcessingTimeOutSeconds());
 		}
 	}
 	
+	public String getFprAntFilter() {
+		return fprAntFilter;
+	}
+
+	@DataBoundSetter
+	public void setFprAntFilter(String fprAntFilter) {
+		this.fprAntFilter = fprAntFilter;
+	}
+
+	public int getProcessingTimeOutSeconds() {
+		return processingTimeOutSeconds;
+	}
+
+	@DataBoundSetter
+	public void setProcessingTimeOutSeconds(int processingTimeOutSeconds) {
+		this.processingTimeOutSeconds = processingTimeOutSeconds;
+	}
+
 	@Override
 	public void perform(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
@@ -98,7 +117,7 @@ public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCUploadFPRCon
 	
 	@Symbol("sscUploadFPR")
 	@Extension
-	public static final class FortifySSCUploadFPRJobConfigDescriptor extends AbstractFortifySSCUploadFPRConfigDescriptor<FortifySSCUploadFPRJobConfig> {
+	public static final class FortifySSCUploadFPRJobConfigDescriptor extends AbstractFortifySSCConfigDescriptor<FortifySSCUploadFPRJobConfig> {
 		@Override
 		public FortifySSCUploadFPRJobConfig createDefaultInstance() {
 			return new FortifySSCUploadFPRJobConfig(FortifySSCGlobalConfiguration.get().getUploadFPRConfig());

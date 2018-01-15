@@ -26,15 +26,15 @@ package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCBuildStepDescriptor;
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCJobConfigWithApplicationVersionAction;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameJobConfig;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionJobConfig;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRJobConfig;
-import com.fortify.integration.jenkins.ssc.describable.IFortifySSCPerformWithApplicationAndVersionNameJobConfig;
 
 import hudson.AbortException;
 import hudson.Extension;
@@ -44,19 +44,17 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
-import hudson.model.TaskListener;
-import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 
 public class FortifySSCJenkinsRecorder extends Recorder {
 	private FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameConfig;
-	private FortifySSCCreateApplicationVersionJobConfig createApplicationVersionConfig;
-	private FortifySSCUploadFPRJobConfig uploadFPRConfig;
+	private List<AbstractFortifySSCJobConfigWithApplicationVersionAction<?>> actions;
 
 	@DataBoundConstructor
 	public FortifySSCJenkinsRecorder() {
+		setActions(new ArrayList<>());
 	}
 
 	public FortifySSCApplicationAndVersionNameJobConfig getApplicationAndVersionNameConfig() {
@@ -65,54 +63,34 @@ public class FortifySSCJenkinsRecorder extends Recorder {
 	}
 
 	@DataBoundSetter
-	public void setApplicationAndVersionNameConfig(
-			FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameConfig) {
+	public void setApplicationAndVersionNameConfig(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameConfig) {
 		this.applicationAndVersionNameConfig = applicationAndVersionNameConfig;
 	}
 
-	public FortifySSCCreateApplicationVersionJobConfig getCreateApplicationVersionConfig() {
-		System.out.println(createApplicationVersionConfig);
-		return createApplicationVersionConfig;
+	public List<AbstractFortifySSCJobConfigWithApplicationVersionAction<?>> getActions() {
+		return actions;
 	}
 
 	@DataBoundSetter
-	public void setCreateApplicationVersionConfig(
-			FortifySSCCreateApplicationVersionJobConfig createApplicationVersionConfig) {
-		this.createApplicationVersionConfig = createApplicationVersionConfig;
-	}
-
-	public FortifySSCUploadFPRJobConfig getUploadFPRConfig() {
-		System.out.println(uploadFPRConfig);
-		return uploadFPRConfig;
-	}
-
-	@DataBoundSetter
-	public void setUploadFPRConfig(FortifySSCUploadFPRJobConfig uploadFPRConfig) {
-		this.uploadFPRConfig = uploadFPRConfig;
+	public void setActions(List<AbstractFortifySSCJobConfigWithApplicationVersionAction<?>> actions) {
+		this.actions = actions;
 	}
 
 	@Override
-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-			throws InterruptedException, IOException {
+	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
 		log.println(
 				"HPE Security Fortify Jenkins plugin: " + FortifySSCGlobalConfiguration.get().conn().getBaseResource());
-		perform(build, launcher, listener, getCreateApplicationVersionConfig(), getUploadFPRConfig());
-		return true;
-	}
-
-	private void perform(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener,
-			IFortifySSCPerformWithApplicationAndVersionNameJobConfig... performers)
-			throws InterruptedException, IOException {
 		FilePath workspace = build.getWorkspace();
 		if (workspace == null) {
 			throw new AbortException("no workspace for " + build);
 		}
-		for (IFortifySSCPerformWithApplicationAndVersionNameJobConfig performer : performers) {
+		for (AbstractFortifySSCJobConfigWithApplicationVersionAction<?> performer : getActions()) {
 			if (performer != null) {
 				performer.perform(getApplicationAndVersionNameConfig(), build, workspace, launcher, listener);
 			}
 		}
+		return true;
 	}
 
 	@Override
@@ -126,7 +104,7 @@ public class FortifySSCJenkinsRecorder extends Recorder {
 	}
 
 	@Extension
-	public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+	public static class DescriptorImpl extends AbstractFortifySSCBuildStepDescriptor<Publisher> {
 
 		@SuppressWarnings("rawtypes")
 		@Override
@@ -139,8 +117,20 @@ public class FortifySSCJenkinsRecorder extends Recorder {
 			return "Fortify SSC Jenkins Plugin";
 		}
 
-		public static final List<Descriptor<?>> getEnabledDescriptors() {
+		public final List<Descriptor<?>> getEnabledDescriptors() {
+			System.out.println("getEnabledDescriptors");
 			return FortifySSCGlobalConfiguration.get().getEnabledJobDescriptors();
+		}
+
+		@Override
+		public final FortifySSCJenkinsRecorder createDefaultInstance() {
+			System.out.println("createDefaultInstance");
+			return new FortifySSCJenkinsRecorder();
+		}
+		
+		public final Class<?> getTargetType() {
+			System.out.println("getTargetType");
+			return AbstractFortifySSCJobConfigWithApplicationVersionAction.class;
 		}
 	}
 

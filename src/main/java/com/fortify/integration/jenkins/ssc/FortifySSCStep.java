@@ -25,39 +25,37 @@
 package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
-import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
 
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCJobConfigWithApplicationVersionAction;
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCStepDescriptor;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameJobConfig;
-import com.fortify.integration.jenkins.ssc.describable.IFortifySSCPerformWithApplicationAndVersionNameJobConfig;
 import com.google.common.collect.ImmutableSet;
 
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import net.sf.json.JSONObject;
 
 public class FortifySSCStep extends Step {
 	private FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameConfig = new FortifySSCApplicationAndVersionNameJobConfig();
-	private IFortifySSCPerformWithApplicationAndVersionNameJobConfig[] actions;
+	private List<AbstractFortifySSCJobConfigWithApplicationVersionAction<?>> actions;
 	
 	@DataBoundConstructor
-	public FortifySSCStep() {}
+	public FortifySSCStep() {
+		setActions(new ArrayList<>());
+	}
 	
 	public String getApplicationName() {
 		return applicationAndVersionNameConfig.getApplicationName();
@@ -77,12 +75,12 @@ public class FortifySSCStep extends Step {
 		applicationAndVersionNameConfig.setVersionName(versionName);
 	}
 	
-	public IFortifySSCPerformWithApplicationAndVersionNameJobConfig[] getActions() {
+	public List<AbstractFortifySSCJobConfigWithApplicationVersionAction<?>> getActions() {
 		return actions;
 	}
 
 	@DataBoundSetter
-	public void setActions(IFortifySSCPerformWithApplicationAndVersionNameJobConfig[] actions) {
+	public void setActions(List<AbstractFortifySSCJobConfigWithApplicationVersionAction<?>> actions) {
 		this.actions = actions;
 	}
 
@@ -94,7 +92,7 @@ public class FortifySSCStep extends Step {
 	public void perform(Run<?, ?> run, FilePath workspace, TaskListener listener, Launcher launcher) throws InterruptedException, IOException {
 		System.out.println(applicationAndVersionNameConfig);
 		if ( actions != null ) {
-			for ( IFortifySSCPerformWithApplicationAndVersionNameJobConfig action : actions ) {
+			for ( AbstractFortifySSCJobConfigWithApplicationVersionAction<?> action : actions ) {
 				System.out.println(action);
 				action.perform(applicationAndVersionNameConfig, run, workspace, launcher, listener);
 			}
@@ -120,7 +118,7 @@ public class FortifySSCStep extends Step {
 	}
 
 	@Extension
-	public static final class DescriptorImpl extends StepDescriptor {
+	public static final class DescriptorImpl extends AbstractFortifySSCStepDescriptor<FortifySSCStep> {
 		@Override
 		public String getDisplayName() {
 			return "Perform Fortify SSC action";
@@ -137,16 +135,21 @@ public class FortifySSCStep extends Step {
 		}
 		
 		public final List<Descriptor<?>> getEnabledDescriptors() {
+			System.out.println("getEnabledDescriptors");
 			return FortifySSCGlobalConfiguration.get().getEnabledJobDescriptors();
 		}
-		
-		// TODO Remove this method if not used in jelly.config
-		public final Map<Descriptor<?>, Describable<?>> getEnabledDescriptorInstances() {
-			Map<Descriptor<?>, Describable<?>> result = new HashMap<>();
-			for ( Descriptor<?> descriptor : getEnabledDescriptors() ) {
-				result.put(descriptor, null);
-			}
-			return result;
+
+		@Override
+		public final FortifySSCStep createDefaultInstance() {
+			System.out.println("createDefaultInstance");
+			return new FortifySSCStep();
 		}
+		
+		public final Class<?> getTargetType() {
+			System.out.println("getTargetType");
+			return AbstractFortifySSCJobConfigWithApplicationVersionAction.class;
+		}
+
+		
 	}
 }

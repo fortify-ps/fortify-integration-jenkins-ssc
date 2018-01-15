@@ -27,20 +27,42 @@ package com.fortify.integration.jenkins.ssc.describable;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import hudson.Extension;
+import com.fortify.client.ssc.api.SSCIssueTemplateAPI;
+import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
+import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import com.fortify.util.rest.json.JSONList;
+import com.fortify.util.rest.json.JSONMap;
 
-public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFortifySSCCreateApplicationVersionConfig<FortifySSCCreateApplicationVersionGlobalConfig> {
+import hudson.Extension;
+import hudson.util.ListBoxModel;
+
+public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFortifySSCGlobalConfig<FortifySSCCreateApplicationVersionGlobalConfig> {
+	private String issueTemplateName;
+	private boolean issueTemplateNameOverrideAllowed = false;
+	
 	@DataBoundConstructor
 	public FortifySSCCreateApplicationVersionGlobalConfig() {}
-	
-	@Override @DataBoundSetter
+
+	public String getIssueTemplateName() {
+		return issueTemplateName;
+	}
+
+	@DataBoundSetter
+	public void setIssueTemplateName(String issueTemplateName) {
+		this.issueTemplateName = issueTemplateName;
+	}
+
+	public boolean isIssueTemplateNameOverrideAllowed() {
+		return issueTemplateNameOverrideAllowed;
+	}
+
+	@DataBoundSetter
 	public void setIssueTemplateNameOverrideAllowed(boolean issueTemplateNameOverrideAllowed) {
-		System.out.println("setIssueTemplateNameOverrideAllowed: "+issueTemplateNameOverrideAllowed);
-		super.setIssueTemplateNameOverrideAllowed(issueTemplateNameOverrideAllowed);
+		this.issueTemplateNameOverrideAllowed = issueTemplateNameOverrideAllowed;
 	}
 	
 	@Extension
-	public static final class FortifySSCCreateApplicationVersionGlobalConfigDescriptor extends AbstractFortifySSCCreateApplicationVersionConfigDescriptor<FortifySSCCreateApplicationVersionGlobalConfig> {
+	public static final class FortifySSCCreateApplicationVersionGlobalConfigDescriptor extends AbstractFortifySSCConfigDescriptor<FortifySSCCreateApplicationVersionGlobalConfig> {
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
@@ -50,6 +72,25 @@ public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFort
 		@Override
 		public FortifySSCCreateApplicationVersionGlobalConfig createDefaultInstance() {
 			return new FortifySSCCreateApplicationVersionGlobalConfig();
+		}
+		
+		// TODO Remove duplication between this and corresponding JobConfig descriptor
+		public ListBoxModel doFillIssueTemplateNameItems() {
+			final ListBoxModel items = new ListBoxModel();
+			JSONList issueTemplates = getIssueTemplates();
+			for ( JSONMap issueTemplate : issueTemplates.asValueType(JSONMap.class) ) {
+				items.add(issueTemplate.get("name", String.class));
+			}
+			return items;
+		}
+        
+        public String getDefaultIssueTemplateName() {
+        	return getIssueTemplates().mapValue("defaultTemplate", true, "name", String.class);
+        }
+        
+        protected JSONList getIssueTemplates() {
+			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
+			return conn.api(SSCIssueTemplateAPI.class).getIssueTemplates(true);
 		}
 	}
 

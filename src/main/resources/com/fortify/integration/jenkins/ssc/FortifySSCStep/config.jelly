@@ -8,15 +8,9 @@
         <f:textbox />
     </f:entry>
     
-	<!-- TODO: Fix databinding, simplify this with descriptorList? -->
-    <j:forEach items="${descriptor.enabledDescriptors}" var="d">
-    	${d}
-    	<f:optionalBlock name="${d.jsonSafeClassName}" help="${d.helpFile}"
-          title="${d.displayName}" checked="false">
-
-          <j:set var="descriptor" value="${d}" />
-          <st:include from="${d}" page="${d.configPage}" optional="true" />
-        </f:optionalBlock>
-    </j:forEach>
-    
+    <f:nested>
+    	<f:hetero-list name="actions" items="${descriptor.getInstanceOrDefault(instance).actions}" 
+    		descriptors="${descriptor.enabledDescriptors}" targetType="${descriptor.targetType}" 
+    		hasHeader="true" addCaption="${%Add Action}" deleteCaption="${%Delete Action}" />
+    </f:nested>
 </j:jelly>

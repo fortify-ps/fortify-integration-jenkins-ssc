@@ -26,6 +26,7 @@ package com.fortify.integration.jenkins.ssc.describable;
 
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import com.fortify.client.ssc.api.SSCApplicationAPI;
@@ -41,43 +42,55 @@ import hudson.Extension;
 import hudson.util.ComboBoxModel;
 
 // TODO Override set* methods to check whether values are being overridden when not allowed
-public class FortifySSCApplicationAndVersionNameJobConfig extends AbstractFortifySSCApplicationAndVersionNameConfig<FortifySSCApplicationAndVersionNameJobConfig> {
+public class FortifySSCApplicationAndVersionNameJobConfig extends AbstractFortifySSCJobConfig<FortifySSCApplicationAndVersionNameJobConfig> {
+	private String applicationName = "";
+	private String versionName = "";
+	
 	/**
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCApplicationAndVersionNameJobConfig() {
-		FortifySSCApplicationAndVersionNameGlobalConfig config = FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig();
-		if ( config != null ) {
-			super.setApplicationNameOverrideAllowed(config.isApplicationNameOverrideAllowed());
-			super.setVersionNameOverrideAllowed(config.isVersionNameOverrideAllowed());
-		}
-	}
+	public FortifySSCApplicationAndVersionNameJobConfig() {}
 	
 	/**
 	 * Initialize with global config 
 	 * @param other
 	 */
 	public FortifySSCApplicationAndVersionNameJobConfig(FortifySSCApplicationAndVersionNameGlobalConfig globalConfig) {
-		this();
 		if ( globalConfig != null ) {
 			setApplicationName(globalConfig.getApplicationName());
 			setVersionName(globalConfig.getVersionName());
 		}
 	}
 	
-	@Override
+	public String getApplicationName() {
+		return applicationName;
+	}
+
+	@DataBoundSetter
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
+	}
+
+	public String getVersionName() {
+		return versionName;
+	}
+
+	@DataBoundSetter
+	public void setVersionName(String versionName) {
+		this.versionName = versionName;
+	}
+	
 	public boolean isApplicationNameOverrideAllowed() {
 		// Allow override if we either were previously configured to allow override, or if current global config allows override
 		FortifySSCApplicationAndVersionNameGlobalConfig globalConfig = FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig();
-		return super.isApplicationNameOverrideAllowed() || globalConfig==null || globalConfig.isApplicationNameOverrideAllowed();
+		return globalConfig==null || globalConfig.isApplicationNameOverrideAllowed();
 	}
 	
-	@Override
 	public boolean isVersionNameOverrideAllowed() {
 		// Allow override if we either were previously configured to allow override, or if current global config allows override
 		FortifySSCApplicationAndVersionNameGlobalConfig globalConfig = FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig();
-		return super.isVersionNameOverrideAllowed() || globalConfig==null || globalConfig.isVersionNameOverrideAllowed();
+		return globalConfig==null || globalConfig.isVersionNameOverrideAllowed();
 	}
 	
 	public JSONMap getApplicationVersion(EnvVars env, boolean failIfNotFound) throws AbortException {
@@ -113,7 +126,7 @@ public class FortifySSCApplicationAndVersionNameJobConfig extends AbstractFortif
 	}
 	
 	@Extension
-	public static final class DescriptorImpl extends AbstractFortifySSCApplicationAndVersionNameConfigDescriptor<FortifySSCApplicationAndVersionNameJobConfig> {
+	public static final class FortifySSCApplicationAndVersionNameJobConfigDescriptor extends AbstractFortifySSCConfigDescriptor<FortifySSCApplicationAndVersionNameJobConfig> {
         public ComboBoxModel doFillApplicationNameItems() {
 			final ComboBoxModel items = new ComboBoxModel();
 			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();

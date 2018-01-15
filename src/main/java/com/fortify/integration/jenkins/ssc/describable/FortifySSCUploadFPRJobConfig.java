@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -94,6 +95,7 @@ public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCUploadFPRCon
 		
 	}
 	
+	@Symbol("sscUploadFPR")
 	@Extension
 	public static final class FortifySSCUploadFPRJobConfigDescriptor extends AbstractFortifySSCUploadFPRConfigDescriptor<FortifySSCUploadFPRJobConfig> {
 		@Override

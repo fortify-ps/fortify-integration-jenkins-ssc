@@ -26,6 +26,7 @@ package com.fortify.integration.jenkins.ssc.describable;
 
 import java.io.IOException;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
@@ -89,6 +90,7 @@ public class FortifySSCCreateApplicationVersionJobConfig
 		throw new AbortException("Creating application versions not yet implemented");
 	}
 
+	@Symbol("sscCreateApplicationVersionIfNotExisting")
 	@Extension
 	public static final class FortifySSCCreateApplicationVersionJobConfigDescriptor extends AbstractFortifySSCCreateApplicationVersionConfigDescriptor<FortifySSCCreateApplicationVersionJobConfig> {
 		@Override

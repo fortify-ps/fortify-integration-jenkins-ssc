@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+<!-- TODO: Fix this
+	<f:entry field="applicationAndVersionNameConfig">
+    	<f:property />
+    </f:entry>
+    
+    <j:forEach items="${descriptor.enabledDescriptors}" var="enabledDescriptor">
+    	<f:optionalProperty field="${enabledDescriptor.propertyName}" title="${enabledDescriptor.displayName}"/>
+    </j:forEach>
+-->
+</j:jelly>

@@ -1,11 +1,14 @@
 package com.fortify.integration.jenkins.ssc;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.RestartableJenkinsRule;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Rule;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 public class FortifySSCGlobalConfigurationTest {
 

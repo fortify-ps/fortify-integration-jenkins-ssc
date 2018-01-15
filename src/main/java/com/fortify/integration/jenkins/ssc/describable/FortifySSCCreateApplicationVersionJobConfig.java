@@ -67,7 +67,7 @@ public class FortifySSCCreateApplicationVersionJobConfig extends AbstractFortify
 	}
 	
 	public String getIssueTemplateName() {
-		return issueTemplateName;
+		return isIssueTemplateNameOverrideAllowed() ? issueTemplateName : getGlobalConfig().getIssueTemplateName();
 	}
 
 	@DataBoundSetter

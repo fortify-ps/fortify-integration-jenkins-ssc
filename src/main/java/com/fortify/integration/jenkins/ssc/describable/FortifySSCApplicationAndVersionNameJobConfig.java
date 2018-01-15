@@ -64,7 +64,7 @@ public class FortifySSCApplicationAndVersionNameJobConfig extends AbstractFortif
 	}
 	
 	public String getApplicationName() {
-		return applicationName;
+		return isApplicationNameOverrideAllowed() ? applicationName : getGlobalConfig().getApplicationName();
 	}
 
 	@DataBoundSetter
@@ -73,7 +73,7 @@ public class FortifySSCApplicationAndVersionNameJobConfig extends AbstractFortif
 	}
 
 	public String getVersionName() {
-		return versionName;
+		return isVersionNameOverrideAllowed() ? versionName : getGlobalConfig().getVersionName();
 	}
 
 	@DataBoundSetter
@@ -123,6 +123,10 @@ public class FortifySSCApplicationAndVersionNameJobConfig extends AbstractFortif
 		if ( StringUtils.isBlank(stringToCheck) ) {
 			throw new AbortException(messageIfBlank);
 		}
+	}
+	
+	private static final FortifySSCApplicationAndVersionNameJobConfig getGlobalConfig() {
+		return FortifySSCGlobalConfiguration.get().getGlobalConfig(FortifySSCApplicationAndVersionNameJobConfig.class);
 	}
 	
 	@Extension

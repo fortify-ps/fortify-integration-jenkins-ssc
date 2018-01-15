@@ -79,6 +79,7 @@ public class FortifySSCCreateApplicationVersionJobConfig
 	public void perform(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException 
 	{
+		FortifySSCGlobalConfiguration.get().checkEnabled(this.getDescriptor());
 		EnvVars env = run.getEnvironment(listener);
 		JSONMap applicationVersion = applicationAndVersionNameJobConfig.getApplicationVersion(env, false);
 		if ( applicationVersion == null ) {

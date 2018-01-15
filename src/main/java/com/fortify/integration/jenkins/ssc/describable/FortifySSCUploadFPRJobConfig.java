@@ -69,6 +69,7 @@ public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCUploadFPRCon
 	@Override
 	public void perform(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+		FortifySSCGlobalConfiguration.get().checkEnabled(this.getDescriptor());
 		PrintStream log = listener.getLogger();
 		EnvVars env = run.getEnvironment(listener);
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();

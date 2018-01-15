@@ -15,18 +15,17 @@ import org.kohsuke.stapler.StaplerRequest;
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameGlobalConfig;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameGlobalConfig.FortifySSCApplicationAndVersionNameGlobalConfigDescriptor;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionGlobalConfig;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionGlobalConfig.FortifySSCCreateApplicationVersionGlobalConfigDescriptor;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionJobConfig.FortifySSCCreateApplicationVersionJobConfigDescriptor;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionJobConfig;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRGlobalConfig;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRGlobalConfig.FortifySSCUploadFPRGlobalConfigDescriptor;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRJobConfig.FortifySSCUploadFPRJobConfigDescriptor;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRJobConfig;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.util.FormValidation;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 /**
@@ -100,15 +99,23 @@ public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
 	
 	public List<Descriptor<?>> getAllGlobalConfigDescriptors() {
 		return Arrays.asList(
-			new FortifySSCApplicationAndVersionNameGlobalConfigDescriptor(),
-			new FortifySSCCreateApplicationVersionGlobalConfigDescriptor(),
-			new FortifySSCUploadFPRGlobalConfigDescriptor());
+			Jenkins.getInstance().getDescriptorOrDie(FortifySSCApplicationAndVersionNameGlobalConfig.class),
+			Jenkins.getInstance().getDescriptorOrDie(FortifySSCCreateApplicationVersionGlobalConfig.class),
+			Jenkins.getInstance().getDescriptorOrDie(FortifySSCUploadFPRGlobalConfig.class));
+	}
+	
+	public void checkEnabled(Descriptor<?> descriptor) throws AbortException {
+		if ( !getEnabledJobDescriptors().contains(descriptor) ) {
+			// TODO Replace with something like this if called from pipeline job?
+			//      descriptor.getClass().getAnnotation(Symbol.class).value()[0]
+			throw new AbortException("Action '"+descriptor.getDisplayName()+"' is not enabled in global configuration");
+		}
 	}
 	
 	public List<Descriptor<?>> getEnabledJobDescriptors() {
 		List<Descriptor<?>> result = new ArrayList<>();
-		addToEnabledList(result, new FortifySSCCreateApplicationVersionJobConfigDescriptor(), createApplicationVersionConfig);
-		addToEnabledList(result, new FortifySSCUploadFPRJobConfigDescriptor(), uploadFPRConfig);
+		addToEnabledList(result, Jenkins.getInstance().getDescriptorOrDie(FortifySSCCreateApplicationVersionJobConfig.class), createApplicationVersionConfig);
+		addToEnabledList(result, Jenkins.getInstance().getDescriptorOrDie(FortifySSCUploadFPRJobConfig.class), uploadFPRConfig);
 		return result;
 	}
 

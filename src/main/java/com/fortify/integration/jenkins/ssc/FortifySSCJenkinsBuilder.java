@@ -25,56 +25,52 @@
 package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import org.jenkinsci.plugins.workflow.steps.Step;
-import org.jenkinsci.plugins.workflow.steps.StepContext;
-import org.jenkinsci.plugins.workflow.steps.StepExecution;
-import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCBuildStepDescriptor;
 import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCJobConfigWithApplicationVersionAction;
-import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCStepDescriptor;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameJobConfig;
-import com.google.common.collect.ImmutableSet;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Builder;
+import jenkins.tasks.SimpleBuildStep;
 
-public class FortifySSCStep extends Step {
-	private FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameConfig = new FortifySSCApplicationAndVersionNameJobConfig();
+public class FortifySSCJenkinsBuilder extends Builder implements SimpleBuildStep {
+	// 'select' is a pretty strange name for this field, but it actually looks nice
+	// in pipeline jobs: performSSCAction select: [applicationName: 'x', ...] actions: [...] 
+	private FortifySSCApplicationAndVersionNameJobConfig select;
 	private List<AbstractFortifySSCJobConfigWithApplicationVersionAction<?>> actions;
-	
+
 	@DataBoundConstructor
-	public FortifySSCStep() {
+	public FortifySSCJenkinsBuilder() {
 		setActions(new ArrayList<>());
 	}
-	
-	public String getApplicationName() {
-		return applicationAndVersionNameConfig.getApplicationName();
+
+	public FortifySSCApplicationAndVersionNameJobConfig getSelect() {
+		return select==null 
+				? new FortifySSCApplicationAndVersionNameJobConfig(FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig())
+				: select;
 	}
 
 	@DataBoundSetter
-	public void setApplicationName(String applicationName) {
-		applicationAndVersionNameConfig.setApplicationName(applicationName);
+	public void setSelect(FortifySSCApplicationAndVersionNameJobConfig select) {
+		this.select = select;
 	}
 
-	public String getVersionName() {
-		return applicationAndVersionNameConfig.getVersionName();
-	}
-
-	@DataBoundSetter
-	public void setVersionName(String versionName) {
-		applicationAndVersionNameConfig.setVersionName(versionName);
-	}
-	
 	public List<AbstractFortifySSCJobConfigWithApplicationVersionAction<?>> getActions() {
 		return actions;
 	}
@@ -85,71 +81,57 @@ public class FortifySSCStep extends Step {
 	}
 
 	@Override
-	public StepExecution start(StepContext context) throws Exception {
-		return new ExecutionImpl(context, this);
-	}
-
-	public void perform(Run<?, ?> run, FilePath workspace, TaskListener listener, Launcher launcher) throws InterruptedException, IOException {
-		System.out.println(applicationAndVersionNameConfig);
-		if ( actions != null ) {
-			for ( AbstractFortifySSCJobConfigWithApplicationVersionAction<?> action : actions ) {
-				System.out.println(action);
-				action.perform(applicationAndVersionNameConfig, run, workspace, launcher, listener);
+	public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+		PrintStream log = listener.getLogger();
+		log.println(
+				"HPE Security Fortify Jenkins plugin: " + FortifySSCGlobalConfiguration.get().conn().getBaseResource());
+		// TODO Move this to AbstractFortifySSCJobConfigWithApplicationVersionAction implementations that actually
+		//      need a workspace
+		if (workspace == null) { 
+			throw new AbortException("no workspace for " + build);
+		}
+		for (AbstractFortifySSCJobConfigWithApplicationVersionAction<?> action : getActions()) {
+			if (action != null) {
+				action.perform(select, build, workspace, launcher, listener);
 			}
 		}
-		System.out.println(run.getEnvironment(listener));
 	}
 
-	private static class ExecutionImpl extends SynchronousNonBlockingStepExecution<Void> {
-		private static final long serialVersionUID = 1L;
-		private transient FortifySSCStep step;
-		
-		public ExecutionImpl(StepContext context, FortifySSCStep step) {
-			super(context);
-			this.step = step;
-		}
-		
-		@Override
-        protected Void run() throws Exception {
-			StepContext c = getContext();
-			step.perform(c.get(Run.class), c.get(FilePath.class), c.get(TaskListener.class), c.get(Launcher.class));
-            return null;
-        }
+	@Override
+	public BuildStepMonitor getRequiredMonitorService() {
+		return BuildStepMonitor.NONE;
 	}
 
+	@Symbol("sscPerformActions")
 	@Extension
-	public static final class DescriptorImpl extends AbstractFortifySSCStepDescriptor<FortifySSCStep> {
+	public static class DescriptorImpl extends AbstractFortifySSCBuildStepDescriptor<Builder> {
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+			return true;
+		}
+
 		@Override
 		public String getDisplayName() {
-			return "Perform Fortify SSC action";
+			return "Fortify SSC Jenkins Plugin";
 		}
 
-		@Override
-		public String getFunctionName() {
-			return "sscPerformActions";
-		}
-
-		@Override
-		public Set<Class<?>> getRequiredContext() {
-			return ImmutableSet.of(Run.class, FilePath.class, TaskListener.class, Launcher.class);
-		}
-		
 		public final List<Descriptor<?>> getEnabledDescriptors() {
 			System.out.println("getEnabledDescriptors");
 			return FortifySSCGlobalConfiguration.get().getEnabledJobDescriptors();
 		}
 
 		@Override
-		public final FortifySSCStep createDefaultInstance() {
+		public final FortifySSCJenkinsBuilder createDefaultInstance() {
 			System.out.println("createDefaultInstance");
-			return new FortifySSCStep();
+			return new FortifySSCJenkinsBuilder();
 		}
 		
 		public final Class<?> getTargetType() {
 			System.out.println("getTargetType");
 			return AbstractFortifySSCJobConfigWithApplicationVersionAction.class;
 		}
-
-		
 	}
+
 }

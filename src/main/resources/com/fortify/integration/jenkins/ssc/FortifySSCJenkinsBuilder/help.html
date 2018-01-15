@@ -1,0 +1,20 @@
+<div>
+    <p>
+    This step executes one or more SSC actions.
+    </p>
+    <p>
+      Example:<br/>
+      <code><pre>
+  stage("Fortify Results") {
+    node {
+      sscPerformActions(
+        select: [applicationName: 'WebGoat', versionName: '5.0'],
+        actions: [
+          sscCreateApplicationVersionIfNotExisting(),
+          sscUploadFPR(fprAntFilter: '**/*.fpr')
+        ])
+    }
+  }     
+      </pre></code>
+    </p>
+</div>

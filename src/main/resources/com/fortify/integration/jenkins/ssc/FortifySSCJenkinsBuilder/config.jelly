@@ -8,6 +8,7 @@
     <f:nested>
     	<f:hetero-list name="actions" items="${descriptor.getInstanceOrDefault(instance).actions}" 
     		descriptors="${descriptor.enabledDescriptors}" targetType="${descriptor.targetType}" 
-    		hasHeader="true" addCaption="${%Add Action}" deleteCaption="${%Delete Action}" />
+    		hasHeader="true" addCaption="${%Add Action}" deleteCaption="${%Delete Action}" 
+    		honorOrder="true" />
     </f:nested>
 </j:jelly>

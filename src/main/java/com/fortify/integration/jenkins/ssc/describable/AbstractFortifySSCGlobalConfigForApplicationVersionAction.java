@@ -24,10 +24,8 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
-import hudson.model.Descriptor;
+import org.springframework.core.Ordered;
 
-public abstract class AbstractFortifySSCGlobalConfig<T extends AbstractFortifySSCGlobalConfig<T>> extends AbstractFortifySSCConfig<T> {
-	public abstract Descriptor<?> getJobConfigDescriptor();
-	
-	public static abstract class AbstractFortifySSCGlobalConfigDescriptor<T extends AbstractFortifySSCGlobalConfig<T>> extends AbstractFortifySSCConfigDescriptor<T> {}
+public abstract class AbstractFortifySSCGlobalConfigForApplicationVersionAction<T extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<T>> extends AbstractFortifySSCGlobalConfig<T> {
+	public abstract static class AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor<T extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<T>> extends AbstractFortifySSCGlobalConfigDescriptor<T> implements Ordered {}
 }

@@ -34,9 +34,12 @@ import com.fortify.util.rest.json.JSONList;
 import com.fortify.util.rest.json.JSONMap;
 
 import hudson.Extension;
+import hudson.model.Descriptor;
 import hudson.util.ListBoxModel;
+import jenkins.model.Jenkins;
 
-public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFortifySSCGlobalConfig<FortifySSCCreateApplicationVersionGlobalConfig> {
+public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<FortifySSCCreateApplicationVersionGlobalConfig> {
+	public static final int ORDER = 100;
 	private String issueTemplateName;
 	private boolean issueTemplateNameOverrideAllowed = false;
 	
@@ -61,8 +64,13 @@ public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFort
 		this.issueTemplateNameOverrideAllowed = issueTemplateNameOverrideAllowed;
 	}
 	
+	@Override
+	public Descriptor<?> getJobConfigDescriptor() {
+		return Jenkins.getInstance().getDescriptorOrDie(FortifySSCCreateApplicationVersionJobConfig.class);
+	}
+	
 	@Extension
-	public static final class FortifySSCCreateApplicationVersionGlobalConfigDescriptor extends AbstractFortifySSCConfigDescriptor<FortifySSCCreateApplicationVersionGlobalConfig> {
+	public static final class FortifySSCCreateApplicationVersionGlobalConfigDescriptor extends AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor<FortifySSCCreateApplicationVersionGlobalConfig> {
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
@@ -92,6 +100,11 @@ public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFort
 			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 			return conn.api(SSCIssueTemplateAPI.class).getIssueTemplates(true);
 		}
+        
+        @Override
+        public int getOrder() {
+        	return ORDER;
+        }
 	}
 
 }

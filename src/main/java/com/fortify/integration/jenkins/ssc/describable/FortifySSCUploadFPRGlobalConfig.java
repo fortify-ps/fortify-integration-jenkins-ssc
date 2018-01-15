@@ -28,8 +28,11 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import hudson.Extension;
+import hudson.model.Descriptor;
+import jenkins.model.Jenkins;
 
-public class FortifySSCUploadFPRGlobalConfig extends AbstractFortifySSCGlobalConfig<FortifySSCUploadFPRGlobalConfig> {
+public class FortifySSCUploadFPRGlobalConfig extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<FortifySSCUploadFPRGlobalConfig> {
+	public static final int ORDER = 200;
 	private static final String DEFAULT_FPR_ANT_FILTER = "**/*.fpr";
 	private String fprAntFilter = DEFAULT_FPR_ANT_FILTER;
 	private int processingTimeOutSeconds = 60;
@@ -54,8 +57,13 @@ public class FortifySSCUploadFPRGlobalConfig extends AbstractFortifySSCGlobalCon
 		this.processingTimeOutSeconds = processingTimeOutSeconds;
 	}
 	
+	@Override
+	public Descriptor<?> getJobConfigDescriptor() {
+		return Jenkins.getInstance().getDescriptorOrDie(FortifySSCUploadFPRJobConfig.class);
+	}
+	
 	@Extension
-	public static final class FortifySSCUploadFPRGlobalConfigDescriptor extends AbstractFortifySSCConfigDescriptor<FortifySSCUploadFPRGlobalConfig> {
+	public static final class FortifySSCUploadFPRGlobalConfigDescriptor extends AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor<FortifySSCUploadFPRGlobalConfig> {
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
@@ -65,6 +73,11 @@ public class FortifySSCUploadFPRGlobalConfig extends AbstractFortifySSCGlobalCon
 		@Override
 		public FortifySSCUploadFPRGlobalConfig createDefaultInstance() {
 			return new FortifySSCUploadFPRGlobalConfig();
+		}
+		
+		@Override
+		public int getOrder() {
+			return ORDER;
 		}
 	}
 }

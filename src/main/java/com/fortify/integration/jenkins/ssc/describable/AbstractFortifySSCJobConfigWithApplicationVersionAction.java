@@ -26,6 +26,8 @@ package com.fortify.integration.jenkins.ssc.describable;
 
 import java.io.IOException;
 
+import org.springframework.core.Ordered;
+
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
@@ -33,4 +35,6 @@ import hudson.model.TaskListener;
 
 public abstract class AbstractFortifySSCJobConfigWithApplicationVersionAction<T extends AbstractFortifySSCJobConfigWithApplicationVersionAction<T>> extends AbstractFortifySSCJobConfig<T> {
 	public abstract void perform(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
+	
+	public static abstract class AbstractFortifySSCJobConfigWithApplicationVersionActionDescriptor<T extends AbstractFortifySSCJobConfigWithApplicationVersionAction<T>> extends AbstractFortifySSCJobConfigDescriptor<T> implements Ordered {}
 }

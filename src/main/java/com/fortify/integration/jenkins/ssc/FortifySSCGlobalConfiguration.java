@@ -2,7 +2,7 @@ package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -11,17 +11,24 @@ import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.springframework.core.OrderComparator;
 
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCGlobalConfigForApplicationVersionAction;
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCGlobalConfigForApplicationVersionAction.AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor;
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCJobConfig.AbstractFortifySSCJobConfigDescriptor;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameGlobalConfig;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionGlobalConfig;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCCreateApplicationVersionJobConfig;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRGlobalConfig;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCUploadFPRJobConfig;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.model.Descriptor;
 import hudson.util.FormValidation;
 import jenkins.model.GlobalConfiguration;
@@ -32,32 +39,24 @@ import net.sf.json.JSONObject;
  * Example of Jenkins global configuration.
  */
 @Extension
-public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
+public class FortifySSCGlobalConfiguration extends AbstractFortifySSCGlobalConfiguration<FortifySSCGlobalConfiguration> {
 	private String sscUrl ="";
-	private FortifySSCApplicationAndVersionNameGlobalConfig applicationAndVersionNameConfig = null;
-	private FortifySSCCreateApplicationVersionGlobalConfig createApplicationVersionConfig = null;
-	private FortifySSCUploadFPRGlobalConfig uploadFPRConfig = null;
+	private FortifySSCApplicationAndVersionNameGlobalConfig applicationAndVersionNameConfig;
+	private ImmutableMap<Class<AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>>, AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>> enabledActionsGlobalConfigs;
 	
 	private transient SSCAuthenticatingRestConnection conn = null;
 	
     /** @return the singleton instance */
-    public static FortifySSCGlobalConfiguration get() {
+    public static final FortifySSCGlobalConfiguration get() {
         return GlobalConfiguration.all().get(FortifySSCGlobalConfiguration.class);
     }
 
     public FortifySSCGlobalConfiguration() {
-        // When Jenkins is restarted, load any saved configuration from disk.
+    	setEnabledActionsGlobalConfigs(getDefaultEnabledActionsGlobalConfigs());
         load();
     }
-    
-    public SSCAuthenticatingRestConnection conn() {
-    	if ( this.conn == null ) {
-    		this.conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
-    	}
-    	return this.conn;
-    }
 
-    public String getSscUrl() {
+	public String getSscUrl() {
         return sscUrl;
     }
 
@@ -66,9 +65,8 @@ public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
         this.sscUrl = sscUrl;
         save(); // Save immediately, so other global config sections can access SSC
     }
-
-	public FortifySSCApplicationAndVersionNameGlobalConfig getApplicationAndVersionNameConfig() {
-		System.out.println(applicationAndVersionNameConfig);
+    
+    public FortifySSCApplicationAndVersionNameGlobalConfig getApplicationAndVersionNameConfig() {
 		return applicationAndVersionNameConfig;
 	}
 
@@ -76,51 +74,83 @@ public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
 	public void setApplicationAndVersionNameConfig(FortifySSCApplicationAndVersionNameGlobalConfig applicationAndVersionNameConfig) {
 		this.applicationAndVersionNameConfig = applicationAndVersionNameConfig;
 	}
-
-	public FortifySSCCreateApplicationVersionGlobalConfig getCreateApplicationVersionConfig() {
-		System.out.println(createApplicationVersionConfig);
-		return createApplicationVersionConfig;
+    
+    public Collection<AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>> getEnabledActionsGlobalConfigs() {
+		return enabledActionsGlobalConfigs.values();
 	}
 
-	@DataBoundSetter
-	public void setCreateApplicationVersionConfig(FortifySSCCreateApplicationVersionGlobalConfig createApplicationVersionConfig) {
-		this.createApplicationVersionConfig = createApplicationVersionConfig;
+    @DataBoundSetter
+	public void setEnabledActionsGlobalConfigs(Collection<AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>> enabledActions) {
+		this.enabledActionsGlobalConfigs = Maps.uniqueIndex(enabledActions, new Function<AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>, Class<AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>>> () {
+			@Override @SuppressWarnings("unchecked")
+			public Class<AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>> apply(AbstractFortifySSCGlobalConfigForApplicationVersionAction<?> input) {
+				return (Class<AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>>) input.getClass();
+			}
+		    
+		    });;
 	}
 
-	public FortifySSCUploadFPRGlobalConfig getUploadFPRConfig() {
-		System.out.println(uploadFPRConfig);
-		return uploadFPRConfig;
-	}
-
-	@DataBoundSetter
-	public void setUploadFPRConfig(FortifySSCUploadFPRGlobalConfig uploadFPRConfig) {
-		this.uploadFPRConfig = uploadFPRConfig;
-	}
-	
-	public List<Descriptor<?>> getAllGlobalConfigDescriptors() {
-		return Arrays.asList(
-			Jenkins.getInstance().getDescriptorOrDie(FortifySSCApplicationAndVersionNameGlobalConfig.class),
-			Jenkins.getInstance().getDescriptorOrDie(FortifySSCCreateApplicationVersionGlobalConfig.class),
-			Jenkins.getInstance().getDescriptorOrDie(FortifySSCUploadFPRGlobalConfig.class));
-	}
+	public SSCAuthenticatingRestConnection conn() {
+    	if ( this.conn == null ) {
+    		this.conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
+    	}
+    	return this.conn;
+    }
 	
 	public void checkEnabled(Descriptor<?> descriptor) throws AbortException {
-		if ( !getEnabledJobDescriptors().contains(descriptor) ) {
+		if ( !isEnabled(descriptor) ) {
 			// TODO Replace with something like this if called from pipeline job?
 			//      descriptor.getClass().getAnnotation(Symbol.class).value()[0]
 			throw new AbortException("Action '"+descriptor.getDisplayName()+"' is not enabled in global configuration");
 		}
 	}
 	
+	public boolean isEnabled(Descriptor<?> descriptor) {
+		if ( descriptor instanceof AbstractFortifySSCJobConfigDescriptor<?> ) {
+			return enabledActionsGlobalConfigs.containsKey(((AbstractFortifySSCJobConfigDescriptor<?>)descriptor).getGlobalConfigClass());
+		}
+		return false;
+	}
+	
 	public List<Descriptor<?>> getEnabledJobDescriptors() {
-		List<Descriptor<?>> result = new ArrayList<>();
-		addToEnabledList(result, Jenkins.getInstance().getDescriptorOrDie(FortifySSCCreateApplicationVersionJobConfig.class), createApplicationVersionConfig);
-		addToEnabledList(result, Jenkins.getInstance().getDescriptorOrDie(FortifySSCUploadFPRJobConfig.class), uploadFPRConfig);
+		List<Descriptor<?>> result = Lists.newArrayList(Iterables.transform(enabledActionsGlobalConfigs.values(),
+				new Function<AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>, Descriptor<?>>() {
+					@Override
+					public Descriptor<?> apply(AbstractFortifySSCGlobalConfigForApplicationVersionAction<?> input) {
+						return input.getJobConfigDescriptor();
+					}
+				}));
+		result.sort(new OrderComparator());
 		return result;
 	}
-
-	private void addToEnabledList(List<Descriptor<?>> enabledList, Descriptor<?> descriptor, Object config) {
-		if ( config != null ) { enabledList.add(descriptor); }
+	
+	public final Class<?> getTargetType() {
+		System.out.println("getTargetType");
+		return AbstractFortifySSCGlobalConfigForApplicationVersionAction.class;
+	}
+	
+	@SuppressWarnings("rawtypes") // TODO Any way to avoid this warning?
+	public final List<AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor> getGlobalConfigActionDescriptors() {
+		ExtensionList<AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor> list = Jenkins.getInstance().getExtensionList(AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor.class);
+		List<AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor> result = new ArrayList<>(list);
+		result.sort(new OrderComparator());
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked") // TODO Any way to avoid this warning?
+	public <T> T getGlobalConfig(Class<T> type) {
+		return (T) enabledActionsGlobalConfigs.get(type);
+	}
+	
+	@SuppressWarnings("rawtypes") // TODO Any way to avoid this warning?
+	private Collection<AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>> getDefaultEnabledActionsGlobalConfigs() {
+		return Lists.newArrayList(Iterables.transform(getGlobalConfigActionDescriptors(),
+				new Function<AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor, AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>>() {
+					@Override
+					public AbstractFortifySSCGlobalConfigForApplicationVersionAction<?> apply(AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor input) {
+						return (AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>) input.createDefaultInstance();
+					}
+				}));
 	}
 
 	@Override
@@ -128,10 +158,7 @@ public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
 		// Clear existing values 
 		// (if de-selected in UI, json will not contain object and thus not overwrite previous config)
 		setApplicationAndVersionNameConfig(null);
-		setCreateApplicationVersionConfig(null);
-		setUploadFPRConfig(null);
-		
-		System.out.println(json);
+		setEnabledActionsGlobalConfigs(new ArrayList<>());
 		
 		super.configure(req, json);
 		save();
@@ -153,6 +180,11 @@ public class FortifySSCGlobalConfiguration extends GlobalConfiguration {
 	    } catch (RuntimeException e) {
 	        return FormValidation.error("Client error : "+e.getMessage());
 	    }
+	}
+	
+	@Override
+	public FortifySSCGlobalConfiguration createDefaultInstance() {
+		return new FortifySSCGlobalConfiguration();
 	}
 
 }

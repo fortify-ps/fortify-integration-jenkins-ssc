@@ -24,10 +24,21 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
-import hudson.model.Descriptor;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-public abstract class AbstractFortifySSCGlobalConfig<T extends AbstractFortifySSCGlobalConfig<T>> extends AbstractFortifySSCConfig<T> {
-	public abstract Descriptor<?> getJobConfigDescriptor();
+import jenkins.model.GlobalConfiguration;
+
+public abstract class AbstractFortifySSCGlobalConfiguration<T extends AbstractFortifySSCGlobalConfiguration<T>> extends GlobalConfiguration {
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
 	
-	public static abstract class AbstractFortifySSCGlobalConfigDescriptor<T extends AbstractFortifySSCGlobalConfig<T>> extends AbstractFortifySSCConfigDescriptor<T> {}
+	public T getInstanceOrDefault(T instance) {
+		T result = instance!=null ? instance : createDefaultInstance();
+		System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
+		return result;
+	}
+	
+	public abstract T createDefaultInstance();
 }

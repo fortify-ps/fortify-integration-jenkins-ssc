@@ -6,9 +6,14 @@
             <f:textbox/>
         </f:entry>
         <f:validateButton title="${%Validate}" progress="${%Testing...}" method="testConnection" with="sscUrl" />
-        
-        <j:forEach items="${descriptor.allGlobalConfigDescriptors}" var="globalConfigDescriptor">
-    		<f:optionalProperty field="${globalConfigDescriptor.propertyName}" title="${globalConfigDescriptor.displayName}"/>
-    	</j:forEach>
+   		
+   		<f:property field="applicationAndVersionNameConfig" title="${%ApplicationAndVersionNameConfig}"/>
+   		
+	    <f:nested>
+	    	<f:hetero-list name="enabledActionsGlobalConfigs" items="${descriptor.getInstanceOrDefault(instance).enabledActionsGlobalConfigs}" 
+	    		descriptors="${descriptor.globalConfigActionDescriptors}" targetType="${descriptor.targetType}" 
+	    		hasHeader="true" addCaption="${%Enable Action}" deleteCaption="${%Disable Action}" 
+	    		oneEach="true" honorOrder="true" />
+	    </f:nested>
     </f:section>
 </j:jelly>

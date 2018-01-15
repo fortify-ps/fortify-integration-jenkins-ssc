@@ -112,21 +112,34 @@ public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCJobConfigWit
 			});
 			log.println(artifactApi.getArtifactById(artifactId, false));
 		}
-		
+	}
+	
+	private static final FortifySSCUploadFPRGlobalConfig getGlobalConfig() {
+		return FortifySSCGlobalConfiguration.get().getGlobalConfig(FortifySSCUploadFPRGlobalConfig.class);
 	}
 	
 	@Symbol("sscUploadFPR")
 	@Extension
-	public static final class FortifySSCUploadFPRJobConfigDescriptor extends AbstractFortifySSCConfigDescriptor<FortifySSCUploadFPRJobConfig> {
+	public static final class FortifySSCUploadFPRJobConfigDescriptor extends AbstractFortifySSCJobConfigWithApplicationVersionActionDescriptor<FortifySSCUploadFPRJobConfig> {
 		@Override
 		public FortifySSCUploadFPRJobConfig createDefaultInstance() {
-			return new FortifySSCUploadFPRJobConfig(FortifySSCGlobalConfiguration.get().getUploadFPRConfig());
+			return new FortifySSCUploadFPRJobConfig(getGlobalConfig());
 		}
 		
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
 			return "Upload FPR file";
+		}
+		
+		@Override
+		public Class<? extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>> getGlobalConfigClass() {
+			return FortifySSCCreateApplicationVersionGlobalConfig.class;
+		}
+		
+		@Override
+		public int getOrder() {
+			return FortifySSCUploadFPRGlobalConfig.ORDER;
 		}
     }
 }

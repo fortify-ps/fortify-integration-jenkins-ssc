@@ -28,6 +28,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import hudson.Extension;
+import hudson.model.Descriptor;
+import jenkins.model.Jenkins;
 
 public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFortifySSCGlobalConfig<FortifySSCApplicationAndVersionNameGlobalConfig> {
 	private String applicationName = "";
@@ -73,9 +75,14 @@ public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFor
 	public void setVersionNameOverrideAllowed(boolean versionNameOverrideAllowed) {
 		this.versionNameOverrideAllowed = versionNameOverrideAllowed;
 	}
+	
+	@Override
+	public Descriptor<?> getJobConfigDescriptor() {
+		return Jenkins.getInstance().getDescriptorOrDie(FortifySSCApplicationAndVersionNameJobConfig.class);
+	}
 
 	@Extension
-	public static final class FortifySSCApplicationAndVersionNameGlobalConfigDescriptor extends AbstractFortifySSCConfigDescriptor<FortifySSCApplicationAndVersionNameGlobalConfig> {
+	public static final class FortifySSCApplicationAndVersionNameGlobalConfigDescriptor extends AbstractFortifySSCGlobalConfigDescriptor<FortifySSCApplicationAndVersionNameGlobalConfig> {
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this

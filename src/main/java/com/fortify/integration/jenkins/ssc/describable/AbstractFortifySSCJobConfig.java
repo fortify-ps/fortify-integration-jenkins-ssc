@@ -24,4 +24,8 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
-public abstract class AbstractFortifySSCJobConfig<T extends AbstractFortifySSCJobConfig<T>> extends AbstractFortifySSCConfig<T> {}
+public abstract class AbstractFortifySSCJobConfig<T extends AbstractFortifySSCJobConfig<T>> extends AbstractFortifySSCConfig<T> {
+	public static abstract class AbstractFortifySSCJobConfigDescriptor<T extends AbstractFortifySSCJobConfig<T>> extends AbstractFortifySSCConfigDescriptor<T> {
+		public abstract Class<? extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>> getGlobalConfigClass();
+	}
+}

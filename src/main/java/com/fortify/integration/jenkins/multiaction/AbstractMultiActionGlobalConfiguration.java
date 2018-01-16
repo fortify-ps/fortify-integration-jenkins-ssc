@@ -45,6 +45,29 @@ import hudson.ExtensionList;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 
+/**
+ * To use, extend this class with correct generics types, and include the following in the
+ * config.jelly page for your concrete implementation:
+ * 
+ * <pre>
+ 	<f:nested>
+    	<f:hetero-list name="enabledActionsGlobalConfigs" items="${descriptor.getInstanceOrDefault(instance).enabledActionsGlobalConfigs}" 
+    		descriptors="${descriptor.globalConfigActionDescriptors}" targetType="${descriptor.targetType}" 
+    		hasHeader="true" addCaption="${%Enable Action}" deleteCaption="${%Disable Action}" 
+    		oneEach="true" honorOrder="true" />
+    </f:nested>
+ * </pre>
+ * 
+ * This will automatically load all available DescriptorActionGlobalType instances (based on the class type returned
+ * by {@link #getDescriptorActionGlobalType()}), and allow to enable, disable and configure these instances to
+ * define the global configuration for this plugin.
+ * 
+ * @author Ruud Senden
+ *
+ * @param <DescribableActionGlobalType>
+ * @param <DescriptorActionGlobalType>
+ * @param <T>
+ */
 @SuppressWarnings("rawtypes")
 public abstract class AbstractMultiActionGlobalConfiguration
 		<DescribableActionGlobalType extends AbstractDescribableActionGlobal,

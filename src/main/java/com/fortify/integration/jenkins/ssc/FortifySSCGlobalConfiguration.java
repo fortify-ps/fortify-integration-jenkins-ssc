@@ -88,12 +88,26 @@ public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConf
     }
 	
 	public FormValidation doTestConnection(@QueryParameter("sscUrl") final String sscUrl) throws IOException, ServletException {
-	    try {
+		try {
 	    	SSCAuthenticatingRestConnection conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
 	    	conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions().maxResults(1).build().getAll();
-	        return FormValidation.ok("Success");
+	    	setSscUrl(sscUrl);
+	    	save();
+	    	// TODO Fix this if possible (automatically save and return to config page)
+	        return FormValidation.warning("Success; please save and return to this page to see additional configuration options");
 	    } catch (RuntimeException e) {
 	        return FormValidation.error("Client error : "+e.getMessage());
+	    }
+	}
+	
+	// TODO Remove code duplication with method above
+	public boolean isConnectionAvailable() {
+		try {
+	    	SSCAuthenticatingRestConnection conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
+	    	conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions().maxResults(1).build().getAll();
+	        return true;
+	    } catch (RuntimeException e) {
+	        return false;
 	    }
 	}
 	

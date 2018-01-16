@@ -7,13 +7,15 @@
         </f:entry>
         <f:validateButton title="${%Validate}" progress="${%Testing...}" method="testConnection" with="sscUrl" />
    		
-   		<f:property field="applicationAndVersionNameConfig" title="${%ApplicationAndVersionNameConfig}"/>
-   		
-	    <f:nested>
-	    	<f:hetero-list name="enabledActionsGlobalConfigs" items="${descriptor.getInstanceOrDefault(instance).enabledActionsGlobalConfigs}" 
-	    		descriptors="${descriptor.globalConfigActionDescriptors}" targetType="${descriptor.targetType}" 
-	    		hasHeader="true" addCaption="${%Enable Action}" deleteCaption="${%Disable Action}" 
-	    		oneEach="true" honorOrder="true" />
-	    </f:nested>
+   		<j:if test="${descriptor.connectionAvailable}">
+	   		<f:property field="applicationAndVersionNameConfig" title="${%ApplicationAndVersionNameConfig}"/>
+	   		
+		    <f:nested>
+		    	<f:hetero-list name="enabledActionsGlobalConfigs" items="${descriptor.getInstanceOrDefault(instance).enabledActionsGlobalConfigs}" 
+		    		descriptors="${descriptor.globalConfigActionDescriptors}" targetType="${descriptor.targetType}" 
+		    		hasHeader="true" addCaption="${%Enable Action}" deleteCaption="${%Disable Action}" 
+		    		oneEach="true" honorOrder="true" />
+		    </f:nested>
+		</j:if>
     </f:section>
 </j:jelly>

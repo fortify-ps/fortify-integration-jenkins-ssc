@@ -22,10 +22,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.multiaction;
 
 import org.springframework.core.Ordered;
 
-public abstract class AbstractFortifySSCGlobalConfigForApplicationVersionAction<T extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<T>> extends AbstractFortifySSCGlobalConfig<T> {
-	public abstract static class AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor<T extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<T>> extends AbstractFortifySSCGlobalConfigDescriptor<T> implements Ordered {}
+public abstract class AbstractDescribableActionJob<T extends AbstractDescribableActionJob<T>> extends AbstractDescribableJob<T> {
+	public static abstract class AbstractDescriptorActionJob<T extends AbstractDescribableActionJob<T>> extends AbstractDescriptorJob<T> implements Ordered {
+		public abstract Class<? extends AbstractDescribableActionGlobal<?>> getGlobalConfigClass();
+	}
 }

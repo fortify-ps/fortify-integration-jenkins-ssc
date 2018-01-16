@@ -38,13 +38,13 @@ import hudson.model.Descriptor;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 
-public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<FortifySSCCreateApplicationVersionGlobalConfig> {
+public class FortifySSCDescribableActionCreateApplicationVersionGlobal extends AbstractFortifySSCDescribableActionGlobal<FortifySSCDescribableActionCreateApplicationVersionGlobal> {
 	public static final int ORDER = 100;
 	private String issueTemplateName;
 	private boolean issueTemplateNameOverrideAllowed = false;
 	
 	@DataBoundConstructor
-	public FortifySSCCreateApplicationVersionGlobalConfig() {}
+	public FortifySSCDescribableActionCreateApplicationVersionGlobal() {}
 
 	public String getIssueTemplateName() {
 		return issueTemplateName;
@@ -66,11 +66,11 @@ public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFort
 	
 	@Override
 	public Descriptor<?> getJobConfigDescriptor() {
-		return Jenkins.getInstance().getDescriptorOrDie(FortifySSCCreateApplicationVersionJobConfig.class);
+		return Jenkins.getInstance().getDescriptorOrDie(FortifySSCDescribableActionCreateApplicationVersionJob.class);
 	}
 	
 	@Extension
-	public static final class FortifySSCCreateApplicationVersionGlobalConfigDescriptor extends AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor<FortifySSCCreateApplicationVersionGlobalConfig> {
+	public static final class FortifySSCCreateApplicationVersionGlobalConfigDescriptor extends AbstractFortifySSCDescriptorActionGlobal<FortifySSCDescribableActionCreateApplicationVersionGlobal> {
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
@@ -78,8 +78,8 @@ public class FortifySSCCreateApplicationVersionGlobalConfig extends AbstractFort
 		}
 		
 		@Override
-		public FortifySSCCreateApplicationVersionGlobalConfig createDefaultInstance() {
-			return new FortifySSCCreateApplicationVersionGlobalConfig();
+		public FortifySSCDescribableActionCreateApplicationVersionGlobal createDefaultInstance() {
+			return new FortifySSCDescribableActionCreateApplicationVersionGlobal();
 		}
 		
 		// TODO Remove duplication between this and corresponding JobConfig descriptor

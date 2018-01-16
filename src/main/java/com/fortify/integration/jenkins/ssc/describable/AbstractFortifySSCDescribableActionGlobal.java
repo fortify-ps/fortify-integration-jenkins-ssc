@@ -24,31 +24,10 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.springframework.core.Ordered;
 
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Descriptor;
+import com.fortify.integration.jenkins.multiaction.AbstractDescribableActionGlobal;
 
-public abstract class AbstractFortifySSCConfig<T extends AbstractFortifySSCConfig<T>> extends AbstractDescribableImpl<T> {
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-	
-	public static abstract class AbstractFortifySSCConfigDescriptor<T extends AbstractFortifySSCConfig<T>> extends Descriptor<T> {
-
-		public AbstractFortifySSCConfigDescriptor() {}
-
-		public AbstractFortifySSCConfigDescriptor(Class<? extends T> clazz) {
-			super(clazz);
-		}
-		
-		public T getInstanceOrDefault(T instance) {
-			T result = instance!=null ? instance : createDefaultInstance();
-			System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
-			return result;
-		}
-		
-		public abstract T createDefaultInstance();
-	}
+public abstract class AbstractFortifySSCDescribableActionGlobal<T extends AbstractFortifySSCDescribableActionGlobal<T>> extends AbstractDescribableActionGlobal<T> {
+	public abstract static class AbstractFortifySSCDescriptorActionGlobal<T extends AbstractFortifySSCDescribableActionGlobal<T>> extends AbstractDescriptorActionGlobal<T> implements Ordered {}
 }

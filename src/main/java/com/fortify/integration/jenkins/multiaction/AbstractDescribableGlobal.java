@@ -22,12 +22,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.multiaction;
 
 import hudson.model.Descriptor;
 
-public abstract class AbstractFortifySSCGlobalConfig<T extends AbstractFortifySSCGlobalConfig<T>> extends AbstractFortifySSCConfig<T> {
+public abstract class AbstractDescribableGlobal<T extends AbstractDescribableGlobal<T>> extends AbstractDescribable<T> {
 	public abstract Descriptor<?> getJobConfigDescriptor();
 	
-	public static abstract class AbstractFortifySSCGlobalConfigDescriptor<T extends AbstractFortifySSCGlobalConfig<T>> extends AbstractFortifySSCConfigDescriptor<T> {}
+	public static abstract class AbstractDescriptorGlobal<T extends AbstractDescribableGlobal<T>> extends AbstractDescriptor<T> {}
 }

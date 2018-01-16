@@ -35,6 +35,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 import com.fortify.client.ssc.api.SSCArtifactAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
+import com.fortify.integration.jenkins.multiaction.AbstractDescribableActionGlobal;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 
 import hudson.EnvVars;
@@ -46,7 +47,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 
-public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCJobConfigWithApplicationVersionAction<FortifySSCUploadFPRJobConfig> {
+public class FortifySSCDescribableActionUploadFPRJob extends AbstractFortifySSCDescribableActionJob<FortifySSCDescribableActionUploadFPRJob> {
 	private String fprAntFilter = "";
 	private int processingTimeOutSeconds = 60;
 	
@@ -54,13 +55,13 @@ public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCJobConfigWit
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCUploadFPRJobConfig() {}
+	public FortifySSCDescribableActionUploadFPRJob() {}
 	
 	/**
 	 * Initialize with global config 
 	 * @param other
 	 */
-	public FortifySSCUploadFPRJobConfig(FortifySSCUploadFPRGlobalConfig globalConfig) {
+	public FortifySSCDescribableActionUploadFPRJob(FortifySSCDescribableActionUploadFPRGlobal globalConfig) {
 		if ( globalConfig != null ) {
 			setFprAntFilter(globalConfig.getFprAntFilter());
 			setProcessingTimeOutSeconds(globalConfig.getProcessingTimeOutSeconds());
@@ -86,7 +87,7 @@ public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCJobConfigWit
 	}
 
 	@Override
-	public void perform(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameJobConfig, Run<?, ?> run,
+	public void perform(FortifySSCDescribableApplicationAndVersionNameJob applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		FortifySSCGlobalConfiguration.get().checkEnabled(this.getDescriptor());
 		PrintStream log = listener.getLogger();
@@ -114,16 +115,16 @@ public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCJobConfigWit
 		}
 	}
 	
-	private static final FortifySSCUploadFPRGlobalConfig getGlobalConfig() {
-		return FortifySSCGlobalConfiguration.get().getGlobalConfig(FortifySSCUploadFPRGlobalConfig.class);
+	private static final FortifySSCDescribableActionUploadFPRGlobal getGlobalConfig() {
+		return FortifySSCGlobalConfiguration.get().getGlobalConfig(FortifySSCDescribableActionUploadFPRGlobal.class);
 	}
 	
 	@Symbol("sscUploadFPR")
 	@Extension
-	public static final class FortifySSCUploadFPRJobConfigDescriptor extends AbstractFortifySSCJobConfigWithApplicationVersionActionDescriptor<FortifySSCUploadFPRJobConfig> {
+	public static final class FortifySSCUploadFPRJobConfigDescriptor extends AbstractFortifySSCDescriptorActionJob<FortifySSCDescribableActionUploadFPRJob> {
 		@Override
-		public FortifySSCUploadFPRJobConfig createDefaultInstance() {
-			return new FortifySSCUploadFPRJobConfig(getGlobalConfig());
+		public FortifySSCDescribableActionUploadFPRJob createDefaultInstance() {
+			return new FortifySSCDescribableActionUploadFPRJob(getGlobalConfig());
 		}
 		
 		@Override
@@ -133,13 +134,13 @@ public class FortifySSCUploadFPRJobConfig extends AbstractFortifySSCJobConfigWit
 		}
 		
 		@Override
-		public Class<? extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>> getGlobalConfigClass() {
-			return FortifySSCCreateApplicationVersionGlobalConfig.class;
+		public Class<? extends AbstractDescribableActionGlobal<?>> getGlobalConfigClass() {
+			return FortifySSCDescribableActionCreateApplicationVersionGlobal.class;
 		}
 		
 		@Override
 		public int getOrder() {
-			return FortifySSCUploadFPRGlobalConfig.ORDER;
+			return FortifySSCDescribableActionUploadFPRGlobal.ORDER;
 		}
     }
 }

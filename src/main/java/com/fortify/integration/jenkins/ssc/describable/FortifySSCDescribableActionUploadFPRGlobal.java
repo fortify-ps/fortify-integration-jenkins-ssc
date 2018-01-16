@@ -31,14 +31,14 @@ import hudson.Extension;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 
-public class FortifySSCUploadFPRGlobalConfig extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<FortifySSCUploadFPRGlobalConfig> {
+public class FortifySSCDescribableActionUploadFPRGlobal extends AbstractFortifySSCDescribableActionGlobal<FortifySSCDescribableActionUploadFPRGlobal> {
 	public static final int ORDER = 200;
 	private static final String DEFAULT_FPR_ANT_FILTER = "**/*.fpr";
 	private String fprAntFilter = DEFAULT_FPR_ANT_FILTER;
 	private int processingTimeOutSeconds = 60;
 	
 	@DataBoundConstructor
-	public FortifySSCUploadFPRGlobalConfig() {}
+	public FortifySSCDescribableActionUploadFPRGlobal() {}
 	
 	public String getFprAntFilter() {
 		return fprAntFilter;
@@ -59,11 +59,11 @@ public class FortifySSCUploadFPRGlobalConfig extends AbstractFortifySSCGlobalCon
 	
 	@Override
 	public Descriptor<?> getJobConfigDescriptor() {
-		return Jenkins.getInstance().getDescriptorOrDie(FortifySSCUploadFPRJobConfig.class);
+		return Jenkins.getInstance().getDescriptorOrDie(FortifySSCDescribableActionUploadFPRJob.class);
 	}
 	
 	@Extension
-	public static final class FortifySSCUploadFPRGlobalConfigDescriptor extends AbstractFortifySSCGlobalConfigForApplicationVersionActionDescriptor<FortifySSCUploadFPRGlobalConfig> {
+	public static final class FortifySSCUploadFPRGlobalConfigDescriptor extends AbstractFortifySSCDescriptorActionGlobal<FortifySSCDescribableActionUploadFPRGlobal> {
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
@@ -71,8 +71,8 @@ public class FortifySSCUploadFPRGlobalConfig extends AbstractFortifySSCGlobalCon
 		}
 		
 		@Override
-		public FortifySSCUploadFPRGlobalConfig createDefaultInstance() {
-			return new FortifySSCUploadFPRGlobalConfig();
+		public FortifySSCDescribableActionUploadFPRGlobal createDefaultInstance() {
+			return new FortifySSCDescribableActionUploadFPRGlobal();
 		}
 		
 		@Override

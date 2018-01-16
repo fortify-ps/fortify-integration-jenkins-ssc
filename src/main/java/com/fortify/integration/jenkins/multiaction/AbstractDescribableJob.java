@@ -22,20 +22,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.multiaction;
 
-import hudson.model.Describable;
-import hudson.tasks.BuildStep;
-import hudson.tasks.BuildStepDescriptor;
-
-public abstract class AbstractFortifySSCBuildStepDescriptor<T extends BuildStep & Describable<T>> extends BuildStepDescriptor<T> {
-
-	public T getInstanceOrDefault(T instance) {
-		T result = instance!=null ? instance : createDefaultInstance();
-		System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
-		return result;
-	}
-	
-	public abstract T createDefaultInstance();
-
+public abstract class AbstractDescribableJob<T extends AbstractDescribableJob<T>> extends AbstractDescribable<T> {
+	public static abstract class AbstractDescriptorJob<T extends AbstractDescribableJob<T>> extends AbstractDescriptor<T> {}
 }

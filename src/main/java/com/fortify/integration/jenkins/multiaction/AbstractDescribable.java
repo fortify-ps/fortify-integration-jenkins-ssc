@@ -22,10 +22,33 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.multiaction;
 
-public abstract class AbstractFortifySSCJobConfig<T extends AbstractFortifySSCJobConfig<T>> extends AbstractFortifySSCConfig<T> {
-	public static abstract class AbstractFortifySSCJobConfigDescriptor<T extends AbstractFortifySSCJobConfig<T>> extends AbstractFortifySSCConfigDescriptor<T> {
-		public abstract Class<? extends AbstractFortifySSCGlobalConfigForApplicationVersionAction<?>> getGlobalConfigClass();
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
+
+public abstract class AbstractDescribable<T extends AbstractDescribable<T>> extends AbstractDescribableImpl<T> {
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
+	
+	public static abstract class AbstractDescriptor<T extends AbstractDescribable<T>> extends Descriptor<T> {
+
+		public AbstractDescriptor() {}
+
+		public AbstractDescriptor(Class<? extends T> clazz) {
+			super(clazz);
+		}
+		
+		public T getInstanceOrDefault(T instance) {
+			T result = instance!=null ? instance : createDefaultInstance();
+			System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
+			return result;
+		}
+		
+		public abstract T createDefaultInstance();
 	}
 }

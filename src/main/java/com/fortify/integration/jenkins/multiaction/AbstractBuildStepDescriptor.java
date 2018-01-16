@@ -22,18 +22,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.multiaction;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import hudson.model.Describable;
+import hudson.tasks.BuildStep;
+import hudson.tasks.BuildStepDescriptor;
 
-import jenkins.model.GlobalConfiguration;
+public abstract class AbstractBuildStepDescriptor<T extends BuildStep & Describable<T>> extends BuildStepDescriptor<T> {
 
-public abstract class AbstractFortifySSCGlobalConfiguration<T extends AbstractFortifySSCGlobalConfiguration<T>> extends GlobalConfiguration {
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-	
 	public T getInstanceOrDefault(T instance) {
 		T result = instance!=null ? instance : createDefaultInstance();
 		System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
@@ -41,4 +37,5 @@ public abstract class AbstractFortifySSCGlobalConfiguration<T extends AbstractFo
 	}
 	
 	public abstract T createDefaultInstance();
+
 }

@@ -25,19 +25,17 @@
 package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCBuildStepDescriptor;
-import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCJobConfigWithApplicationVersionAction;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCApplicationAndVersionNameJobConfig;
+import com.fortify.integration.jenkins.multiaction.AbstractDescribableActionJob;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionBuilder;
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCDescribableActionJob;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionNameJob;
 
-import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -45,83 +43,52 @@ import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
-import jenkins.tasks.SimpleBuildStep;
 
-public class FortifySSCJenkinsBuilder extends Builder implements SimpleBuildStep {
-	// 'select' is a pretty strange name for this field, but it actually looks nice
-	// in pipeline jobs: performSSCAction select: [applicationName: 'x', ...] actions: [...] 
-	private FortifySSCApplicationAndVersionNameJobConfig select;
-	private List<AbstractFortifySSCJobConfigWithApplicationVersionAction<?>> actions;
-
+public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder<AbstractFortifySSCDescribableActionJob<?>> {
+	// 'with' is a pretty strange name for this field, but it actually looks nice
+	// in pipeline jobs: performSSCAction( with: [applicationName: 'x', ...] actions: [...]) 
+	private FortifySSCDescribableApplicationAndVersionNameJob with;
+	
 	@DataBoundConstructor
-	public FortifySSCJenkinsBuilder() {
-		setActions(new ArrayList<>());
-	}
+	public FortifySSCJenkinsBuilder() {}
 
-	public FortifySSCApplicationAndVersionNameJobConfig getSelect() {
-		return select==null 
-				? new FortifySSCApplicationAndVersionNameJobConfig(FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig())
-				: select;
-	}
-
-	@DataBoundSetter
-	public void setSelect(FortifySSCApplicationAndVersionNameJobConfig select) {
-		this.select = select;
-	}
-
-	public List<AbstractFortifySSCJobConfigWithApplicationVersionAction<?>> getActions() {
-		return actions;
+	public FortifySSCDescribableApplicationAndVersionNameJob getWith() {
+		return with==null 
+				? new FortifySSCDescribableApplicationAndVersionNameJob(FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig())
+				: with;
 	}
 
 	@DataBoundSetter
-	public void setActions(List<AbstractFortifySSCJobConfigWithApplicationVersionAction<?>> actions) {
-		this.actions = actions;
+	public void setWith(FortifySSCDescribableApplicationAndVersionNameJob with) {
+		this.with = with;
 	}
 
 	@Override
-	public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-		PrintStream log = listener.getLogger();
-		log.println(
-				"HPE Security Fortify Jenkins plugin: " + FortifySSCGlobalConfiguration.get().conn().getBaseResource());
-		// TODO Move this to AbstractFortifySSCJobConfigWithApplicationVersionAction implementations that actually
-		//      need a workspace
-		if (workspace == null) { 
-			throw new AbortException("no workspace for " + build);
-		}
-		for (AbstractFortifySSCJobConfigWithApplicationVersionAction<?> action : getActions()) {
-			if (action != null) {
-				action.perform(select, build, workspace, launcher, listener);
-			}
-		}
+	protected void perform(AbstractFortifySSCDescribableActionJob<?> action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+		action.perform(with, build, workspace, launcher, listener);
 	}
-
-	@Override
-	public BuildStepMonitor getRequiredMonitorService() {
-		return BuildStepMonitor.NONE;
-	}
-
+	
 	@Symbol("sscPerformActions")
 	@Extension
-	public static class DescriptorImpl extends AbstractFortifySSCBuildStepDescriptor<Builder> {
-
+	public static class DescriptorImpl extends AbstractDescriptorMultiActionBuilder<Builder> {
+	
 		@SuppressWarnings("rawtypes")
 		@Override
 		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
 			return true;
 		}
-
+	
 		@Override
 		public String getDisplayName() {
 			return "Fortify SSC Jenkins Plugin";
 		}
-
+	
 		public final List<Descriptor<?>> getEnabledDescriptors() {
 			System.out.println("getEnabledDescriptors");
 			return FortifySSCGlobalConfiguration.get().getEnabledJobDescriptors();
 		}
-
+	
 		@Override
 		public final FortifySSCJenkinsBuilder createDefaultInstance() {
 			System.out.println("createDefaultInstance");
@@ -130,7 +97,7 @@ public class FortifySSCJenkinsBuilder extends Builder implements SimpleBuildStep
 		
 		public final Class<?> getTargetType() {
 			System.out.println("getTargetType");
-			return AbstractFortifySSCJobConfigWithApplicationVersionAction.class;
+			return AbstractDescribableActionJob.class;
 		}
 	}
 

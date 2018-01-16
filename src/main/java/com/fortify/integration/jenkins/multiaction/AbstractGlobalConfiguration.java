@@ -22,19 +22,29 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.multiaction;
 
-import java.io.IOException;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-import org.springframework.core.Ordered;
+import jenkins.model.GlobalConfiguration;
 
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+public abstract class AbstractGlobalConfiguration<T extends AbstractGlobalConfiguration<T>> extends GlobalConfiguration {
 
-public abstract class AbstractFortifySSCJobConfigWithApplicationVersionAction<T extends AbstractFortifySSCJobConfigWithApplicationVersionAction<T>> extends AbstractFortifySSCJobConfig<T> {
-	public abstract void perform(FortifySSCApplicationAndVersionNameJobConfig applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
-	
-	public static abstract class AbstractFortifySSCJobConfigWithApplicationVersionActionDescriptor<T extends AbstractFortifySSCJobConfigWithApplicationVersionAction<T>> extends AbstractFortifySSCJobConfigDescriptor<T> implements Ordered {}
+	public AbstractGlobalConfiguration() {
+		super();
+	}
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
+
+	public T getInstanceOrDefault(T instance) {
+		T result = instance!=null ? instance : createDefaultInstance();
+		System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
+		return result;
+	}
+
+	public abstract T createDefaultInstance();
+
 }

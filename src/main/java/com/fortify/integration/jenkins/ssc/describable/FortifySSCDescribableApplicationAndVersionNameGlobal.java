@@ -27,18 +27,20 @@ package com.fortify.integration.jenkins.ssc.describable;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
+import com.fortify.integration.jenkins.multiaction.AbstractDescribableGlobal;
+
 import hudson.Extension;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 
-public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFortifySSCGlobalConfig<FortifySSCApplicationAndVersionNameGlobalConfig> {
+public class FortifySSCDescribableApplicationAndVersionNameGlobal extends AbstractDescribableGlobal<FortifySSCDescribableApplicationAndVersionNameGlobal> {
 	private String applicationName = "";
 	private String versionName = "";
 	private boolean applicationNameOverrideAllowed = true;
 	private boolean versionNameOverrideAllowed = true;
 	
 	@DataBoundConstructor
-	public FortifySSCApplicationAndVersionNameGlobalConfig() {}
+	public FortifySSCDescribableApplicationAndVersionNameGlobal() {}
 	
 	public String getApplicationName() {
 		return applicationName;
@@ -78,11 +80,11 @@ public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFor
 	
 	@Override
 	public Descriptor<?> getJobConfigDescriptor() {
-		return Jenkins.getInstance().getDescriptorOrDie(FortifySSCApplicationAndVersionNameJobConfig.class);
+		return Jenkins.getInstance().getDescriptorOrDie(FortifySSCDescribableApplicationAndVersionNameJob.class);
 	}
 
 	@Extension
-	public static final class FortifySSCApplicationAndVersionNameGlobalConfigDescriptor extends AbstractFortifySSCGlobalConfigDescriptor<FortifySSCApplicationAndVersionNameGlobalConfig> {
+	public static final class FortifySSCApplicationAndVersionNameGlobalConfigDescriptor extends AbstractDescriptorGlobal<FortifySSCDescribableApplicationAndVersionNameGlobal> {
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
@@ -90,8 +92,8 @@ public class FortifySSCApplicationAndVersionNameGlobalConfig extends AbstractFor
 		}
 		
 		@Override
-		public FortifySSCApplicationAndVersionNameGlobalConfig createDefaultInstance() {
-			return new FortifySSCApplicationAndVersionNameGlobalConfig();
+		public FortifySSCDescribableApplicationAndVersionNameGlobal createDefaultInstance() {
+			return new FortifySSCDescribableApplicationAndVersionNameGlobal();
 		}
 	}
 }

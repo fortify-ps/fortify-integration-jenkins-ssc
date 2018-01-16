@@ -31,10 +31,10 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.multiaction.AbstractDescribableActionJob;
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionBuilder;
-import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCDescribableActionJob;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionNameJob;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribable;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCDescribableAction;
 
 import hudson.Extension;
 import hudson.FilePath;
@@ -45,27 +45,27 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 
-public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder<AbstractFortifySSCDescribableActionJob<?>> {
+public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder<AbstractFortifySSCDescribableAction<?>> {
 	// 'with' is a pretty strange name for this field, but it actually looks nice
 	// in pipeline jobs: performSSCAction( with: [applicationName: 'x', ...] actions: [...]) 
-	private FortifySSCDescribableApplicationAndVersionNameJob with;
+	private FortifySSCDescribableApplicationAndVersionName with;
 	
 	@DataBoundConstructor
 	public FortifySSCJenkinsBuilder() {}
 
-	public FortifySSCDescribableApplicationAndVersionNameJob getWith() {
+	public FortifySSCDescribableApplicationAndVersionName getWith() {
 		return with==null 
-				? new FortifySSCDescribableApplicationAndVersionNameJob(FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig())
+				? new FortifySSCDescribableApplicationAndVersionName(FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig())
 				: with;
 	}
 
 	@DataBoundSetter
-	public void setWith(FortifySSCDescribableApplicationAndVersionNameJob with) {
+	public void setWith(FortifySSCDescribableApplicationAndVersionName with) {
 		this.with = with;
 	}
 
 	@Override
-	protected void perform(AbstractFortifySSCDescribableActionJob<?> action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+	protected void perform(AbstractFortifySSCDescribableAction<?> action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		action.perform(with, build, workspace, launcher, listener);
 	}
 	
@@ -85,19 +85,16 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder<Abstrac
 		}
 	
 		public final List<Descriptor<?>> getEnabledDescriptors() {
-			System.out.println("getEnabledDescriptors");
 			return FortifySSCGlobalConfiguration.get().getEnabledJobDescriptors();
 		}
 	
 		@Override
 		public final FortifySSCJenkinsBuilder createDefaultInstance() {
-			System.out.println("createDefaultInstance");
 			return new FortifySSCJenkinsBuilder();
 		}
 		
 		public final Class<?> getTargetType() {
-			System.out.println("getTargetType");
-			return AbstractDescribableActionJob.class;
+			return AbstractMultiActionDescribable.class;
 		}
 	}
 

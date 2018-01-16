@@ -22,33 +22,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.multiaction;
+package com.fortify.integration.jenkins.ssc.describable.action;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribableGlobalConfiguration;
 
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Descriptor;
+public abstract class AbstractFortifySSCDescribableActionGlobalConfiguration<T extends AbstractFortifySSCDescribableActionGlobalConfiguration<T>> extends AbstractMultiActionDescribableGlobalConfiguration<T> {
+	private static final long serialVersionUID = 1L;
 
-public abstract class AbstractDescribable<T extends AbstractDescribable<T>> extends AbstractDescribableImpl<T> {
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-	
-	public static abstract class AbstractDescriptor<T extends AbstractDescribable<T>> extends Descriptor<T> {
-
-		public AbstractDescriptor() {}
-
-		public AbstractDescriptor(Class<? extends T> clazz) {
-			super(clazz);
-		}
-		
-		public T getInstanceOrDefault(T instance) {
-			T result = instance!=null ? instance : createDefaultInstance();
-			System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
-			return result;
-		}
-		
-		public abstract T createDefaultInstance();
-	}
+	public static abstract class AbstractFortifySSCDescriptorGlobalConfiguration<T extends AbstractFortifySSCDescribableActionGlobalConfiguration<T>> extends AbstractMultiActionDescriptorGlobalConfiguration<T> {}
 }

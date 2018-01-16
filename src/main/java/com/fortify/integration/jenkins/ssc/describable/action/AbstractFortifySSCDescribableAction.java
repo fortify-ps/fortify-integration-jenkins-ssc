@@ -22,12 +22,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.multiaction;
+package com.fortify.integration.jenkins.ssc.describable.action;
 
-import hudson.model.Descriptor;
+import java.io.IOException;
 
-public abstract class AbstractDescribableGlobal<T extends AbstractDescribableGlobal<T>> extends AbstractDescribable<T> {
-	public abstract Descriptor<?> getJobConfigDescriptor();
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribable;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
+
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+
+public abstract class AbstractFortifySSCDescribableAction<T extends AbstractFortifySSCDescribableAction<T>> extends AbstractMultiActionDescribable<T> {
+	private static final long serialVersionUID = 1L;
+
+	public abstract void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
 	
-	public static abstract class AbstractDescriptorGlobal<T extends AbstractDescribableGlobal<T>> extends AbstractDescriptor<T> {}
+	public static abstract class AbstractFortifySSCDescriptorAction<T extends AbstractFortifySSCDescribableAction<T>> extends AbstractMultiActionDescriptor<T> {}
 }

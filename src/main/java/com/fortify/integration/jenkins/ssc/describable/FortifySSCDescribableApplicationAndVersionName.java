@@ -32,7 +32,7 @@ import org.kohsuke.stapler.QueryParameter;
 import com.fortify.client.ssc.api.SSCApplicationAPI;
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
-import com.fortify.integration.jenkins.multiaction.AbstractDescribableJob;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribable;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.json.processor.AddNamesToComboBoxModel;
 import com.fortify.util.rest.json.JSONMap;
@@ -43,7 +43,8 @@ import hudson.Extension;
 import hudson.util.ComboBoxModel;
 
 // TODO Override set* methods to check whether values are being overridden when not allowed
-public class FortifySSCDescribableApplicationAndVersionNameJob extends AbstractDescribableJob<FortifySSCDescribableApplicationAndVersionNameJob> {
+public class FortifySSCDescribableApplicationAndVersionName extends AbstractMultiActionDescribable<FortifySSCDescribableApplicationAndVersionName> {
+	private static final long serialVersionUID = 1L;
 	private String applicationName = "";
 	private String versionName = "";
 	
@@ -51,16 +52,16 @@ public class FortifySSCDescribableApplicationAndVersionNameJob extends AbstractD
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableApplicationAndVersionNameJob() {}
+	public FortifySSCDescribableApplicationAndVersionName() {}
 	
 	/**
-	 * Initialize with global config 
+	 * Copy constructor
 	 * @param other
 	 */
-	public FortifySSCDescribableApplicationAndVersionNameJob(FortifySSCDescribableApplicationAndVersionNameGlobal globalConfig) {
-		if ( globalConfig != null ) {
-			setApplicationName(globalConfig.getApplicationName());
-			setVersionName(globalConfig.getVersionName());
+	public FortifySSCDescribableApplicationAndVersionName(FortifySSCDescribableApplicationAndVersionName other) {
+		if ( other != null ) {
+			setApplicationName(other.getApplicationName());
+			setVersionName(other.getVersionName());
 		}
 	}
 	
@@ -84,14 +85,16 @@ public class FortifySSCDescribableApplicationAndVersionNameJob extends AbstractD
 	
 	public boolean isApplicationNameOverrideAllowed() {
 		// Allow override if we either were previously configured to allow override, or if current global config allows override
-		FortifySSCDescribableApplicationAndVersionNameGlobal globalConfig = FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig();
-		return globalConfig==null || globalConfig.isApplicationNameOverrideAllowed();
+		//FortifySSCDescribableApplicationAndVersionNameGlobal globalConfig = FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig();
+		//return globalConfig==null || globalConfig.isApplicationNameOverrideAllowed();
+		return true; // TODO
 	}
 	
 	public boolean isVersionNameOverrideAllowed() {
 		// Allow override if we either were previously configured to allow override, or if current global config allows override
-		FortifySSCDescribableApplicationAndVersionNameGlobal globalConfig = FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig();
-		return globalConfig==null || globalConfig.isVersionNameOverrideAllowed();
+		//FortifySSCDescribableApplicationAndVersionNameGlobal globalConfig = FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig();
+		//return globalConfig==null || globalConfig.isVersionNameOverrideAllowed();
+		return true; // TODO
 	}
 	
 	public JSONMap getApplicationVersion(EnvVars env, boolean failIfNotFound) throws AbortException {
@@ -126,12 +129,12 @@ public class FortifySSCDescribableApplicationAndVersionNameJob extends AbstractD
 		}
 	}
 	
-	private static final FortifySSCDescribableApplicationAndVersionNameJob getGlobalConfig() {
-		return FortifySSCGlobalConfiguration.get().getGlobalConfig(FortifySSCDescribableApplicationAndVersionNameJob.class);
+	private static final FortifySSCDescribableApplicationAndVersionName getGlobalConfig() {
+		return FortifySSCGlobalConfiguration.get().getDefaultConfig(FortifySSCDescribableApplicationAndVersionName.class);
 	}
 	
 	@Extension
-	public static final class FortifySSCApplicationAndVersionNameJobConfigDescriptor extends AbstractDescriptor<FortifySSCDescribableApplicationAndVersionNameJob> {
+	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractMultiActionDescriptor<FortifySSCDescribableApplicationAndVersionName> {
         public ComboBoxModel doFillApplicationNameItems() {
 			final ComboBoxModel items = new ComboBoxModel();
 			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
@@ -157,8 +160,18 @@ public class FortifySSCDescribableApplicationAndVersionNameJob extends AbstractD
 		}
 		
 		@Override
-		public FortifySSCDescribableApplicationAndVersionNameJob createDefaultInstance() {
-			return new FortifySSCDescribableApplicationAndVersionNameJob(FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig());
+		public FortifySSCDescribableApplicationAndVersionName createDefaultInstanceWithConfiguration() {
+			return new FortifySSCDescribableApplicationAndVersionName(FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig());
+		}
+		
+		@Override
+		public FortifySSCDescribableApplicationAndVersionName createDefaultInstance() {
+			return new FortifySSCDescribableApplicationAndVersionName();
+		}
+		
+		@Override
+		public int getOrder() {
+			return 10;
 		}
     }
 }

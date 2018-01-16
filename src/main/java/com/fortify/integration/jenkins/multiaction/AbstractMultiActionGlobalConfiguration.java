@@ -25,17 +25,15 @@
 package com.fortify.integration.jenkins.multiaction;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.kohsuke.stapler.DataBoundSetter;
 import org.springframework.core.OrderComparator;
 
-import com.fortify.integration.jenkins.multiaction.AbstractDescribableActionGlobal.AbstractDescriptorActionGlobal;
-import com.fortify.integration.jenkins.multiaction.AbstractDescribableActionJob.AbstractDescriptorActionJob;
-import com.fortify.integration.jenkins.multiaction.AbstractDescribableJob.AbstractDescriptorJob;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribable.AbstractMultiActionDescriptor;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribableGlobalConfiguration.AbstractMultiActionDescriptorGlobalConfiguration;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -50,51 +48,39 @@ import jenkins.model.Jenkins;
  * config.jelly page for your concrete implementation:
  * 
  * <pre>
- 	<f:nested>
-    	<f:hetero-list name="enabledActionsGlobalConfigs" items="${descriptor.getInstanceOrDefault(instance).enabledActionsGlobalConfigs}" 
-    		descriptors="${descriptor.globalConfigActionDescriptors}" targetType="${descriptor.targetType}" 
-    		hasHeader="true" addCaption="${%Enable Action}" deleteCaption="${%Disable Action}" 
-    		oneEach="true" honorOrder="true" />
-    </f:nested>
+ 	TODO
  * </pre>
  * 
- * This will automatically load all available DescriptorActionGlobalType instances (based on the class type returned
- * by {@link #getDescriptorActionGlobalType()}), and allow to enable, disable and configure these instances to
+ * This will automatically load all available DescriptorActionJobType instances (based on the class type returned
+ * by {@link #getDescribableGlobalConfigurationDescriptorType()}), and allow to enable, disable and configure these instances to
  * define the global configuration for this plugin.
  * 
  * @author Ruud Senden
  *
- * @param <DescribableActionGlobalType>
- * @param <DescriptorActionGlobalType>
- * @param <T>
  */
-@SuppressWarnings("rawtypes")
-public abstract class AbstractMultiActionGlobalConfiguration
-		<DescribableActionGlobalType extends AbstractDescribableActionGlobal,
-		 DescriptorActionGlobalType extends AbstractDescriptorActionGlobal,
-		 T extends AbstractMultiActionGlobalConfiguration<DescribableActionGlobalType, DescriptorActionGlobalType, T>> 
-		 extends AbstractGlobalConfiguration<T> 
+public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractMultiActionGlobalConfiguration<T>> extends AbstractGlobalConfiguration<T> 
 {
-	private ImmutableMap<Class<DescribableActionGlobalType>, DescribableActionGlobalType> enabledActionsGlobalConfigs;
+	private List<AbstractMultiActionDescribableGlobalConfiguration<?>> enabledActionsDefaultConfigs;
+	private transient Map<Class<AbstractMultiActionDescribable<?>>, AbstractMultiActionDescribableGlobalConfiguration<?>> enabledActionsDefaultConfigsMap;
 
 	public AbstractMultiActionGlobalConfiguration() {
-		setEnabledActionsGlobalConfigs(getDefaultEnabledActionsGlobalConfigs());
-        load();
+		setEnabledActionsDefaultConfigs(getDefaultEnabledActionsDefaultConfigs());
 	}
 	
-	public Collection<DescribableActionGlobalType> getEnabledActionsGlobalConfigs() {
-		return enabledActionsGlobalConfigs.values();
+	public List<AbstractMultiActionDescribableGlobalConfiguration<?>> getEnabledActionsDefaultConfigs() {
+		return enabledActionsDefaultConfigs;
 	}
 
 	@DataBoundSetter
-	public void setEnabledActionsGlobalConfigs(Collection<DescribableActionGlobalType> enabledActions) {
-		this.enabledActionsGlobalConfigs = Maps.uniqueIndex(enabledActions, new Function<DescribableActionGlobalType, Class<DescribableActionGlobalType>> () {
-			@Override @SuppressWarnings("unchecked")
-			public Class<DescribableActionGlobalType> apply(DescribableActionGlobalType input) {
-				return (Class<DescribableActionGlobalType>) input.getClass();
+	public void setEnabledActionsDefaultConfigs(List<AbstractMultiActionDescribableGlobalConfiguration<?>> enabledActionsDefaultConfigs) {
+		this.enabledActionsDefaultConfigs = enabledActionsDefaultConfigs;
+		this.enabledActionsDefaultConfigsMap = Maps.uniqueIndex(enabledActionsDefaultConfigs, new Function<AbstractMultiActionDescribableGlobalConfiguration<?>, Class<AbstractMultiActionDescribable<?>>> () {
+			@Override
+			public Class<AbstractMultiActionDescribable<?>> apply(AbstractMultiActionDescribableGlobalConfiguration<?> input) {
+				return (Class<AbstractMultiActionDescribable<?>>) input.getTargetType();
 			}
 		    
-		    });;
+		    });
 	}
 
 	public void checkEnabled(Descriptor<?> descriptor) throws AbortException {
@@ -106,52 +92,58 @@ public abstract class AbstractMultiActionGlobalConfiguration
 	}
 
 	public boolean isEnabled(Descriptor<?> descriptor) {
-		if ( descriptor instanceof AbstractDescriptorJob<?> ) {
-			return enabledActionsGlobalConfigs.containsKey(((AbstractDescriptorActionJob<?>)descriptor).getGlobalConfigClass());
+		if ( descriptor instanceof AbstractMultiActionDescriptor<?> ) {
+			return enabledActionsDefaultConfigsMap.containsKey(((AbstractMultiActionDescriptor<?>)descriptor).getClass().getEnclosingClass());
 		}
 		return false;
 	}
 
 	public List<Descriptor<?>> getEnabledJobDescriptors() {
-		List<Descriptor<?>> result = Lists.newArrayList(Iterables.transform(enabledActionsGlobalConfigs.values(),
-				new Function<DescribableActionGlobalType, Descriptor<?>>() {
+		List<Descriptor<?>> result = Lists.newArrayList(Iterables.transform(enabledActionsDefaultConfigs,
+				new Function<AbstractMultiActionDescribableGlobalConfiguration<?>, Descriptor<?>>() {
 					@Override
-					public Descriptor<?> apply(DescribableActionGlobalType input) {
-						return input.getJobConfigDescriptor();
+					public Descriptor<?> apply(AbstractMultiActionDescribableGlobalConfiguration<?> input) {
+						return Jenkins.getInstance().getDescriptorOrDie(input.getTargetType());
 					}
 				}));
 		result.sort(new OrderComparator());
 		return result;
 	}
 
-	public final List<DescriptorActionGlobalType> getGlobalConfigActionDescriptors() {
-		ExtensionList<DescriptorActionGlobalType> list = Jenkins.getInstance().getExtensionList(getDescriptorActionGlobalType());
-		List<DescriptorActionGlobalType> result = new ArrayList<>(list);
+	public final List<AbstractMultiActionDescriptorGlobalConfiguration<?>> getAllGlobalConfigurationDescriptors() {
+		ExtensionList<AbstractMultiActionDescriptorGlobalConfiguration<?>> list = Jenkins.getInstance().getExtensionList(getDescribableGlobalConfigurationDescriptorType());
+		List<AbstractMultiActionDescriptorGlobalConfiguration<?>> result = new ArrayList<>(list);
 		result.sort(new OrderComparator());
 		return result;
 	}
 
-	protected abstract Class<DescriptorActionGlobalType> getDescriptorActionGlobalType();
+	protected abstract <D extends AbstractMultiActionDescriptorGlobalConfiguration<?>> Class<D> getDescribableGlobalConfigurationDescriptorType();
 
 	@SuppressWarnings("unchecked")
-	public <GlobalConfig> GlobalConfig getGlobalConfig(Class<GlobalConfig> type) {
-		return (GlobalConfig) enabledActionsGlobalConfigs.get(type);
+	public <GlobalConfig extends AbstractMultiActionDescribable<?>> GlobalConfig getDefaultConfig(Class<GlobalConfig> type) {
+		AbstractMultiActionDescribableGlobalConfiguration<?> config = enabledActionsDefaultConfigsMap.get(type);
+		return config == null ? null : (GlobalConfig)config.getTarget();
 	}
 
-	@SuppressWarnings("unchecked")
-	protected Collection<DescribableActionGlobalType> getDefaultEnabledActionsGlobalConfigs() {
+	protected List<AbstractMultiActionDescribableGlobalConfiguration<?>> getDefaultEnabledActionsDefaultConfigs() {
 		return !enableAllActionsByDefault() 
-				? new ArrayList<>()
-				: Lists.newArrayList(Iterables.transform(getGlobalConfigActionDescriptors(),
-					new Function<AbstractDescriptorActionGlobal, DescribableActionGlobalType>() {
+				? new ArrayList<>() : new ArrayList<>();
+		/* TODO re-implement this
+				: Lists.newArrayList(Iterables.transform(getAllGlobalConfigurationDescriptors(),
+					new Function<AbstractMultiActionDescriptor, MultiActionDescribableType>() {
 						@Override
-						public DescribableActionGlobalType apply(AbstractDescriptorActionGlobal input) {
-							return (DescribableActionGlobalType) input.createDefaultInstance();
+						public MultiActionDescribableType apply(AbstractMultiActionDescriptor input) {
+							return (MultiActionDescribableType) input.createDefaultInstance();
 						}
 					}));
+		*/
 	}
 	
 	protected boolean enableAllActionsByDefault() {
 		return true;
+	}
+	
+	public final Class<?> getTargetType() {
+		return AbstractMultiActionDescribableGlobalConfiguration.class;
 	}
 }

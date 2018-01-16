@@ -22,7 +22,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.ssc.describable.action;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,8 +35,8 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 import com.fortify.client.ssc.api.SSCArtifactAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
-import com.fortify.integration.jenkins.multiaction.AbstractDescribableActionGlobal;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
 
 import hudson.EnvVars;
 import hudson.Extension;
@@ -47,24 +47,25 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 
-public class FortifySSCDescribableActionUploadFPRJob extends AbstractFortifySSCDescribableActionJob<FortifySSCDescribableActionUploadFPRJob> {
-	private String fprAntFilter = "";
-	private int processingTimeOutSeconds = 60;
+public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDescribableAction<FortifySSCDescribableUploadFPRAction> {
+	private static final long serialVersionUID = 1L;
+	private String fprAntFilter = "**/*.fpr";
+	private int processingTimeOutSeconds = 600;
 	
 	/**
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableActionUploadFPRJob() {}
+	public FortifySSCDescribableUploadFPRAction() {}
 	
 	/**
-	 * Initialize with global config 
+	 * Copy constructor
 	 * @param other
 	 */
-	public FortifySSCDescribableActionUploadFPRJob(FortifySSCDescribableActionUploadFPRGlobal globalConfig) {
-		if ( globalConfig != null ) {
-			setFprAntFilter(globalConfig.getFprAntFilter());
-			setProcessingTimeOutSeconds(globalConfig.getProcessingTimeOutSeconds());
+	public FortifySSCDescribableUploadFPRAction(FortifySSCDescribableUploadFPRAction other) {
+		if ( other != null ) {
+			setFprAntFilter(other.getFprAntFilter());
+			setProcessingTimeOutSeconds(other.getProcessingTimeOutSeconds());
 		}
 	}
 	
@@ -87,7 +88,7 @@ public class FortifySSCDescribableActionUploadFPRJob extends AbstractFortifySSCD
 	}
 
 	@Override
-	public void perform(FortifySSCDescribableApplicationAndVersionNameJob applicationAndVersionNameJobConfig, Run<?, ?> run,
+	public void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		FortifySSCGlobalConfiguration.get().checkEnabled(this.getDescriptor());
 		PrintStream log = listener.getLogger();
@@ -115,32 +116,34 @@ public class FortifySSCDescribableActionUploadFPRJob extends AbstractFortifySSCD
 		}
 	}
 	
-	private static final FortifySSCDescribableActionUploadFPRGlobal getGlobalConfig() {
-		return FortifySSCGlobalConfiguration.get().getGlobalConfig(FortifySSCDescribableActionUploadFPRGlobal.class);
+	private static final FortifySSCDescribableUploadFPRAction getDefaultConfig() {
+		return FortifySSCGlobalConfiguration.get().getDefaultConfig(FortifySSCDescribableUploadFPRAction.class);
 	}
 	
 	@Symbol("sscUploadFPR")
 	@Extension
-	public static final class FortifySSCUploadFPRJobConfigDescriptor extends AbstractFortifySSCDescriptorActionJob<FortifySSCDescribableActionUploadFPRJob> {
+	public static final class FortifySSCDescriptorUploadFPRAction extends AbstractFortifySSCDescriptorAction<FortifySSCDescribableUploadFPRAction> {
+		static final String DISPLAY_NAME = "Upload FPR file";
+
 		@Override
-		public FortifySSCDescribableActionUploadFPRJob createDefaultInstance() {
-			return new FortifySSCDescribableActionUploadFPRJob(getGlobalConfig());
+		public FortifySSCDescribableUploadFPRAction createDefaultInstanceWithConfiguration() {
+			return new FortifySSCDescribableUploadFPRAction(getDefaultConfig());
+		}
+		
+		@Override
+		public FortifySSCDescribableUploadFPRAction createDefaultInstance() {
+			return new FortifySSCDescribableUploadFPRAction();
 		}
 		
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
-			return "Upload FPR file";
-		}
-		
-		@Override
-		public Class<? extends AbstractDescribableActionGlobal<?>> getGlobalConfigClass() {
-			return FortifySSCDescribableActionCreateApplicationVersionGlobal.class;
+			return DISPLAY_NAME;
 		}
 		
 		@Override
 		public int getOrder() {
-			return FortifySSCDescribableActionUploadFPRGlobal.ORDER;
+			return 200;
 		}
     }
 }

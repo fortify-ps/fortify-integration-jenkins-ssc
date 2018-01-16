@@ -22,7 +22,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.ssc.describable.action;
 
 import java.io.IOException;
 
@@ -32,8 +32,8 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 import com.fortify.client.ssc.api.SSCIssueTemplateAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
-import com.fortify.integration.jenkins.multiaction.AbstractDescribableActionGlobal;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
 import com.fortify.util.rest.json.JSONList;
 import com.fortify.util.rest.json.JSONMap;
 
@@ -48,27 +48,28 @@ import hudson.util.ListBoxModel;
 
 // TODO Override set* methods to check whether values are being overridden when not allowed
 // TODO Don't display if global configuration disallows creating application versions
-public class FortifySSCDescribableActionCreateApplicationVersionJob extends AbstractFortifySSCDescribableActionJob<FortifySSCDescribableActionCreateApplicationVersionJob> {
-	private String issueTemplateName;
+public class FortifySSCDescribableCreateApplicationVersionAction extends AbstractFortifySSCDescribableAction<FortifySSCDescribableCreateApplicationVersionAction> {
+	private static final long serialVersionUID = 1L;
+	private String issueTemplateName = null;
 	
 	/**
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableActionCreateApplicationVersionJob() {}
+	public FortifySSCDescribableCreateApplicationVersionAction() {}
 	
 	/**
-	 * Initialize with global config 
+	 * Copy constructor
 	 * @param other
 	 */
-	public FortifySSCDescribableActionCreateApplicationVersionJob(FortifySSCDescribableActionCreateApplicationVersionGlobal globalConfig) {
-		if ( globalConfig != null ) {
-			setIssueTemplateName(globalConfig.getIssueTemplateName());
+	public FortifySSCDescribableCreateApplicationVersionAction(FortifySSCDescribableCreateApplicationVersionAction other) {
+		if ( other != null ) {
+			setIssueTemplateName(other.getIssueTemplateName());
 		}
 	}
 	
 	public String getIssueTemplateName() {
-		return isIssueTemplateNameOverrideAllowed() ? issueTemplateName : getGlobalConfig().getIssueTemplateName();
+		return isIssueTemplateNameOverrideAllowed() ? issueTemplateName : getDefaultConfig().getIssueTemplateName();
 	}
 
 	@DataBoundSetter
@@ -78,12 +79,14 @@ public class FortifySSCDescribableActionCreateApplicationVersionJob extends Abst
 	
 	public boolean isIssueTemplateNameOverrideAllowed() {
 		// Allow override if we either were previously configured to allow override, or if current global config allows override
-		FortifySSCDescribableActionCreateApplicationVersionGlobal globalConfig = getGlobalConfig();
-		return globalConfig==null || globalConfig.isIssueTemplateNameOverrideAllowed();
+		//FortifySSCDescribableActionCreateApplicationVersionGlobal globalConfig = getGlobalConfig();
+		//return globalConfig==null || globalConfig.isOverrideAllowed("issueTemplateName");
+		// TODO
+		return true;
 	}
 	
 	@Override
-	public void perform(FortifySSCDescribableApplicationAndVersionNameJob applicationAndVersionNameJobConfig, Run<?, ?> run,
+	public void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException 
 	{
 		FortifySSCGlobalConfiguration.get().checkEnabled(this.getDescriptor());
@@ -98,22 +101,29 @@ public class FortifySSCDescribableActionCreateApplicationVersionJob extends Abst
 		throw new AbortException("Creating application versions not yet implemented");
 	}
 	
-	private static final FortifySSCDescribableActionCreateApplicationVersionGlobal getGlobalConfig() {
-		return FortifySSCGlobalConfiguration.get().getGlobalConfig(FortifySSCDescribableActionCreateApplicationVersionGlobal.class);
+	private static final FortifySSCDescribableCreateApplicationVersionAction getDefaultConfig() {
+		return FortifySSCGlobalConfiguration.get().getDefaultConfig(FortifySSCDescribableCreateApplicationVersionAction.class);
 	}
 
 	@Symbol("sscCreateApplicationVersionIfNotExisting")
 	@Extension
-	public static final class FortifySSCCreateApplicationVersionJobConfigDescriptor extends AbstractFortifySSCDescriptorActionJob<FortifySSCDescribableActionCreateApplicationVersionJob> {
+	public static final class FortifySSCDescriptorCreateApplicationVersionAction extends AbstractFortifySSCDescriptorAction<FortifySSCDescribableCreateApplicationVersionAction> {
+		static final String DISPLAY_NAME = "Create application version if it does not yet exist";
+
 		@Override
-		public FortifySSCDescribableActionCreateApplicationVersionJob createDefaultInstance() {
-			return new FortifySSCDescribableActionCreateApplicationVersionJob(getGlobalConfig());
+		public FortifySSCDescribableCreateApplicationVersionAction createDefaultInstanceWithConfiguration() {
+			return new FortifySSCDescribableCreateApplicationVersionAction(getDefaultConfig());
+		}
+		
+		@Override
+		public FortifySSCDescribableCreateApplicationVersionAction createDefaultInstance() {
+			return new FortifySSCDescribableCreateApplicationVersionAction();
 		}
 		
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
-			return "Create application version if it does not yet exist";
+			return DISPLAY_NAME;
 		}
 		
 		public ListBoxModel doFillIssueTemplateNameItems() {
@@ -133,15 +143,10 @@ public class FortifySSCDescribableActionCreateApplicationVersionJob extends Abst
 			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 			return conn.api(SSCIssueTemplateAPI.class).getIssueTemplates(true);
 		}
-
-		@Override
-		public Class<? extends AbstractDescribableActionGlobal<?>> getGlobalConfigClass() {
-			return FortifySSCDescribableActionCreateApplicationVersionGlobal.class;
-		}
 		
 		@Override
 		public int getOrder() {
-			return FortifySSCDescribableActionCreateApplicationVersionGlobal.ORDER;
+			return 100;
 		}
 	}
 }

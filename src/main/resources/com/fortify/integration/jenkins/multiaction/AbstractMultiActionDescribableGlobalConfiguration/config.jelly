@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+	<f:entry field="enabledByDefault" title="${%EnableByDefault}">
+		<f:checkbox default="true"/>
+	</f:entry> 
+	<j:set var="isGlobalConfig" value="${true}"/>
+	<f:entry field="target">
+		<f:property/>
+	</f:entry> 
+	<j:if test="${descriptor.configurableOverrideDisallowedPropertyNames.size()>0}">
+		<f:entry title="Allow job to override default value">
+			<j:forEach items="${descriptor.configurableOverrideDisallowedPropertyNames}" var="propertyName">
+				<f:checkbox name="${propertyName}" title="${propertyName}" checked="true"/>
+			</j:forEach>
+		</f:entry>
+	</j:if>
+</j:jelly>

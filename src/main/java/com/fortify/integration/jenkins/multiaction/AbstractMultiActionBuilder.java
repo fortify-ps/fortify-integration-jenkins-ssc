@@ -29,6 +29,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
@@ -65,7 +66,7 @@ import jenkins.tasks.SimpleBuildStep;
  *
  * @param <DescribableActionJobType>
  */
-public abstract class AbstractMultiActionBuilder<DescribableActionJobType extends AbstractDescribableActionJob<?>> extends Builder implements SimpleBuildStep {
+public abstract class AbstractMultiActionBuilder<DescribableActionJobType extends AbstractMultiActionDescribable<?>> extends Builder implements SimpleBuildStep {
 	private List<DescribableActionJobType> actions;
 
 	public AbstractMultiActionBuilder() {
@@ -103,6 +104,11 @@ public abstract class AbstractMultiActionBuilder<DescribableActionJobType extend
 	@Override
 	public BuildStepMonitor getRequiredMonitorService() {
 		return BuildStepMonitor.NONE;
+	}
+	
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
 	}
 	
 	public static abstract class AbstractDescriptorMultiActionBuilder<T extends BuildStep & Describable<T>> extends BuildStepDescriptor<T> {

@@ -7,7 +7,7 @@
 			background-color: lightgrey;
 		}
 	</style>
-
+	
 	<f:entry field="applicationName" title="${%ApplicationName}">
 		<j:choose>
 			<j:when test="${descriptor.getInstanceOrDefault(instance).applicationNameOverrideAllowed}">
@@ -18,7 +18,7 @@
 			</j:otherwise>
 		</j:choose>   
 	</f:entry>
-			
+	
 	<f:entry field="versionName" title="${%VersionName}">
 		<j:choose>
 			<j:when test="${descriptor.getInstanceOrDefault(instance).versionNameOverrideAllowed}">

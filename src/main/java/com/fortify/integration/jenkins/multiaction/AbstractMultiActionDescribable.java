@@ -24,6 +24,42 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.multiaction;
 
-public abstract class AbstractDescribableJob<T extends AbstractDescribableJob<T>> extends AbstractDescribable<T> {
-	public static abstract class AbstractDescriptorJob<T extends AbstractDescribableJob<T>> extends AbstractDescriptor<T> {}
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.springframework.core.Ordered;
+
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
+
+public abstract class AbstractMultiActionDescribable<T extends AbstractMultiActionDescribable<T>> extends AbstractDescribableImpl<T> implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
+	
+	public static abstract class AbstractMultiActionDescriptor<T extends AbstractMultiActionDescribable<T>> extends Descriptor<T> implements Ordered {
+
+		public AbstractMultiActionDescriptor() {}
+
+		public AbstractMultiActionDescriptor(Class<? extends T> clazz) {
+			super(clazz);
+		}
+		
+		public T getInstanceOrDefault(T instance) {
+			T result = instance!=null ? instance : createDefaultInstanceWithConfiguration();
+			System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
+			return result;
+		}
+		
+		public T createDefaultInstanceWithConfiguration() {
+			return createDefaultInstance();
+		};
+		
+		public abstract T createDefaultInstance();
+	}
 }

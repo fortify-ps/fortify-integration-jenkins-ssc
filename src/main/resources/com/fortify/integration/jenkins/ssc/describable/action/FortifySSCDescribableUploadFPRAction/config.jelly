@@ -1,24 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+	<j:set var="instance" value="${descriptor.getInstanceOrDefault(instance)}"/>
+	
     <f:entry field="fprAntFilter" title="${%FPRAntFilter}">
-        <f:textbox value="${descriptor.getInstanceOrDefault(instance).fprAntFilter}"/>
-    </f:entry>
-    <f:entry field="processingTimeOutSeconds" title="${%ProcessingTimeOutSeconds}">
-        <f:number value="${descriptor.getInstanceOrDefault(instance).processingTimeOutSeconds}"/>
+    	<j:choose>
+			<j:when test="${instance.isOverrideAllowed('fprAntFilter')}">
+        		<f:textbox />
+        	</j:when>
+			<j:otherwise>
+				<f:readOnlyTextbox clazz="readOnly" />
+			</j:otherwise>
+		</j:choose>	
     </f:entry>
     
-    <f:block>
-    	Auto-approve: ${descriptor.getInstanceOrDefault(instance).autoApprove}
-    </f:block>
+    <f:entry field="processingTimeOutSeconds" title="${%ProcessingTimeOutSeconds}">
+    	<j:choose>
+			<j:when test="${instance.isOverrideAllowed('processingTimeOutSeconds')}">
+        		<f:number />
+        	</j:when>
+			<j:otherwise>
+				<f:readOnlyTextbox clazz="readOnly" />
+			</j:otherwise>
+		</j:choose>	
+    </f:entry>
     
     <f:entry field="autoApprove" title="${%AutoApprove}">
     	<j:choose>
 			<j:when test="${isGlobalConfig}">
-    			<f:select value="${descriptor.getInstanceOrDefault(instance).autoApprove}" />
+    			<f:select />
     		</j:when>
 			<j:otherwise>
-				<f:checkbox checked="${descriptor.getInstanceOrDefault(instance).autoApprove}" json="true" />
+				<f:checkbox json="true" readonly="${'true'!=instance.isOverrideAllowed('autoApprove')}" />
 			</j:otherwise>
 		</j:choose>
     </f:entry>

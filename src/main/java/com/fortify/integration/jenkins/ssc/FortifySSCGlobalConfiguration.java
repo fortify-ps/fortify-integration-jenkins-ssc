@@ -108,6 +108,7 @@ public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConf
 		return new FortifySSCGlobalConfiguration();
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	protected Class<AbstractFortifySSCDescriptorGlobalConfiguration> getDescribableGlobalConfigurationDescriptorType() {
 		return AbstractFortifySSCDescriptorGlobalConfiguration.class;

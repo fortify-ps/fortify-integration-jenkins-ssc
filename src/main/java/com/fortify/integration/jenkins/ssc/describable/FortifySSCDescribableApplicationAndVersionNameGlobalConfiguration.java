@@ -27,7 +27,6 @@ package com.fortify.integration.jenkins.ssc.describable;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable;
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribableGlobalConfiguration;
 
 import hudson.Extension;

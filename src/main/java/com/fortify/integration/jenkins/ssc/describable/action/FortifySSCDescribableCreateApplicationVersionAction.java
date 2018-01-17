@@ -25,6 +25,7 @@
 package com.fortify.integration.jenkins.ssc.describable.action;
 
 import java.io.IOException;
+import java.io.PrintStream;
 
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -70,7 +71,11 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
 	}
 	
 	public String getIssueTemplateName() {
-		return isIssueTemplateNameOverrideAllowed() ? issueTemplateName : getDefaultConfiguration().getIssueTemplateName();
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed("issueTemplateName", issueTemplateName);
+	}
+	
+	private String getIssueTemplateNameWithLog(PrintStream log) {
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "issueTemplateName", issueTemplateName);
 	}
 
 	@DataBoundSetter
@@ -78,27 +83,21 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
 		this.issueTemplateName = issueTemplateName;
 	}
 	
-	public boolean isIssueTemplateNameOverrideAllowed() {
-		// Allow override if we either were previously configured to allow override, or if current global config allows override
-		//FortifySSCDescribableActionCreateApplicationVersionGlobal globalConfig = getGlobalConfig();
-		//return globalConfig==null || globalConfig.isOverrideAllowed("issueTemplateName");
-		// TODO
-		return true;
-	}
-	
 	@Override
 	public void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException 
 	{
-		FortifySSCGlobalConfiguration.get().checkEnabled(this.getDescriptor());
+		checkEnabled();
 		EnvVars env = run.getEnvironment(listener);
+		PrintStream log = listener.getLogger();
 		JSONMap applicationVersion = applicationAndVersionNameJobConfig.getApplicationVersion(env, false);
 		if ( applicationVersion == null ) {
-			createApplicationVersion(applicationAndVersionNameJobConfig.getExpandedApplicationName(env), applicationAndVersionNameJobConfig.getExpandedVersionName(env));
+			createApplicationVersion(log, applicationAndVersionNameJobConfig.getExpandedApplicationName(env), applicationAndVersionNameJobConfig.getExpandedVersionName(env));
 		}
 	}
 	
-	private void createApplicationVersion(String expandedApplicationName, String expandedVersionName) throws AbortException {
+	private void createApplicationVersion(PrintStream log, String expandedApplicationName, String expandedVersionName) throws AbortException {
+		String issueTemplateName = getIssueTemplateNameWithLog(log);
 		throw new AbortException("Creating application versions not yet implemented");
 	}
 

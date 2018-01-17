@@ -29,6 +29,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -38,6 +39,7 @@ import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Describable;
+import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStep;
@@ -85,8 +87,9 @@ public abstract class AbstractMultiActionBuilder<DescribableActionJobType extend
 	@Override
 	public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		log.println(
-				"HPE Security Fortify Jenkins plugin: " + FortifySSCGlobalConfiguration.get().conn().getBaseResource());
+		if ( StringUtils.isNotBlank(getStartPerformMessage()) ) {
+			log.println(getStartPerformMessage());
+		}
 		// TODO Move this to AbstractFortifySSCJobConfigWithApplicationVersionAction implementations that actually
 		//      need a workspace
 		if (workspace == null) { 
@@ -97,6 +100,10 @@ public abstract class AbstractMultiActionBuilder<DescribableActionJobType extend
 				perform(action, build, workspace, launcher, listener);
 			}
 		}
+	}
+
+	protected String getStartPerformMessage() {
+		return getDescriptor().getDisplayName();
 	}
 	
 	protected abstract void perform(DescribableActionJobType action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
@@ -113,14 +120,19 @@ public abstract class AbstractMultiActionBuilder<DescribableActionJobType extend
 	
 	public static abstract class AbstractDescriptorMultiActionBuilder<T extends BuildStep & Describable<T>> extends BuildStepDescriptor<T> {
 
-		public T getInstanceOrDefault(T instance) {
+		public final T getInstanceOrDefault(T instance) {
 			T result = instance!=null ? instance : createDefaultInstance();
 			System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
 			return result;
 		}
 		
+		public final List<Descriptor<?>> getEnabledDescriptors() {
+			return getMultiActionGlobalConfiguration().getEnabledJobDescriptors();
+		}
+		
 		public abstract T createDefaultInstance();
 
+		protected abstract AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration();
 	}
 
 }

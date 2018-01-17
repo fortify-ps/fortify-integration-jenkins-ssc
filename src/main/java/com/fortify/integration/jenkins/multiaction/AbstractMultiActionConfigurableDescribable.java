@@ -24,15 +24,15 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.multiaction;
 
+import java.io.PrintStream;
 import java.io.Serializable;
 
 import org.springframework.core.Ordered;
 
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 
+import hudson.AbortException;
 import hudson.model.Describable;
-import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
 
 public abstract class AbstractMultiActionConfigurableDescribable<C extends Describable<C>, T extends AbstractMultiActionConfigurableDescribable<C, T>> extends AbstractDescribable<T> implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -43,32 +43,82 @@ public abstract class AbstractMultiActionConfigurableDescribable<C extends Descr
 		return (AbstractMultiActionConfigurableDescriptor<C,T>) super.getDescriptor();
 	}
 	
-	protected C getDefaultConfiguration() {
+	public final boolean isEnabled() {
+		return getMultiActionGlobalConfiguration().isEnabled(this.getClass());
+	}
+	
+	public final void checkEnabled() throws AbortException {
+		getMultiActionGlobalConfiguration().checkEnabled(this.getClass());
+	}
+	
+	/**
+	 * Return whether the current instance is the default configuration.
+	 * Note that this method also returns true if there is no default
+	 * configuration.
+	 * @return
+	 */
+	public final boolean isInstanceIsDefaultConfiguration() {
+		C defaultConfiguration = getDefaultConfiguration();
+		return defaultConfiguration==null 
+				|| !defaultConfiguration.getClass().equals(this.getClass()) 
+				|| this == defaultConfiguration;
+	}
+	
+	public boolean isOverrideAllowed(String propertyName) {
+		return isInstanceIsDefaultConfiguration() 
+			|| getMultiActionGlobalConfiguration().isOverrideAllowed(this.getClass(), propertyName);
+	}
+	
+	/**
+	 * This method needs to be called by all getter methods for configurable properties.
+	 * If the current instance is the global configuration, or if override is allowed,
+	 * this method will return the given current value. Otherwise, this method will
+	 * return the property value from the global configuration.
+	 *  
+	 * @param propertyName
+	 * @param currentValue
+	 * @return
+	 */
+	protected final <V> V getPropertyValueOrDefaultValueIfOverrideDisallowed(String propertyName, V currentValue) {
+		return isInstanceIsDefaultConfiguration() 
+					? currentValue 
+					: getMultiActionGlobalConfiguration().getPropertyValueOrDefaultValueIfOverrideDisallowed(
+							this.getClass(), propertyName, currentValue);
+	}
+	
+	/**
+	 * Same as {@link #getPropertyValueOrDefaultValueIfOverrideDisallowed(String, Object)},
+	 * but logs a warning if default configuration value is used instead of current value.
+	 * @return
+	 */
+	protected final <V> V getPropertyValueOrDefaultValueIfOverrideDisallowed(PrintStream log, String propertyName, V currentValue) {
+		return isInstanceIsDefaultConfiguration() 
+					? currentValue 
+					: getMultiActionGlobalConfiguration().getPropertyValueOrDefaultValueIfOverrideDisallowed(
+							this.getClass(), log, propertyName, currentValue);
+	}
+	
+	public final C getDefaultConfiguration() {
 		return getDescriptor().getDefaultConfiguration();
+	}
+	
+	protected final AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
+		return getDescriptor().getMultiActionGlobalConfiguration();
 	}
 	
 	public static abstract class AbstractMultiActionConfigurableDescriptor<C extends Describable<C>, T extends AbstractMultiActionConfigurableDescribable<C,T>> extends AbstractDescriptor<T> implements Ordered {		
 		/**
-		 * By default we return our own class. Subclasses must override this method
-		 * if our global configuration class is not the same as ourselves.
-		 * 
+		 * By default we return the dynamically added default configuration.
+		 * Subclasses that are statically configured must override this method.
+		 * This method assumes that the default configuration target type
+		 * is the same as the configurable type (C and T class parameters are
+		 * the same class). If not, this method must be overridden to get the 
+		 * default configuration using the correct types.
 		 * @return
 		 */
 		@SuppressWarnings("unchecked")
-		protected Class<C> getGlobalConfigurationTargetType() {
-			return (Class<C>)getT();
-		}
-		
-		protected final Descriptor<?> getGlobalConfigurationDescriptor() {
-			return Jenkins.getInstance().getDescriptorOrDie(getGlobalConfigurationTargetType());
-		}
-		
-		protected final Class<?> getGlobalConfigurationClass() {
-			return getGlobalConfigurationDescriptor().getT();
-		}
-		
 		protected C getDefaultConfiguration() {
-			return FortifySSCGlobalConfiguration.get().getDefaultConfig(getGlobalConfigurationClass(), getGlobalConfigurationTargetType());
+			return (C)FortifySSCGlobalConfiguration.get().getDefaultConfig(getT(), getT());
 		}
 		
 		protected abstract AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration();

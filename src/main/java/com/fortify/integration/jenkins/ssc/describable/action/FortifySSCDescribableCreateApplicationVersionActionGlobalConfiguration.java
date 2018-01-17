@@ -24,13 +24,9 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable.action;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable;
 import com.fortify.integration.jenkins.ssc.describable.action.FortifySSCDescribableCreateApplicationVersionAction.FortifySSCDescriptorCreateApplicationVersionAction;
 
 import hudson.Extension;

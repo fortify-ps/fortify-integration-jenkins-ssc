@@ -75,7 +75,11 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 	}
 	
 	public String getFprAntFilter() {
-		return fprAntFilter;
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed("fprAntFilter", fprAntFilter);
+	}
+	
+	private String getFprAntFilterWithLog(PrintStream log) {
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "fprAntFilter", fprAntFilter);
 	}
 
 	@DataBoundSetter
@@ -84,7 +88,11 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 	}
 
 	public int getProcessingTimeOutSeconds() {
-		return processingTimeOutSeconds;
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed("processingTimeOutSeconds", processingTimeOutSeconds);
+	}
+	
+	private int getProcessingTimeOutSecondsWithLog(PrintStream log) {
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "processingTimeOutSeconds", processingTimeOutSeconds);
 	}
 
 	@DataBoundSetter
@@ -93,7 +101,11 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 	}
 
 	public String getAutoApprove() {
-		return autoApprove;
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed("autoApprove", autoApprove);
+	}
+	
+	private String getAutoApproveWithLog(PrintStream log) {
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "autoApprove", autoApprove);
 	}
 
 	@DataBoundSetter
@@ -104,36 +116,43 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 	@Override
 	public void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-		FortifySSCGlobalConfiguration.get().checkEnabled(this.getDescriptor());
+		checkEnabled();
 		PrintStream log = listener.getLogger();
 		EnvVars env = run.getEnvironment(listener);
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(env);
-		FilePath[] list = workspace.list(getFprAntFilter());
-		if ( list.length == 0 ) {
-			throw new AbortException("No FPR file found");
-		} else if ( list.length > 1 ) {
-			throw new AbortException("More than 1 FPR file found");
-		} else {
-			final SSCArtifactAPI artifactApi = conn.api(SSCArtifactAPI.class);
-			String artifactId = list[0].act(new FileCallable<String>() {
-				private static final long serialVersionUID = 1L;
-				@Override
-				public void checkRoles(RoleChecker checker) throws SecurityException {}
+		FilePath fprFilePath = getFPRFilePath(workspace, log);
+		
+		final SSCArtifactAPI artifactApi = conn.api(SSCArtifactAPI.class);
+		String artifactId = fprFilePath.act(new FileCallable<String>() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void checkRoles(RoleChecker checker) throws SecurityException {}
 
-				@Override
-				public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-					return artifactApi.uploadArtifactAndWaitProcessingCompletion(applicationVersionId, f, getProcessingTimeOutSeconds());
-				}
-			});
-			log.println(artifactApi.getArtifactById(artifactId, true));
-			if ( "true".equals(getAutoApprove()) ) {
-				JSONMap artifact = artifactApi.getArtifactById(artifactId, true);
-				if ( "REQUIRE_AUTH".equals(artifact.get("status", String.class)) ) {
-					// TODO Implement artifactApi.approveArtifactAndWaitForProcessing() in Fortify client API
-					artifactApi.approveArtifact(artifactId, "Auto-approved by Jenkins");
-				}
+			@Override
+			public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+				return artifactApi.uploadArtifactAndWaitProcessingCompletion(applicationVersionId, f, getProcessingTimeOutSecondsWithLog(log));
 			}
+		});
+		log.println(artifactApi.getArtifactById(artifactId, true));
+		if ( "true".equals(getAutoApproveWithLog(log)) ) {
+			JSONMap artifact = artifactApi.getArtifactById(artifactId, true);
+			if ( "REQUIRE_AUTH".equals(artifact.get("status", String.class)) ) {
+				// TODO Implement artifactApi.approveArtifactAndWaitForProcessing() in Fortify client API
+				artifactApi.approveArtifact(artifactId, "Auto-approved by Jenkins");
+			}
+		}
+	}
+
+	private FilePath getFPRFilePath(FilePath workspace, PrintStream log) throws IOException, InterruptedException {
+		String fprAntFilter = getFprAntFilterWithLog(log);
+		FilePath[] list = workspace.list(fprAntFilter);
+		if ( list.length == 0 ) {
+			throw new AbortException("No FPR file found with filter '"+fprAntFilter+"'");
+		} else if ( list.length > 1 ) {
+			throw new AbortException("More than 1 FPR file found with filter '"+fprAntFilter+"'");
+		} else {
+			return list[0];
 		}
 	}
 	

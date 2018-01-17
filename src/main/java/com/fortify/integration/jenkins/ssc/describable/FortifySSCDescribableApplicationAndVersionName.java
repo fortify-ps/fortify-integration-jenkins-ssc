@@ -165,6 +165,11 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 		}
 		
 		@Override
+		protected FortifySSCDescribableApplicationAndVersionName getDefaultConfiguration() {
+			return FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig();
+		}
+		
+		@Override
 		public int getOrder() {
 			return 10;
 		}

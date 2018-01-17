@@ -25,22 +25,21 @@
 package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionBuilder;
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCConfigurableDescribable;
 import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCDescribableAction;
 
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.Builder;
@@ -69,6 +68,11 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder<Abstrac
 		action.perform(with, build, workspace, launcher, listener);
 	}
 	
+	@Override
+	protected String getStartPerformMessage() {
+		return "HPE Security Fortify Jenkins plugin: " + FortifySSCGlobalConfiguration.get().conn().getBaseUrl();
+	}
+	
 	@Symbol("sscPerformActions")
 	@Extension
 	public static class DescriptorImpl extends AbstractDescriptorMultiActionBuilder<Builder> {
@@ -84,17 +88,18 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder<Abstrac
 			return "Fortify SSC Jenkins Plugin";
 		}
 	
-		public final List<Descriptor<?>> getEnabledDescriptors() {
-			return FortifySSCGlobalConfiguration.get().getEnabledJobDescriptors();
-		}
-	
 		@Override
 		public final FortifySSCJenkinsBuilder createDefaultInstance() {
 			return new FortifySSCJenkinsBuilder();
 		}
 		
+		@Override
+		protected AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
+			return FortifySSCGlobalConfiguration.get();
+		}
+		
 		public final Class<?> getTargetType() {
-			return AbstractMultiActionConfigurableDescribable.class;
+			return AbstractFortifySSCConfigurableDescribable.class;
 		}
 	}
 

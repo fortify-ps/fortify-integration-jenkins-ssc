@@ -27,8 +27,6 @@ package com.fortify.integration.jenkins.multiaction;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.springframework.core.Ordered;
 
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable.AbstractMultiActionConfigurableDescriptor;
-
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
@@ -66,7 +64,7 @@ public abstract class AbstractMultiActionDescribableGlobalConfiguration<T extend
 	}
 
 	public abstract Describable<?> getTarget();
-	public abstract <TargetType extends Describable<?>> Class<TargetType> getTargetType();
+	public abstract <TargetType extends AbstractMultiActionConfigurableDescribable<?, ?>> Class<TargetType> getTargetType();
 
 	public static abstract class AbstractMultiActionDescriptorGlobalConfiguration<T extends AbstractMultiActionDescribableGlobalConfiguration<T>> extends AbstractDescriptor<T> implements Ordered {
 		/* This would be nice, but causes Jenkins to fail from starting up

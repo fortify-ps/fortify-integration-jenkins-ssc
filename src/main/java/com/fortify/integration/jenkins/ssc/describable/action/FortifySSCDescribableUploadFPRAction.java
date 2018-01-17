@@ -38,7 +38,6 @@ import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
 import com.fortify.integration.jenkins.util.ModelHelper;
-import com.fortify.util.rest.json.JSONMap;
 
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -122,7 +121,6 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(env);
 		FilePath fprFilePath = getFPRFilePath(workspace, log);
-		final int processingTimeoutSeconds = getProcessingTimeOutSecondsWithLog(log); 
 		
 		final SSCArtifactAPI artifactApi = conn.api(SSCArtifactAPI.class);
 		String artifactId = fprFilePath.act(new FileCallable<String>() {
@@ -132,16 +130,14 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 
 			@Override
 			public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-				return artifactApi.uploadArtifactAndWaitProcessingCompletion(applicationVersionId, f, processingTimeoutSeconds);
+				final int processingTimeoutSeconds = getProcessingTimeOutSecondsWithLog(log); 
+				if ( "true".equals(getAutoApproveWithLog(log)) ) {
+					return artifactApi.uploadArtifactAndWaitProcessingCompletionWithApproval(applicationVersionId, f, "Auto-approved by Jenkins", processingTimeoutSeconds);
+				} else {
+					return artifactApi.uploadArtifactAndWaitProcessingCompletion(applicationVersionId, f, processingTimeoutSeconds);
+				}
 			}
 		});
-		if ( "true".equals(getAutoApproveWithLog(log)) ) {
-			JSONMap artifact = artifactApi.getArtifactById(artifactId, false);
-			if ( "REQUIRE_AUTH".equals(artifact.get("status", String.class)) ) {
-				// TODO Implement artifactApi.approveArtifactAndWaitForProcessing() in Fortify client API
-				artifactApi.approveArtifactAndWaitProcessingCompletion(artifactId, "Auto-approved by Jenkins", processingTimeoutSeconds);
-			}
-		}
 		log.println(artifactApi.getArtifactById(artifactId, true));
 	}
 

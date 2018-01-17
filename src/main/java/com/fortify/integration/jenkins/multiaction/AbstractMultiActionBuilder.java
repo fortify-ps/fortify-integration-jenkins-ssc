@@ -66,7 +66,7 @@ import jenkins.tasks.SimpleBuildStep;
  *
  * @param <DescribableActionJobType>
  */
-public abstract class AbstractMultiActionBuilder<DescribableActionJobType extends AbstractMultiActionDescribable<?>> extends Builder implements SimpleBuildStep {
+public abstract class AbstractMultiActionBuilder<DescribableActionJobType extends AbstractMultiActionConfigurableDescribable<?,?>> extends Builder implements SimpleBuildStep {
 	private List<DescribableActionJobType> actions;
 
 	public AbstractMultiActionBuilder() {

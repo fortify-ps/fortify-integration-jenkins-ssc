@@ -25,19 +25,24 @@
 package com.fortify.integration.jenkins.multiaction;
 
 import org.kohsuke.stapler.DataBoundSetter;
+import org.springframework.core.Ordered;
 
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable.AbstractMultiActionConfigurableDescriptor;
+
+import hudson.model.Describable;
+import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 
 /**
  * TODO: update JavaDoc
  * Subclasses will need to implement a property (field/setter/getter) named 'target' with 
- * the corresponding {@link AbstractMultiActionDescribable} type.
+ * the corresponding {@link AbstractMultiActionConfigurableDescribable} type.
  * 
  * @author Ruud Senden
  *
  * @param <T>
  */
-public abstract class AbstractMultiActionDescribableGlobalConfiguration<T extends AbstractMultiActionDescribableGlobalConfiguration<T>> extends AbstractMultiActionDescribable<T> {
+public abstract class AbstractMultiActionDescribableGlobalConfiguration<T extends AbstractMultiActionDescribableGlobalConfiguration<T>> extends AbstractDescribable<T> {
 	private static final long serialVersionUID = 1L;
 	private boolean enabledByDefault = true;
 	private boolean allowOverride = true;
@@ -60,10 +65,10 @@ public abstract class AbstractMultiActionDescribableGlobalConfiguration<T extend
 		this.allowOverride = allowOverride;
 	}
 
-	public abstract AbstractMultiActionDescribable<?> getTarget();
-	public abstract <TargetType extends AbstractMultiActionDescribable<?>> Class<TargetType> getTargetType();
+	public abstract Describable<?> getTarget();
+	public abstract <TargetType extends Describable<?>> Class<TargetType> getTargetType();
 
-	public static abstract class AbstractMultiActionDescriptorGlobalConfiguration<T extends AbstractMultiActionDescribableGlobalConfiguration<T>> extends AbstractMultiActionDescriptor<T> {
+	public static abstract class AbstractMultiActionDescriptorGlobalConfiguration<T extends AbstractMultiActionDescribableGlobalConfiguration<T>> extends AbstractDescriptor<T> implements Ordered {
 		/* This would be nice, but causes Jenkins to fail from starting up
 		@Override
 		public String getDisplayName() {
@@ -76,10 +81,11 @@ public abstract class AbstractMultiActionDescribableGlobalConfiguration<T extend
 			return getTargetDescriptor().getOrder();
 		}
 		
-		public AbstractMultiActionDescriptor<?> getTargetDescriptor() {
-			return (AbstractMultiActionDescriptor<?>) Jenkins.getInstance().getDescriptorOrDie(getTargetType());
+		@SuppressWarnings("unchecked")
+		public final <TD extends Descriptor<?> & Ordered> TD getTargetDescriptor() {
+			return (TD) Jenkins.getInstance().getDescriptorOrDie(getTargetType());
 		}
 		
-		protected abstract Class<? extends AbstractMultiActionDescribable<?>> getTargetType();
+		protected abstract Class<? extends Describable<?>> getTargetType();
 	}
 }

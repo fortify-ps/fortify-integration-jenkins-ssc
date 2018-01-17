@@ -32,8 +32,8 @@ import org.kohsuke.stapler.QueryParameter;
 import com.fortify.client.ssc.api.SSCApplicationAPI;
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribable;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCConfigurableDescribable;
 import com.fortify.integration.jenkins.ssc.json.processor.AddNamesToComboBoxModel;
 import com.fortify.util.rest.json.JSONMap;
 
@@ -42,8 +42,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.util.ComboBoxModel;
 
-// TODO Override set* methods to check whether values are being overridden when not allowed
-public class FortifySSCDescribableApplicationAndVersionName extends AbstractMultiActionDescribable<FortifySSCDescribableApplicationAndVersionName> {
+public class FortifySSCDescribableApplicationAndVersionName extends AbstractFortifySSCConfigurableDescribable<FortifySSCDescribableApplicationAndVersionName, FortifySSCDescribableApplicationAndVersionName> {
 	private static final long serialVersionUID = 1L;
 	private String applicationName = "";
 	private String versionName = "";
@@ -66,7 +65,7 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractMult
 	}
 	
 	public String getApplicationName() {
-		return isApplicationNameOverrideAllowed() ? applicationName : getGlobalConfig().getApplicationName();
+		return isApplicationNameOverrideAllowed() ? applicationName : getDefaultConfiguration().getApplicationName();
 	}
 
 	@DataBoundSetter
@@ -75,7 +74,7 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractMult
 	}
 
 	public String getVersionName() {
-		return isVersionNameOverrideAllowed() ? versionName : getGlobalConfig().getVersionName();
+		return isVersionNameOverrideAllowed() ? versionName : getDefaultConfiguration().getVersionName();
 	}
 
 	@DataBoundSetter
@@ -129,12 +128,8 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractMult
 		}
 	}
 	
-	private static final FortifySSCDescribableApplicationAndVersionName getGlobalConfig() {
-		return FortifySSCGlobalConfiguration.get().getDefaultConfig(FortifySSCDescribableApplicationAndVersionName.class);
-	}
-	
 	@Extension
-	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractMultiActionDescriptor<FortifySSCDescribableApplicationAndVersionName> {
+	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractFortifySSCConfigurableDescriptor<FortifySSCDescribableApplicationAndVersionName, FortifySSCDescribableApplicationAndVersionName> {
         public ComboBoxModel doFillApplicationNameItems() {
 			final ComboBoxModel items = new ComboBoxModel();
 			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();

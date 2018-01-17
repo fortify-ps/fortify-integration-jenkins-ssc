@@ -29,5 +29,7 @@ import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribabl
 public abstract class AbstractFortifySSCDescribableActionGlobalConfiguration<T extends AbstractFortifySSCDescribableActionGlobalConfiguration<T>> extends AbstractMultiActionDescribableGlobalConfiguration<T> {
 	private static final long serialVersionUID = 1L;
 
-	public static abstract class AbstractFortifySSCDescriptorGlobalConfiguration<T extends AbstractFortifySSCDescribableActionGlobalConfiguration<T>> extends AbstractMultiActionDescriptorGlobalConfiguration<T> {}
+	public static abstract class AbstractFortifySSCDescriptorGlobalConfiguration<T extends AbstractFortifySSCDescribableActionGlobalConfiguration<T>> extends AbstractMultiActionDescriptorGlobalConfiguration<T> {
+		
+	}
 }

@@ -51,7 +51,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ListBoxModel;
 
-public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDescribableAction<FortifySSCDescribableUploadFPRAction> {
+public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDescribableAction<FortifySSCDescribableUploadFPRAction, FortifySSCDescribableUploadFPRAction> {
 	private static final long serialVersionUID = 1L;
 	private String fprAntFilter = "**/*.fpr";
 	private int processingTimeOutSeconds = 600;
@@ -137,18 +137,14 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 		}
 	}
 	
-	private static final FortifySSCDescribableUploadFPRAction getDefaultConfig() {
-		return FortifySSCGlobalConfiguration.get().getDefaultConfig(FortifySSCDescribableUploadFPRAction.class);
-	}
-	
 	@Symbol("sscUploadFPR")
 	@Extension
-	public static final class FortifySSCDescriptorUploadFPRAction extends AbstractFortifySSCDescriptorAction<FortifySSCDescribableUploadFPRAction> {
+	public static final class FortifySSCDescriptorUploadFPRAction extends AbstractFortifySSCDescriptorAction<FortifySSCDescribableUploadFPRAction, FortifySSCDescribableUploadFPRAction> {
 		static final String DISPLAY_NAME = "Upload FPR file";
 
 		@Override
 		public FortifySSCDescribableUploadFPRAction createDefaultInstanceWithConfiguration() {
-			return new FortifySSCDescribableUploadFPRAction(getDefaultConfig());
+			return new FortifySSCDescribableUploadFPRAction(getDefaultConfiguration());
 		}
 		
 		@Override

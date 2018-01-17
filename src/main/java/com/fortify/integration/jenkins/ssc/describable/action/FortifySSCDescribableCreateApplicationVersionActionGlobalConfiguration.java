@@ -30,10 +30,11 @@ import java.util.List;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribable;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable;
 import com.fortify.integration.jenkins.ssc.describable.action.FortifySSCDescribableCreateApplicationVersionAction.FortifySSCDescriptorCreateApplicationVersionAction;
 
 import hudson.Extension;
+import hudson.model.Describable;
 
 public class FortifySSCDescribableCreateApplicationVersionActionGlobalConfiguration extends AbstractFortifySSCDescribableActionGlobalConfiguration<FortifySSCDescribableCreateApplicationVersionActionGlobalConfiguration> {
 	private static final long serialVersionUID = 1L;
@@ -65,9 +66,9 @@ public class FortifySSCDescribableCreateApplicationVersionActionGlobalConfigurat
         }
         
         @Override
-        protected Class<? extends AbstractMultiActionDescribable<?>> getTargetType() {
-        	return FortifySSCDescribableCreateApplicationVersionAction.class;
-        }
+		protected Class<? extends Describable<?>> getTargetType() {
+			return FortifySSCDescribableCreateApplicationVersionAction.class;
+		}
         
         @Override
         public String getDisplayName() {

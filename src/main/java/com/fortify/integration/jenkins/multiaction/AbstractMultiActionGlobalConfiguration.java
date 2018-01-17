@@ -31,7 +31,7 @@ import java.util.Map;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.springframework.core.OrderComparator;
 
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribable.AbstractMultiActionDescriptor;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable.AbstractMultiActionConfigurableDescriptor;
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribableGlobalConfiguration.AbstractMultiActionDescriptorGlobalConfiguration;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -40,6 +40,7 @@ import com.google.common.collect.Maps;
 
 import hudson.AbortException;
 import hudson.ExtensionList;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 
@@ -61,7 +62,7 @@ import jenkins.model.Jenkins;
 public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractMultiActionGlobalConfiguration<T>> extends AbstractGlobalConfiguration<T> 
 {
 	private List<AbstractMultiActionDescribableGlobalConfiguration<?>> enabledActionsDefaultConfigs;
-	private transient Map<Class<AbstractMultiActionDescribable<?>>, AbstractMultiActionDescribableGlobalConfiguration<?>> enabledActionsDefaultConfigsMap;
+	private transient Map<Class<Describable<?>>, AbstractMultiActionDescribableGlobalConfiguration<?>> targetTypeToEnabledActionsDefaultConfigsMap;
 
 	public AbstractMultiActionGlobalConfiguration() {
 		setEnabledActionsDefaultConfigs(getDefaultEnabledActionsDefaultConfigs());
@@ -74,13 +75,20 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 	@DataBoundSetter
 	public void setEnabledActionsDefaultConfigs(List<AbstractMultiActionDescribableGlobalConfiguration<?>> enabledActionsDefaultConfigs) {
 		this.enabledActionsDefaultConfigs = enabledActionsDefaultConfigs;
-		this.enabledActionsDefaultConfigsMap = Maps.uniqueIndex(enabledActionsDefaultConfigs, new Function<AbstractMultiActionDescribableGlobalConfiguration<?>, Class<AbstractMultiActionDescribable<?>>> () {
-			@Override
-			public Class<AbstractMultiActionDescribable<?>> apply(AbstractMultiActionDescribableGlobalConfiguration<?> input) {
-				return (Class<AbstractMultiActionDescribable<?>>) input.getTargetType();
-			}
-		    
-		    });
+		this.targetTypeToEnabledActionsDefaultConfigsMap = null;
+	}
+	
+	public Map<Class<Describable<?>>, AbstractMultiActionDescribableGlobalConfiguration<?>> getTargetTypeToEnabledActionsDefaultConfigsMap() {
+		if ( targetTypeToEnabledActionsDefaultConfigsMap == null ) {
+			targetTypeToEnabledActionsDefaultConfigsMap = Maps.uniqueIndex(enabledActionsDefaultConfigs, new Function<AbstractMultiActionDescribableGlobalConfiguration<?>, Class<Describable<?>>> () {
+				@Override
+				public Class<Describable<?>> apply(AbstractMultiActionDescribableGlobalConfiguration<?> input) {
+					return input.getTargetType();
+				}
+			    
+			    });
+		};
+		return targetTypeToEnabledActionsDefaultConfigsMap;
 	}
 
 	public void checkEnabled(Descriptor<?> descriptor) throws AbortException {
@@ -92,8 +100,8 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 	}
 
 	public boolean isEnabled(Descriptor<?> descriptor) {
-		if ( descriptor instanceof AbstractMultiActionDescriptor<?> ) {
-			return enabledActionsDefaultConfigsMap.containsKey(((AbstractMultiActionDescriptor<?>)descriptor).getClass().getEnclosingClass());
+		if ( descriptor instanceof AbstractMultiActionConfigurableDescriptor<?,?> ) {
+			return getTargetTypeToEnabledActionsDefaultConfigsMap().containsKey(((AbstractMultiActionConfigurableDescriptor<?,?>)descriptor).getGlobalConfigurationTargetType());
 		}
 		return false;
 	}
@@ -120,9 +128,9 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 	protected abstract <D extends AbstractMultiActionDescriptorGlobalConfiguration<?>> Class<D> getDescribableGlobalConfigurationDescriptorType();
 
 	@SuppressWarnings("unchecked")
-	public <GlobalConfig extends AbstractMultiActionDescribable<?>> GlobalConfig getDefaultConfig(Class<GlobalConfig> type) {
-		AbstractMultiActionDescribableGlobalConfiguration<?> config = enabledActionsDefaultConfigsMap.get(type);
-		return config == null ? null : (GlobalConfig)config.getTarget();
+	public <R, C> R getDefaultConfig(Class<C> globalConfigurationType, Class<R> returnType) {
+		AbstractMultiActionDescribableGlobalConfiguration<?> config = getTargetTypeToEnabledActionsDefaultConfigsMap().get(globalConfigurationType);
+		return config == null ? null : (R)config.getTarget();
 	}
 
 	protected List<AbstractMultiActionDescribableGlobalConfiguration<?>> getDefaultEnabledActionsDefaultConfigs() {

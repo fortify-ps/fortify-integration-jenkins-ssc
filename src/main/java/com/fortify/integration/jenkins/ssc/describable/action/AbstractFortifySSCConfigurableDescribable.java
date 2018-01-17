@@ -24,20 +24,19 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable.action;
 
-import java.io.IOException;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
-
-import hudson.FilePath;
-import hudson.Launcher;
 import hudson.model.Describable;
-import hudson.model.Run;
-import hudson.model.TaskListener;
 
-public abstract class AbstractFortifySSCDescribableAction<C extends Describable<C>, T extends AbstractFortifySSCDescribableAction<C, T>> extends AbstractFortifySSCConfigurableDescribable<C, T> {
+public abstract class AbstractFortifySSCConfigurableDescribable<C extends Describable<C>, T extends AbstractFortifySSCConfigurableDescribable<C, T>> extends AbstractMultiActionConfigurableDescribable<C, T> {
 	private static final long serialVersionUID = 1L;
 
-	public abstract void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
-	
-	public static abstract class AbstractFortifySSCDescriptorAction<C extends Describable<C>, T extends AbstractFortifySSCDescribableAction<C,T>> extends AbstractFortifySSCConfigurableDescriptor<C,T> {}
+	public static abstract class AbstractFortifySSCConfigurableDescriptor<C extends Describable<C>, T extends AbstractFortifySSCConfigurableDescribable<C,T>> extends AbstractMultiActionConfigurableDescriptor<C,T> {
+		@Override
+		protected AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
+			return FortifySSCGlobalConfiguration.get();
+		}
+	}
 }

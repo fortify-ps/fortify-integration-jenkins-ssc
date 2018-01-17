@@ -27,10 +27,11 @@ package com.fortify.integration.jenkins.ssc.describable.action;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribable;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable;
 import com.fortify.integration.jenkins.ssc.describable.action.FortifySSCDescribableUploadFPRAction.FortifySSCDescriptorUploadFPRAction;
 
 import hudson.Extension;
+import hudson.model.Describable;
 
 public class FortifySSCDescribableUploadFPRActionGlobalConfiguration extends AbstractFortifySSCDescribableActionGlobalConfiguration<FortifySSCDescribableUploadFPRActionGlobalConfiguration> {
 	private static final long serialVersionUID = 1L;
@@ -62,7 +63,7 @@ public class FortifySSCDescribableUploadFPRActionGlobalConfiguration extends Abs
         }
         
         @Override
-        protected Class<? extends AbstractMultiActionDescribable<?>> getTargetType() {
+        protected Class<? extends Describable<?>> getTargetType() {
         	return FortifySSCDescribableUploadFPRAction.class;
         }
         

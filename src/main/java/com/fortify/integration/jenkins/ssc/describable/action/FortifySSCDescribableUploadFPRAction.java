@@ -122,6 +122,7 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(env);
 		FilePath fprFilePath = getFPRFilePath(workspace, log);
+		final int processingTimeoutSeconds = getProcessingTimeOutSecondsWithLog(log); 
 		
 		final SSCArtifactAPI artifactApi = conn.api(SSCArtifactAPI.class);
 		String artifactId = fprFilePath.act(new FileCallable<String>() {
@@ -131,17 +132,17 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 
 			@Override
 			public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-				return artifactApi.uploadArtifactAndWaitProcessingCompletion(applicationVersionId, f, getProcessingTimeOutSecondsWithLog(log));
+				return artifactApi.uploadArtifactAndWaitProcessingCompletion(applicationVersionId, f, processingTimeoutSeconds);
 			}
 		});
-		log.println(artifactApi.getArtifactById(artifactId, true));
 		if ( "true".equals(getAutoApproveWithLog(log)) ) {
-			JSONMap artifact = artifactApi.getArtifactById(artifactId, true);
+			JSONMap artifact = artifactApi.getArtifactById(artifactId, false);
 			if ( "REQUIRE_AUTH".equals(artifact.get("status", String.class)) ) {
 				// TODO Implement artifactApi.approveArtifactAndWaitForProcessing() in Fortify client API
-				artifactApi.approveArtifact(artifactId, "Auto-approved by Jenkins");
+				artifactApi.approveArtifactAndWaitProcessingCompletion(artifactId, "Auto-approved by Jenkins", processingTimeoutSeconds);
 			}
 		}
+		log.println(artifactApi.getArtifactById(artifactId, true));
 	}
 
 	private FilePath getFPRFilePath(FilePath workspace, PrintStream log) throws IOException, InterruptedException {

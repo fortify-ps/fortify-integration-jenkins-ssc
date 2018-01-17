@@ -37,7 +37,10 @@ import com.fortify.client.ssc.api.SSCArtifactAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.util.ModelHelper;
+import com.fortify.util.rest.json.JSONMap;
 
+import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -46,11 +49,13 @@ import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
+import hudson.util.ListBoxModel;
 
 public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDescribableAction<FortifySSCDescribableUploadFPRAction> {
 	private static final long serialVersionUID = 1L;
 	private String fprAntFilter = "**/*.fpr";
 	private int processingTimeOutSeconds = 600;
+	private String autoApprove = null;
 	
 	/**
 	 * Default constructor
@@ -87,6 +92,15 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 		this.processingTimeOutSeconds = processingTimeOutSeconds;
 	}
 
+	public String getAutoApprove() {
+		return autoApprove;
+	}
+
+	@DataBoundSetter
+	public void setAutoApprove(String autoApprove) {
+		this.autoApprove = autoApprove;
+	}
+
 	@Override
 	public void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
@@ -95,11 +109,11 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 		EnvVars env = run.getEnvironment(listener);
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(env);
-		FilePath[] list = workspace.list("**/*.fpr");
+		FilePath[] list = workspace.list(getFprAntFilter());
 		if ( list.length == 0 ) {
-			log.println("No FPR file found");
+			throw new AbortException("No FPR file found");
 		} else if ( list.length > 1 ) {
-			log.println("More than 1 FPR file found");
+			throw new AbortException("More than 1 FPR file found");
 		} else {
 			final SSCArtifactAPI artifactApi = conn.api(SSCArtifactAPI.class);
 			String artifactId = list[0].act(new FileCallable<String>() {
@@ -109,10 +123,17 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 
 				@Override
 				public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-					return artifactApi.uploadArtifactAndWaitProcessingCompletion(applicationVersionId, f, 60);
+					return artifactApi.uploadArtifactAndWaitProcessingCompletion(applicationVersionId, f, getProcessingTimeOutSeconds());
 				}
 			});
-			log.println(artifactApi.getArtifactById(artifactId, false));
+			log.println(artifactApi.getArtifactById(artifactId, true));
+			if ( "true".equals(getAutoApprove()) ) {
+				JSONMap artifact = artifactApi.getArtifactById(artifactId, true);
+				if ( "REQUIRE_AUTH".equals(artifact.get("status", String.class)) ) {
+					// TODO Implement artifactApi.approveArtifactAndWaitForProcessing() in Fortify client API
+					artifactApi.approveArtifact(artifactId, "Auto-approved by Jenkins");
+				}
+			}
 		}
 	}
 	
@@ -144,6 +165,13 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 		@Override
 		public int getOrder() {
 			return 200;
+		}
+		
+		public ListBoxModel doFillAutoApproveItems() {
+			final ListBoxModel items = ModelHelper.createListBoxModelWithNotSpecifiedOption();
+			items.add("Yes", "true");
+			items.add("No", "false");
+			return items;
 		}
     }
 }

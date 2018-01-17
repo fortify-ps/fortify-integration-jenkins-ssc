@@ -7,4 +7,19 @@
     <f:entry field="processingTimeOutSeconds" title="${%ProcessingTimeOutSeconds}">
         <f:number value="${descriptor.getInstanceOrDefault(instance).processingTimeOutSeconds}"/>
     </f:entry>
+    
+    <f:block>
+    	Auto-approve: ${descriptor.getInstanceOrDefault(instance).autoApprove}
+    </f:block>
+    
+    <f:entry field="autoApprove" title="${%AutoApprove}">
+    	<j:choose>
+			<j:when test="${isGlobalConfig}">
+    			<f:select value="${descriptor.getInstanceOrDefault(instance).autoApprove}" />
+    		</j:when>
+			<j:otherwise>
+				<f:checkbox checked="${descriptor.getInstanceOrDefault(instance).autoApprove}" json="true" />
+			</j:otherwise>
+		</j:choose>
+    </f:entry>
 </j:jelly>

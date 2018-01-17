@@ -73,10 +73,5 @@ public class FortifySSCDescribableCreateApplicationVersionActionGlobalConfigurat
         public String getDisplayName() {
         	return FortifySSCDescriptorCreateApplicationVersionAction.DISPLAY_NAME;
         }
-        
-        @Override
-        public List<String> getConfigurableOverrideDisallowedPropertyNames() {
-        	return Arrays.asList("issueTemplateName","dummy");
-        }
     }
 }

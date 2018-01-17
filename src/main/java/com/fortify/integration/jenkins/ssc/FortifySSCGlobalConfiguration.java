@@ -56,7 +56,7 @@ public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConf
 	}
     
     public SSCAuthenticatingRestConnection conn() {
-    	if ( this.conn == null ) {
+    	if ( this.conn == null && StringUtils.isNotBlank(sscUrl) ) {
     		this.conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
     	}
     	return this.conn;
@@ -86,7 +86,7 @@ public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConf
 	    	SSCAuthenticatingRestConnection conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
 	    	conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions().maxResults(1).build().getAll();
 	    	// TODO Fix this if possible (automatically save and return to config page)
-	        return FormValidation.warning("Success; please save and return to this page to see additional configuration options");
+	        return FormValidation.warning("Success; please apply the changes and refresh this page to see additional configuration options");
 	    } catch (RuntimeException e) {
 	        return FormValidation.error("Client error : "+e.getMessage());
 	    }

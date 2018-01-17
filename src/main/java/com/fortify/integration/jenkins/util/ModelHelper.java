@@ -22,42 +22,24 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.multiaction;
+package com.fortify.integration.jenkins.util;
 
-import java.io.Serializable;
+import org.apache.commons.lang.StringUtils;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.springframework.core.Ordered;
+import hudson.util.ListBoxModel;
 
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Descriptor;
+public class ModelHelper {
+	private static final String NOT_SPECIFIED = "Not Specified"; // TODO I18N this
+	private ModelHelper() {}
 
-public abstract class AbstractMultiActionDescribable<T extends AbstractMultiActionDescribable<T>> extends AbstractDescribableImpl<T> implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
+	public static final ListBoxModel createListBoxModelWithNotSpecifiedOption() {
+		ListBoxModel result = new ListBoxModel();
+		result.add("Not Specified");
+		return result;
 	}
 	
-	public static abstract class AbstractMultiActionDescriptor<T extends AbstractMultiActionDescribable<T>> extends Descriptor<T> implements Ordered {
-
-		public AbstractMultiActionDescriptor() {}
-
-		public AbstractMultiActionDescriptor(Class<? extends T> clazz) {
-			super(clazz);
-		}
-		
-		public T getInstanceOrDefault(T instance) {
-			T result = instance!=null ? instance : createDefaultInstanceWithConfiguration();
-			System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
-			return result;
-		}
-		
-		public T createDefaultInstanceWithConfiguration() {
-			return createDefaultInstance();
-		};
-		
-		public abstract T createDefaultInstance();
+	public static final boolean isNotSpecified(String value) {
+		return StringUtils.isBlank(value) || NOT_SPECIFIED.equals(value);
 	}
+	
 }

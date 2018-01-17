@@ -24,9 +24,6 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.multiaction;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.kohsuke.stapler.DataBoundSetter;
 
 import jenkins.model.Jenkins;
@@ -42,7 +39,8 @@ import jenkins.model.Jenkins;
  */
 public abstract class AbstractMultiActionDescribableGlobalConfiguration<T extends AbstractMultiActionDescribableGlobalConfiguration<T>> extends AbstractMultiActionDescribable<T> {
 	private static final long serialVersionUID = 1L;
-	private boolean enabledByDefault;
+	private boolean enabledByDefault = true;
+	private boolean allowOverride = true;
 	
 	public boolean isEnabledByDefault() {
 		return enabledByDefault;
@@ -53,11 +51,20 @@ public abstract class AbstractMultiActionDescribableGlobalConfiguration<T extend
 		this.enabledByDefault = enabledByDefault;
 	}
 	
+	public boolean isAllowOverride() {
+		return allowOverride;
+	}
+
+	@DataBoundSetter
+	public void setAllowOverride(boolean allowOverride) {
+		this.allowOverride = allowOverride;
+	}
+
 	public abstract AbstractMultiActionDescribable<?> getTarget();
 	public abstract <TargetType extends AbstractMultiActionDescribable<?>> Class<TargetType> getTargetType();
 
 	public static abstract class AbstractMultiActionDescriptorGlobalConfiguration<T extends AbstractMultiActionDescribableGlobalConfiguration<T>> extends AbstractMultiActionDescriptor<T> {
-		/*
+		/* This would be nice, but causes Jenkins to fail from starting up
 		@Override
 		public String getDisplayName() {
 			return getTargetDescriptor().getDisplayName();
@@ -74,9 +81,5 @@ public abstract class AbstractMultiActionDescribableGlobalConfiguration<T extend
 		}
 		
 		protected abstract Class<? extends AbstractMultiActionDescribable<?>> getTargetType();
-		
-		public List<String> getConfigurableOverrideDisallowedPropertyNames() {
-			return new ArrayList<>();
-		}
 	}
 }

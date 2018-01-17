@@ -29,11 +29,13 @@ import java.io.IOException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 import com.fortify.client.ssc.api.SSCIssueTemplateAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.util.ModelHelper;
 import com.fortify.util.rest.json.JSONList;
 import com.fortify.util.rest.json.JSONMap;
 
@@ -127,7 +129,7 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
 		}
 		
 		public ListBoxModel doFillIssueTemplateNameItems() {
-			final ListBoxModel items = new ListBoxModel();
+			final ListBoxModel items = ModelHelper.createListBoxModelWithNotSpecifiedOption();
 			JSONList issueTemplates = getIssueTemplates();
 			for ( JSONMap issueTemplate : issueTemplates.asValueType(JSONMap.class) ) {
 				items.add(issueTemplate.get("name", String.class));
@@ -140,8 +142,8 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
         }
         
         protected JSONList getIssueTemplates() {
-			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
-			return conn.api(SSCIssueTemplateAPI.class).getIssueTemplates(true);
+        	SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
+			return conn == null ? new JSONList() : conn.api(SSCIssueTemplateAPI.class).getIssueTemplates(true);
 		}
 		
 		@Override

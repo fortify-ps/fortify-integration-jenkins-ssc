@@ -90,11 +90,13 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 
 	@DataBoundSetter
 	public void setDynamicGlobalConfigurationsList(List<? extends AbstractMultiActionDescribableGlobalConfiguration> dynamicGlobalConfigurations) throws IOException {
+		System.out.println("setDynamicGlobalConfigurationsList: "+dynamicGlobalConfigurations);
 		getDynamicGlobalConfigurationsList().replaceBy(dynamicGlobalConfigurations);
 	}
 
 	@DataBoundSetter
 	public void setStaticGlobalConfigurationsList(List<? extends AbstractMultiActionDescribableGlobalConfiguration> staticGlobalConfigurations) throws IOException {
+		System.out.println("setStaticGlobalConfigurationsList: "+staticGlobalConfigurations);
 		getStaticGlobalConfigurationsList().replaceBy(staticGlobalConfigurations);
 	}
 
@@ -250,19 +252,17 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 	
 	@Override
 	public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-		this.targetTypeToDynamicGlobalConfigurationsMap = null;
-		this.targetTypeToStaticGlobalConfigurationsMap = null;
-		
 		try {
-			System.out.println("Dynamic before: "+getAllDynamicGlobalConfigurationDescriptors());
-			getDynamicGlobalConfigurationsList().rebuildHetero(req, json, getAllDynamicGlobalConfigurationDescriptors(), "dynamicGlobalConfiguration");
-			System.out.println("Dynamic after: "+getAllDynamicGlobalConfigurationDescriptors());
-			System.out.println("Static before: "+getAllStaticGlobalConfigurationDescriptors());
-			getStaticGlobalConfigurationsList().rebuild(req, json, getAllStaticGlobalConfigurationDescriptors());
-			System.out.println("Static after: "+getAllStaticGlobalConfigurationDescriptors());
+			this.targetTypeToDynamicGlobalConfigurationsMap = null;
+			getDynamicGlobalConfigurationsList().rebuildHetero(req, json, getAllDynamicGlobalConfigurationDescriptors(), "dynamicGlobalConfigurationsList");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new FormException("Error updating configuration", e, "dynamicGlobalConfigurationsList");
+		}
+		try {
+			this.targetTypeToStaticGlobalConfigurationsMap = null;
+			getStaticGlobalConfigurationsList().rebuild(req, json.getJSONObject("staticGlobalConfigurationsList"), getAllStaticGlobalConfigurationDescriptors());
+		} catch (IOException e) {
+			throw new FormException("Error updating configuration", e, "staticGlobalConfigurationsList");
 		}
 		return super.configure(req, json);
 	}

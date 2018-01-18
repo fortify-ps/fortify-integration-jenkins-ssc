@@ -53,7 +53,6 @@ public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConf
 	
 	@Override
 	public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
-		System.out.println(json.toString(2));
 		boolean result = super.configure(req, json);
 		save();
 		return result;

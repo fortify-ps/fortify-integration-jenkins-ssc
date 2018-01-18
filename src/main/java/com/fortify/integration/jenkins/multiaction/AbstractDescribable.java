@@ -42,9 +42,7 @@ public abstract class AbstractDescribable<T extends AbstractDescribable<T>> exte
 	
 	public static abstract class AbstractDescriptor<T extends AbstractDescribable<T>> extends Descriptor<T> {
 		public T getInstanceOrDefault(T instance) {
-			T result = instance!=null ? instance : createDefaultInstanceWithConfiguration();
-			System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
-			return result;
+			return instance!=null ? instance : createDefaultInstanceWithConfiguration();
 		}
 		
 		public T createDefaultInstanceWithConfiguration() {

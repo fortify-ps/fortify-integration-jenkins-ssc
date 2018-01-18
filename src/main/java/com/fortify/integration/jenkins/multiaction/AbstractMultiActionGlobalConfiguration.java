@@ -119,7 +119,7 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 	}
 	
 	public final boolean isEnabledByDefault(Class<?> configurableDescribableType) {
-        AbstractMultiActionDescribableGlobalConfiguration config = getGlobalConfiguration(configurableDescribableType);
+		AbstractMultiActionDescribableGlobalConfiguration config = getGlobalConfiguration(configurableDescribableType);
         if ( config==null ) { return false; }
         return config.isEnabledByDefault();
     }
@@ -184,12 +184,10 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 	}
 	
 	private AbstractMultiActionDescribableGlobalConfiguration getGlobalConfiguration(Class<?> configurableDescribableType) {
-		System.out.println("getGlobalConfiguration: "+configurableDescribableType);
 		AbstractMultiActionDescribableGlobalConfiguration result = getTargetTypeToDynamicGlobalConfigurationsMap().get(configurableDescribableType);
 		if ( result == null ) {
 			result = getTargetTypeToStaticGlobalConfigurationsMap().get(configurableDescribableType);
 		}
-		System.out.println("getGlobalConfiguration result: "+result);
 		return result;
 	}
 
@@ -197,7 +195,6 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 		if ( targetTypeToDynamicGlobalConfigurationsMap==null ) {
 			targetTypeToDynamicGlobalConfigurationsMap = createTargetTypesToDefaultConfigsMap(getDynamicGlobalConfigurationsList());
 		}
-		System.out.println("targetTypeToDynamicGlobalConfigurationsMap: "+targetTypeToDynamicGlobalConfigurationsMap);
 		return targetTypeToDynamicGlobalConfigurationsMap;
 	}
 	
@@ -205,7 +202,6 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 		if ( targetTypeToStaticGlobalConfigurationsMap==null ) {
 			targetTypeToStaticGlobalConfigurationsMap = createTargetTypesToDefaultConfigsMap(getStaticGlobalConfigurationsList());
 		}
-		System.out.println("targetTypeToStaticGlobalConfigurationsMap: "+targetTypeToStaticGlobalConfigurationsMap);
 		return targetTypeToStaticGlobalConfigurationsMap;
 	}
 
@@ -249,7 +245,6 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 	
 	@Override
 	public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-		System.out.println(json.toString(2));
 		try {
 			this.targetTypeToDynamicGlobalConfigurationsMap = null;
 			// Only rebuild if the dynamic global configuration list is shown

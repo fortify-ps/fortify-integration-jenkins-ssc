@@ -85,5 +85,7 @@ public abstract class AbstractMultiActionDescribableGlobalConfiguration extends 
 		}
 		
 		protected abstract Class<? extends Describable<?>> getTargetType();
+		
+		public abstract boolean isStatic();
 	}
 }

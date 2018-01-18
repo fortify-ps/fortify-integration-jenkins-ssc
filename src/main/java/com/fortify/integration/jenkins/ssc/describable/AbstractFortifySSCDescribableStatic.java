@@ -27,5 +27,10 @@ package com.fortify.integration.jenkins.ssc.describable;
 public abstract class AbstractFortifySSCDescribableStatic extends AbstractFortifySSCConfigurableDescribable {
 	private static final long serialVersionUID = 1L;
 
-	public static abstract class AbstractFortifySSCDescriptorStatic extends AbstractFortifySSCConfigurableDescriptor {}
+	public static abstract class AbstractFortifySSCDescriptorStatic extends AbstractFortifySSCConfigurableDescriptor {
+		@Override
+		public String getDisplayName() {
+			return "Application Version";
+		}
+	}
 }

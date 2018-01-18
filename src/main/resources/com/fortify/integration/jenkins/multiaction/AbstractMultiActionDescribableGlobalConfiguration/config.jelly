@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
-	<f:entry field="enabledByDefault" title="${%EnableByDefault}">
-		<f:checkbox checked="${descriptor.getInstanceOrDefault(instance).enabledByDefault}" />
-	</f:entry> 
+
+	<j:if test="${!descriptor.static}">
+		<f:entry field="enabledByDefault" title="${%EnableByDefault}">
+			<f:checkbox checked="${descriptor.getInstanceOrDefault(instance).enabledByDefault}" />
+		</f:entry> 
+	</j:if>
+	
 	<f:entry field="allowOverride" title="${%AllowOverride}">
 		<f:checkbox checked="${descriptor.getInstanceOrDefault(instance).allowOverride}" />
 	</f:entry>

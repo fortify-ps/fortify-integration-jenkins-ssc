@@ -84,12 +84,10 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 	}
 
 	protected void setDynamicJobConfigurationsList(List<? extends AbstractMultiActionConfigurableDescribable> dynamicJobConfigurations) throws IOException {
-		System.out.println("setDynamicJobConfigurationsList: "+dynamicJobConfigurations);
 		getDynamicJobConfigurationsList().replaceBy(dynamicJobConfigurations);
 	}
 
 	protected void setStaticJobConfigurationsList(List<? extends AbstractMultiActionConfigurableDescribable> staticJobConfigurations) throws IOException {
-		System.out.println("setStaticJobConfigurationsList: "+staticJobConfigurations);
 		getStaticJobConfigurationsList().replaceBy(staticJobConfigurations);
 	}
 	
@@ -121,9 +119,7 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 	public static abstract class AbstractDescriptorMultiActionBuilder extends BuildStepDescriptor<Builder> {
 
 		public final AbstractMultiActionBuilder getInstanceOrDefault(AbstractMultiActionBuilder instance) {
-			AbstractMultiActionBuilder result = instance!=null ? instance : createDefaultInstance();
-			System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
-			return result;
+			return instance!=null ? instance : createDefaultInstance();
 		}
 		
 		public boolean isShowStaticJobConfigurationsList() {
@@ -188,7 +184,6 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 		
 		@Override
 		public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-			System.out.println("\n\n"+this.getClass().getSimpleName()+"\n"+formData.toString(2));
 			AbstractMultiActionBuilder newInstance = (AbstractMultiActionBuilder) super.newInstance(req, formData);
 		
 			try {

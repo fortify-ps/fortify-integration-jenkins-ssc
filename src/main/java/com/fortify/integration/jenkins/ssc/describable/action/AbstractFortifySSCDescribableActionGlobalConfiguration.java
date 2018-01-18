@@ -30,6 +30,9 @@ public abstract class AbstractFortifySSCDescribableActionGlobalConfiguration ext
 	private static final long serialVersionUID = 1L;
 
 	public static abstract class AbstractFortifySSCDescriptorActionGlobalConfiguration extends AbstractMultiActionDescriptorGlobalConfiguration {
-		
+		@Override
+		public boolean isStatic() {
+			return false;
+		}
 	}
 }

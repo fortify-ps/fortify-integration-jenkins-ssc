@@ -33,7 +33,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
 
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionBuilder;
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable;
@@ -52,7 +51,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.DescribableList;
-import net.sf.json.JSONObject;
 
 public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 	@DataBoundConstructor
@@ -75,7 +73,6 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 	
 	@DataBoundSetter
 	public void setActions(List<? extends AbstractMultiActionConfigurableDescribable> dynamicJobConfigurations) throws IOException {
-		System.out.println("setActions: "+dynamicJobConfigurations);
 		setDynamicJobConfigurationsList(dynamicJobConfigurations);
 	}
 	
@@ -162,12 +159,6 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 		@Override
 		protected boolean includeDynamicConfigurationDescriptorsWithoutGlobalConfiguration() {
 			return false;
-		}
-		
-		@Override
-		public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
-			System.out.println(json.toString(2));
-			return super.configure(req, json);
 		}
 	}
 }

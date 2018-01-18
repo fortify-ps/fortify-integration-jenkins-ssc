@@ -30,6 +30,14 @@ public abstract class AbstractFortifySSCDescribableStaticGlobalConfiguration ext
 	private static final long serialVersionUID = 1L;
 
 	public static abstract class AbstractFortifySSCDescriptorStaticGlobalConfiguration extends AbstractMultiActionDescriptorGlobalConfiguration {
+		@Override
+		public boolean isStatic() {
+			return true;
+		}
 		
+		@Override
+		public String getDisplayName() {
+			return "Configure defaul application/version name";
+		}
 	}
 }

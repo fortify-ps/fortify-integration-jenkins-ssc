@@ -40,9 +40,7 @@ public abstract class AbstractGlobalConfiguration<T extends AbstractGlobalConfig
 	}
 
 	public T getInstanceOrDefault(T instance) {
-		T result = instance!=null ? instance : createDefaultInstance();
-		System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
-		return result;
+		return instance!=null ? instance : createDefaultInstance();
 	}
 
 	public abstract T createDefaultInstance();

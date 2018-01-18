@@ -118,6 +118,12 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 		return "Delete";
 	}
 	
+	public final boolean isEnabledByDefault(Class<?> configurableDescribableType) {
+        AbstractMultiActionDescribableGlobalConfiguration config = getGlobalConfiguration(configurableDescribableType);
+        if ( config==null ) { return false; }
+        return config.isEnabledByDefault();
+    }
+	
 	public final void failIfGlobalConfigurationUnavailable(Class<?> configurableDescribableType, String message) throws AbortException {
 		if ( !isGlobalConfigurationAvailable(configurableDescribableType) ) {
 			// TODO Replace with something like this if called from pipeline job?

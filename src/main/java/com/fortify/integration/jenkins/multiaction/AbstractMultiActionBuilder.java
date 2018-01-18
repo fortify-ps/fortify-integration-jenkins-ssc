@@ -71,7 +71,7 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 	
 	public final DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getDynamicJobConfigurationsList() {
 		if (dynamicJobConfigurationsList == null) {
-			dynamicJobConfigurationsList = new DescribableList<AbstractMultiActionConfigurableDescribable,AbstractMultiActionConfigurableDescriptor>(this);
+			dynamicJobConfigurationsList = getDescriptor().addDefaultDynamicJobConfigurationsList(new DescribableList<AbstractMultiActionConfigurableDescribable,AbstractMultiActionConfigurableDescriptor>(this));
         }
 		return dynamicJobConfigurationsList;
 	}
@@ -102,6 +102,11 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 		}
 		return null;
 	}
+	
+	@Override
+	public AbstractDescriptorMultiActionBuilder getDescriptor() {
+		return (AbstractDescriptorMultiActionBuilder)super.getDescriptor();
+	}
 
 	@Override
 	public BuildStepMonitor getRequiredMonitorService() {
@@ -121,11 +126,11 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 			return result;
 		}
 		
-		public boolean isShowStaticGlobalConfigurationsList() {
+		public boolean isShowStaticJobConfigurationsList() {
 			return true;
 		}
 		
-		public boolean isShowDynamicGlobalConfigurationsList() {
+		public boolean isShowDynamicJobConfigurationsList() {
 			return true;
 		}
 		
@@ -159,6 +164,15 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 			result.sort(new OrderComparator());
 			return result;
 		}
+		
+		private DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> addDefaultDynamicJobConfigurationsList(DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> list) {
+            for ( AbstractMultiActionConfigurableDescriptor descriptor :  getAllDynamicJobConfigurationDescriptors() ) {
+                if ( getMultiActionGlobalConfiguration().isEnabledByDefault(descriptor.getGlobalConfigurationTargetType()) ) {
+                    list.add(descriptor.createDefaultInstanceWithConfiguration());
+                }
+            }
+            return list;
+        }
 		
 		protected boolean includeDynamicConfigurationDescriptorsWithoutGlobalConfiguration() {
 			return true;

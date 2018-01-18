@@ -7,8 +7,8 @@
 	</f:entry>
 	
     <f:nested>
-    	<f:hetero-list name="dynamicGlobalConfigurationsList" descriptors="${descriptor.allDynamicJobConfigurationDescriptors}"
-    		items="${instance.staticGlobalConfigurationsList}" targetType="${descriptor.targetType}" 
+    	<f:hetero-list name="dynamicJobConfigurationsList" descriptors="${descriptor.allDynamicJobConfigurationDescriptors}"
+    		items="${instance.dynamicJobConfigurationsList}" targetType="${descriptor.targetType}" 
     		hasHeader="true" addCaption="${%Enable Action}" deleteCaption="${%Disable Action}" 
     		oneEach="true" honorOrder="true" />
     </f:nested>

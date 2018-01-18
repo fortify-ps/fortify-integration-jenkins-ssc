@@ -37,6 +37,12 @@ import hudson.model.TaskListener;
 public abstract class AbstractFortifySSCDescribableAction extends AbstractFortifySSCConfigurableDescribable {
 	private static final long serialVersionUID = 1L;
 
+	public final void performWithCheck(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+		failIfDynamicGlobalConfigurationUnavailable(getDescriptor().getDisplayName()+" not enabled in global configuration");
+		listener.getLogger().println("Performing action "+getDescriptor().getDisplayName());
+		perform(applicationAndVersionNameJobConfig, run, workspace, launcher, listener);
+	}
+	
 	public abstract void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
 	
 	public static abstract class AbstractFortifySSCDescriptorAction extends AbstractFortifySSCConfigurableDescriptor {}

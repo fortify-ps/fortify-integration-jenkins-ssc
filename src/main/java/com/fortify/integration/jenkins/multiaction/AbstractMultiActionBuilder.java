@@ -29,21 +29,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.core.OrderComparator;
 
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable.AbstractMultiActionConfigurableDescriptor;
 
 import hudson.ExtensionList;
-import hudson.model.Describable;
 import hudson.model.Saveable;
-import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import hudson.util.DescribableList;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
+import net.sf.json.JSONObject;
 
 /**
  * To use, extend this class with correct generics types, and include the following in the
@@ -83,30 +82,14 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 		return staticJobConfigurationsList;
 	}
 
-	@DataBoundSetter
-	public void setDynamicJobConfigurationsList(List<? extends AbstractMultiActionConfigurableDescribable> dynamicJobConfigurations) throws IOException {
+	protected void setDynamicJobConfigurationsList(List<? extends AbstractMultiActionConfigurableDescribable> dynamicJobConfigurations) throws IOException {
+		System.out.println("setDynamicJobConfigurationsList: "+dynamicJobConfigurations);
 		getDynamicJobConfigurationsList().replaceBy(dynamicJobConfigurations);
 	}
 
-	@DataBoundSetter
-	public void setStaticJobConfigurationsList(List<? extends AbstractMultiActionConfigurableDescribable> staticJobConfigurations) throws IOException {
+	protected void setStaticJobConfigurationsList(List<? extends AbstractMultiActionConfigurableDescribable> staticJobConfigurations) throws IOException {
+		System.out.println("setStaticJobConfigurationsList: "+staticJobConfigurations);
 		getStaticJobConfigurationsList().replaceBy(staticJobConfigurations);
-	}
-	
-	public final DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getSortedDynamicJobConfigurationsList() {
-		return getSortedDescribableList(getDynamicJobConfigurationsList());
-	}
-	
-	public final DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getSortedStaticJobConfigurationsList() {
-		return getSortedDescribableList(getStaticJobConfigurationsList());
-	}
-
-	private DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getSortedDescribableList(
-			DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> original) {
-		DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> result = 
-				new DescribableList<>(this, original);
-		result.sort(new OrderComparator());
-		return result;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -129,10 +112,10 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 		return ToStringBuilder.reflectionToString(this);
 	}
 	
-	public static abstract class AbstractDescriptorMultiActionBuilder<T extends BuildStep & Describable<T>> extends BuildStepDescriptor<T> {
+	public static abstract class AbstractDescriptorMultiActionBuilder extends BuildStepDescriptor<Builder> {
 
-		public final T getInstanceOrDefault(T instance) {
-			T result = instance!=null ? instance : createDefaultInstance();
+		public final AbstractMultiActionBuilder getInstanceOrDefault(AbstractMultiActionBuilder instance) {
+			AbstractMultiActionBuilder result = instance!=null ? instance : createDefaultInstance();
 			System.out.println(this.getClass().getSimpleName()+".getInstanceOrDefault: "+result);
 			return result;
 		}
@@ -156,12 +139,29 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 			return AbstractMultiActionConfigurableDescribable.class;
 		}
 		
+		@Override
+		public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+			System.out.println("\n\n"+this.getClass().getSimpleName()+"\n"+formData.toString(2));
+			AbstractMultiActionBuilder newInstance = (AbstractMultiActionBuilder) super.newInstance(req, formData);
+		
+			try {
+				newInstance.getDynamicJobConfigurationsList().rebuildHetero(req, formData, getAllDynamicJobConfigurationDescriptors(), "dynamicJobConfigurationsList");
+			} catch (IOException e) {
+				throw new FormException("Error updating configuration", e, "dynamicGlobalConfigurationsList");
+			}
+			try {
+				newInstance.getStaticJobConfigurationsList().rebuild(req, formData.getJSONObject("staticJobConfigurationsList"), getAllStaticJobConfigurationDescriptors());
+			} catch (IOException e) {
+				throw new FormException("Error updating configuration", e, "staticGlobalConfigurationsList");
+			}
+	
+			return newInstance;
+		}
+		
 		protected abstract <D extends AbstractMultiActionConfigurableDescriptor> Class<D> getDynamicJobConfigurationDescriptorType();
 		protected abstract <D extends AbstractMultiActionConfigurableDescriptor> Class<D> getStaticJobConfigurationDescriptorType();
 		
-		
-		
-		public abstract T createDefaultInstance();
+		public abstract AbstractMultiActionBuilder createDefaultInstance();
 
 		protected abstract AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration();
 	}

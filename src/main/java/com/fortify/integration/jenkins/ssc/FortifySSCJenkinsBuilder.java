@@ -27,6 +27,7 @@ package com.fortify.integration.jenkins.ssc;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -36,6 +37,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionBuilder;
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable.AbstractMultiActionConfigurableDescriptor;
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCDescribableStatic.AbstractFortifySSCDescriptorStatic;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
@@ -49,7 +51,7 @@ import hudson.Launcher;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.tasks.Builder;
+import hudson.util.DescribableList;
 import net.sf.json.JSONObject;
 
 public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
@@ -65,6 +67,16 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 	@DataBoundSetter
 	public void setWith(FortifySSCDescribableApplicationAndVersionName with) throws IOException {
 		setStaticJobConfigurationsList(Arrays.asList(with));;
+	}
+	
+	public final DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getActions() {
+		return getDynamicJobConfigurationsList();
+	}
+	
+	@DataBoundSetter
+	public void setActions(List<? extends AbstractMultiActionConfigurableDescribable> dynamicJobConfigurations) throws IOException {
+		System.out.println("setActions: "+dynamicJobConfigurations);
+		setDynamicJobConfigurationsList(dynamicJobConfigurations);
 	}
 	
 	@Override
@@ -87,7 +99,7 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 
 	protected void perform(AbstractMultiActionConfigurableDescribable action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		if ( action instanceof AbstractFortifySSCDescribableAction ) {
-			((AbstractFortifySSCDescribableAction)action).perform(getWith(), build, workspace, launcher, listener);
+			((AbstractFortifySSCDescribableAction)action).performWithCheck(getWith(), build, workspace, launcher, listener);
 		}
 	}
 	
@@ -102,7 +114,7 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 	
 	@Symbol("sscPerformActions")
 	@Extension
-	public static class DescriptorImpl extends AbstractDescriptorMultiActionBuilder<Builder> {
+	public static class DescriptorImpl extends AbstractDescriptorMultiActionBuilder {
 	
 		@SuppressWarnings("rawtypes")
 		@Override

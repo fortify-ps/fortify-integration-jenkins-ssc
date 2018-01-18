@@ -35,12 +35,14 @@ import com.fortify.client.ssc.api.SSCApplicationAPI;
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.describable.action.FortifySSCDescribableUploadFPRAction;
 import com.fortify.integration.jenkins.ssc.json.processor.AddNamesToComboBoxModel;
 import com.fortify.util.rest.json.JSONMap;
 
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.model.Describable;
 import hudson.util.ComboBoxModel;
 
 public class FortifySSCDescribableApplicationAndVersionName extends AbstractFortifySSCDescribableStatic {
@@ -126,8 +128,23 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 	@Extension
 	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractFortifySSCDescriptorStatic {
 		@Override
+		public FortifySSCDescribableApplicationAndVersionName createDefaultInstanceWithConfiguration() {
+			return new FortifySSCDescribableApplicationAndVersionName(getDefaultConfiguration());
+		}
+		
+		@Override
+		public FortifySSCDescribableApplicationAndVersionName createDefaultInstance() {
+			return new FortifySSCDescribableApplicationAndVersionName();
+		}
+		
+		@Override
 		protected FortifySSCDescribableApplicationAndVersionName getDefaultConfiguration() {
 			return (FortifySSCDescribableApplicationAndVersionName)super.getDefaultConfiguration();
+		}
+		
+		@Override
+		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
+			return FortifySSCDescribableApplicationAndVersionName.class;
 		}
 		
         public ComboBoxModel doFillApplicationNameItems() {
@@ -152,11 +169,6 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 		public String getDisplayName() {
 			// TODO Internationalize this
 			return "Configure application and version name";
-		}
-		
-		@Override
-		public FortifySSCDescribableApplicationAndVersionName createDefaultInstance() {
-			return new FortifySSCDescribableApplicationAndVersionName();
 		}
 		
 		@Override

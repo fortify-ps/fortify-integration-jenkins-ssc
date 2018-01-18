@@ -42,12 +42,12 @@ public abstract class AbstractMultiActionConfigurableDescribable extends Abstrac
 		return (AbstractMultiActionConfigurableDescriptor) super.getDescriptor();
 	}
 	
-	public final boolean isEnabled() {
-		return getMultiActionGlobalConfiguration().isEnabled(this.getClass());
+	public final boolean isDynamicGlobalConfigurationAvailable() {
+		return getMultiActionGlobalConfiguration().isDynamicGlobalConfigurationAvailable(this.getClass());
 	}
 	
-	public final void checkEnabled() throws AbortException {
-		getMultiActionGlobalConfiguration().checkEnabled(this.getClass());
+	public final void failIfDynamicGlobalConfigurationUnavailable(String message) throws AbortException {
+		getMultiActionGlobalConfiguration().failIfDynamicGlobalConfigurationUnavailable(this.getClass(), message);
 	}
 	
 	/**
@@ -110,9 +110,7 @@ public abstract class AbstractMultiActionConfigurableDescribable extends Abstrac
 			return FortifySSCGlobalConfiguration.get().getDefaultConfiguration(getGlobalConfigurationTargetType());
 		}
 		
-		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
-			return getT();
-		}
+		protected abstract Class<? extends Describable<?>> getGlobalConfigurationTargetType();
 		
 		protected abstract AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration();
 	}

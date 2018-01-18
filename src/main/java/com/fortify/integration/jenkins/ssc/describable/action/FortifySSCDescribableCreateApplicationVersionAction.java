@@ -44,6 +44,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.ListBoxModel;
@@ -87,7 +88,6 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
 	public void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException 
 	{
-		checkEnabled();
 		EnvVars env = run.getEnvironment(listener);
 		PrintStream log = listener.getLogger();
 		JSONMap applicationVersion = applicationAndVersionNameJobConfig.getApplicationVersion(env, log, false);
@@ -105,11 +105,6 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
 	@Extension
 	public static final class FortifySSCDescriptorCreateApplicationVersionAction extends AbstractFortifySSCDescriptorAction {
 		static final String DISPLAY_NAME = "Create application version if it does not yet exist";
-		
-		@Override
-		protected FortifySSCDescribableCreateApplicationVersionAction getDefaultConfiguration() {
-			return (FortifySSCDescribableCreateApplicationVersionAction)super.getDefaultConfiguration();
-		}
 
 		@Override
 		public FortifySSCDescribableCreateApplicationVersionAction createDefaultInstanceWithConfiguration() {
@@ -119,6 +114,16 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
 		@Override
 		public FortifySSCDescribableCreateApplicationVersionAction createDefaultInstance() {
 			return new FortifySSCDescribableCreateApplicationVersionAction();
+		}
+		
+		@Override
+		protected FortifySSCDescribableCreateApplicationVersionAction getDefaultConfiguration() {
+			return (FortifySSCDescribableCreateApplicationVersionAction)super.getDefaultConfiguration();
+		}
+		
+		@Override
+		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
+			return FortifySSCDescribableCreateApplicationVersionAction.class;
 		}
 		
 		@Override

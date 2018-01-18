@@ -27,6 +27,7 @@ package com.fortify.integration.jenkins.multiaction;
 import java.io.Serializable;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
@@ -36,7 +37,7 @@ public abstract class AbstractDescribable<T extends AbstractDescribable<T>> exte
 
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
 	}
 	
 	public static abstract class AbstractDescriptor<T extends AbstractDescribable<T>> extends Descriptor<T> {

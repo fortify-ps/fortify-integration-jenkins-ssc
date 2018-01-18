@@ -34,7 +34,6 @@ import java.util.Map;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.core.OrderComparator;
 
@@ -87,34 +86,6 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
         }
 		return staticGlobalConfigurationsList;
 	}
-
-	@DataBoundSetter
-	public void setDynamicGlobalConfigurationsList(List<? extends AbstractMultiActionDescribableGlobalConfiguration> dynamicGlobalConfigurations) throws IOException {
-		System.out.println("setDynamicGlobalConfigurationsList: "+dynamicGlobalConfigurations);
-		getDynamicGlobalConfigurationsList().replaceBy(dynamicGlobalConfigurations);
-	}
-
-	@DataBoundSetter
-	public void setStaticGlobalConfigurationsList(List<? extends AbstractMultiActionDescribableGlobalConfiguration> staticGlobalConfigurations) throws IOException {
-		System.out.println("setStaticGlobalConfigurationsList: "+staticGlobalConfigurations);
-		getStaticGlobalConfigurationsList().replaceBy(staticGlobalConfigurations);
-	}
-
-	public final DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> getSortedDynamicGlobalConfigurationsList() {
-		return getSortedDescribableList(getDynamicGlobalConfigurationsList());
-	}
-	
-	public final DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> getSortedStaticGlobalConfigurationsList() {
-		return getSortedDescribableList(getStaticGlobalConfigurationsList());
-	}
-
-	private DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> getSortedDescribableList(
-			DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> original) {
-		DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> result = 
-				new DescribableList<>(this, original);
-		result.sort(new OrderComparator());
-		return result;
-	}
 	
 	public final List<? extends AbstractMultiActionDescriptorGlobalConfiguration> getAllDynamicGlobalConfigurationDescriptors() {
 		return getAllGlobalConfigurationDescriptors(getDynamicGlobalConfigurationDescriptorType());
@@ -131,16 +102,15 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 		return result;
 	}
 	
-	@SuppressWarnings("unchecked")
-	public final void checkEnabled(Class<?> configurableDescribableType) throws AbortException {
-		if ( !isEnabled(configurableDescribableType) ) {
+	public final void failIfDynamicGlobalConfigurationUnavailable(Class<?> configurableDescribableType, String message) throws AbortException {
+		if ( !isDynamicGlobalConfigurationAvailable(configurableDescribableType) ) {
 			// TODO Replace with something like this if called from pipeline job?
 			//      descriptor.getClass().getAnnotation(Symbol.class).value()[0]
-			throw new AbortException("Action '"+Jenkins.getInstance().getDescriptorOrDie((Class<? extends Describable<?>>) configurableDescribableType)+"' is not enabled in global configuration");
+			throw new AbortException(message);
 		}
 	}
 
-	public final boolean isEnabled(Class<?> configurableDescribableType) {
+	public final boolean isDynamicGlobalConfigurationAvailable(Class<?> configurableDescribableType) {
 		return getTargetTypeToDynamicGlobalConfigurationsMap().containsKey(configurableDescribableType);
 	}
 
@@ -191,10 +161,12 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 	}
 	
 	private AbstractMultiActionDescribableGlobalConfiguration getGlobalConfiguration(Class<?> configurableDescribableType) {
+		System.out.println("getGlobalConfiguration: "+configurableDescribableType);
 		AbstractMultiActionDescribableGlobalConfiguration result = getTargetTypeToDynamicGlobalConfigurationsMap().get(configurableDescribableType);
 		if ( result == null ) {
 			result = getTargetTypeToStaticGlobalConfigurationsMap().get(configurableDescribableType);
 		}
+		System.out.println("getGlobalConfiguration result: "+result);
 		return result;
 	}
 
@@ -202,6 +174,7 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 		if ( targetTypeToDynamicGlobalConfigurationsMap==null ) {
 			targetTypeToDynamicGlobalConfigurationsMap = createTargetTypesToDefaultConfigsMap(getDynamicGlobalConfigurationsList());
 		}
+		System.out.println("targetTypeToDynamicGlobalConfigurationsMap: "+targetTypeToDynamicGlobalConfigurationsMap);
 		return targetTypeToDynamicGlobalConfigurationsMap;
 	}
 	
@@ -209,6 +182,7 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 		if ( targetTypeToStaticGlobalConfigurationsMap==null ) {
 			targetTypeToStaticGlobalConfigurationsMap = createTargetTypesToDefaultConfigsMap(getStaticGlobalConfigurationsList());
 		}
+		System.out.println("targetTypeToStaticGlobalConfigurationsMap: "+targetTypeToStaticGlobalConfigurationsMap);
 		return targetTypeToStaticGlobalConfigurationsMap;
 	}
 

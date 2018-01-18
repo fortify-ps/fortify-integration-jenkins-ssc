@@ -45,6 +45,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
+import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
@@ -115,7 +116,6 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 	@Override
 	public void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-		checkEnabled();
 		PrintStream log = listener.getLogger();
 		EnvVars env = run.getEnvironment(listener);
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
@@ -164,13 +164,18 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 		}
 		
 		@Override
+		public FortifySSCDescribableUploadFPRAction createDefaultInstance() {
+			return new FortifySSCDescribableUploadFPRAction();
+		}
+		
+		@Override
 		protected FortifySSCDescribableUploadFPRAction getDefaultConfiguration() {
 			return (FortifySSCDescribableUploadFPRAction)super.getDefaultConfiguration();
 		}
 		
 		@Override
-		public FortifySSCDescribableUploadFPRAction createDefaultInstance() {
-			return new FortifySSCDescribableUploadFPRAction();
+		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
+			return FortifySSCDescribableUploadFPRAction.class;
 		}
 		
 		@Override

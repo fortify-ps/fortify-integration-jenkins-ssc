@@ -50,6 +50,26 @@ public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConf
     	}
     	return this.conn;
     }
+    
+    @Override
+    public boolean isShowDynamicGlobalConfigurationsList() {
+    	return FortifySSCGlobalConfiguration.get().isConnectionAvailable();
+    }
+    
+    @Override
+    public boolean isShowStaticGlobalConfigurationsList() {
+    	return FortifySSCGlobalConfiguration.get().isConnectionAvailable();
+    }
+    
+    @Override
+    public String getDynamicGlobalConfigurationAddButtonDisplayName() {
+		return "Enable Action";
+	}
+	
+    @Override
+	public String getDynamicGlobalConfigurationDeleteButtonDisplayName() {
+		return "Disable Action";
+	}
 	
 	@Override
 	public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {

@@ -1,25 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:section title="${%Title}">
-        <f:entry field="sscUrl" title="${%SSCUrl}">
-            <f:textbox/>
-        </f:entry>
-        <f:validateButton title="${%Validate}" progress="${%Testing...}" method="testConnection" with="sscUrl" />
-   		
-   		<j:if test="${descriptor.connectionAvailable}">
-   			<f:entry field="staticGlobalConfigurationsList">
-	   			<f:descriptorList descriptors="${descriptor.allStaticGlobalConfigurationDescriptors}" 
-	   				targetType="${descriptor.targetType}" forceRowSet="true"/>
-	   		</f:entry>
-	   		
-		    <f:nested>
-		    	<f:hetero-list name="dynamicGlobalConfigurationsList" descriptors="${descriptor.allDynamicGlobalConfigurationDescriptors}"
-		    		items="${descriptor.dynamicGlobalConfigurationsList}" targetType="${descriptor.targetType}" 
-		    		hasHeader="true" addCaption="${%Enable Action}" deleteCaption="${%Disable Action}" 
-		    		oneEach="true" honorOrder="true" />
-		    </f:nested>
-		</j:if>
-		
-    </f:section>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler" >
+	<f:section title="${%Title}">
+	    <f:entry field="sscUrl" title="${%SSCUrl}">
+	        <f:textbox/>
+	    </f:entry>
+	    <f:validateButton title="${%Validate}" progress="${%Testing...}" method="testConnection" with="sscUrl" />
+	    
+	    <st:include page="config-globalConfigurations.jelly" optional="false" class="${descriptor.clazz}"/>
+	    
+	</f:section>
 </j:jelly>

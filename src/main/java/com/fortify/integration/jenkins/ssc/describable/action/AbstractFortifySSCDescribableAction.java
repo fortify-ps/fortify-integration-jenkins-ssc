@@ -38,7 +38,7 @@ public abstract class AbstractFortifySSCDescribableAction extends AbstractFortif
 	private static final long serialVersionUID = 1L;
 
 	public final void performWithCheck(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-		failIfDynamicGlobalConfigurationUnavailable(getDescriptor().getDisplayName()+" not enabled in global configuration");
+		failIfGlobalConfigurationUnavailable(getDescriptor().getDisplayName()+" not enabled in global configuration");
 		listener.getLogger().println("Performing action "+getDescriptor().getDisplayName());
 		perform(applicationAndVersionNameJobConfig, run, workspace, launcher, listener);
 	}

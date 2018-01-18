@@ -27,6 +27,7 @@ package com.fortify.integration.jenkins.multiaction;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.kohsuke.stapler.StaplerRequest;
@@ -120,19 +121,51 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 			return result;
 		}
 		
+		public boolean isShowStaticGlobalConfigurationsList() {
+			return true;
+		}
+		
+		public boolean isShowDynamicGlobalConfigurationsList() {
+			return true;
+		}
+		
+		public String getDynamicJobConfigurationAddButtonDisplayName() {
+			return "Add";
+		}
+		
+		public String getDynamicJobConfigurationDeleteButtonDisplayName() {
+			return "Delete";
+		}
+		
 		public final List<? extends AbstractMultiActionConfigurableDescriptor> getAllDynamicJobConfigurationDescriptors() {
-			return getAllJobConfigurationDescriptors(getDynamicJobConfigurationDescriptorType());
+			return getAllJobConfigurationDescriptors(getDynamicJobConfigurationDescriptorType(), includeDynamicConfigurationDescriptorsWithoutGlobalConfiguration());
 		}
 
 		public final List<? extends AbstractMultiActionConfigurableDescriptor> getAllStaticJobConfigurationDescriptors() {
-			return getAllJobConfigurationDescriptors(getStaticJobConfigurationDescriptorType());
+			return getAllJobConfigurationDescriptors(getStaticJobConfigurationDescriptorType(), includeStaticConfigurationDescriptorsWithoutGlobalConfiguration());
 		}
 
-		private List<? extends AbstractMultiActionConfigurableDescriptor> getAllJobConfigurationDescriptors(Class<? extends AbstractMultiActionConfigurableDescriptor> describableJobConfigurationActionDescriptorType) {
+		private final List<? extends AbstractMultiActionConfigurableDescriptor> getAllJobConfigurationDescriptors(Class<? extends AbstractMultiActionConfigurableDescriptor> describableJobConfigurationActionDescriptorType, boolean includeDescriptorsWithoutGlobalConfiguration) {
 			ExtensionList<? extends AbstractMultiActionConfigurableDescriptor> list = Jenkins.getInstance().getExtensionList(describableJobConfigurationActionDescriptorType);
 			List<? extends AbstractMultiActionConfigurableDescriptor> result = new ArrayList<>(list);
+			if ( !includeDescriptorsWithoutGlobalConfiguration ) {
+				result.removeIf(new Predicate<AbstractMultiActionConfigurableDescriptor>() {
+					@Override
+					public boolean test(AbstractMultiActionConfigurableDescriptor d) {
+						return !d.isGlobalConfigurationAvailable();
+					}
+				});
+			}
 			result.sort(new OrderComparator());
 			return result;
+		}
+		
+		protected boolean includeDynamicConfigurationDescriptorsWithoutGlobalConfiguration() {
+			return true;
+		}
+		
+		protected boolean includeStaticConfigurationDescriptorsWithoutGlobalConfiguration() {
+			return true;
 		}
 		
 		public final Class<?> getTargetType() {
@@ -150,7 +183,10 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 				throw new FormException("Error updating configuration", e, "dynamicGlobalConfigurationsList");
 			}
 			try {
-				newInstance.getStaticJobConfigurationsList().rebuild(req, formData.getJSONObject("staticJobConfigurationsList"), getAllStaticJobConfigurationDescriptors());
+				JSONObject staticJobConfigurationJSON = formData.getJSONObject("staticJobConfigurationsList");
+				if ( staticJobConfigurationJSON!=null && !staticJobConfigurationJSON.isNullObject() ) {
+					newInstance.getStaticJobConfigurationsList().rebuild(req, staticJobConfigurationJSON, getAllStaticJobConfigurationDescriptors());
+				}
 			} catch (IOException e) {
 				throw new FormException("Error updating configuration", e, "staticGlobalConfigurationsList");
 			}

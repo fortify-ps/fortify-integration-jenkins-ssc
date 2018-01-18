@@ -102,16 +102,33 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 		return result;
 	}
 	
-	public final void failIfDynamicGlobalConfigurationUnavailable(Class<?> configurableDescribableType, String message) throws AbortException {
-		if ( !isDynamicGlobalConfigurationAvailable(configurableDescribableType) ) {
+	public boolean isShowStaticGlobalConfigurationsList() {
+		return true;
+	}
+	
+	public boolean isShowDynamicGlobalConfigurationsList() {
+		return true;
+	}
+	
+	public String getDynamicGlobalConfigurationAddButtonDisplayName() {
+		return "Add";
+	}
+	
+	public String getDynamicGlobalConfigurationDeleteButtonDisplayName() {
+		return "Delete";
+	}
+	
+	public final void failIfGlobalConfigurationUnavailable(Class<?> configurableDescribableType, String message) throws AbortException {
+		if ( !isGlobalConfigurationAvailable(configurableDescribableType) ) {
 			// TODO Replace with something like this if called from pipeline job?
 			//      descriptor.getClass().getAnnotation(Symbol.class).value()[0]
 			throw new AbortException(message);
 		}
 	}
 
-	public final boolean isDynamicGlobalConfigurationAvailable(Class<?> configurableDescribableType) {
-		return getTargetTypeToDynamicGlobalConfigurationsMap().containsKey(configurableDescribableType);
+	public final boolean isGlobalConfigurationAvailable(Class<?> configurableDescribableType) {
+		return getTargetTypeToDynamicGlobalConfigurationsMap().containsKey(configurableDescribableType)
+				|| getTargetTypeToStaticGlobalConfigurationsMap().containsKey(configurableDescribableType);
 	}
 
 	public final Describable<?> getDefaultConfiguration(Class<?> configurableDescribableType) {
@@ -226,15 +243,24 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 	
 	@Override
 	public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+		System.out.println(json.toString(2));
 		try {
 			this.targetTypeToDynamicGlobalConfigurationsMap = null;
-			getDynamicGlobalConfigurationsList().rebuildHetero(req, json, getAllDynamicGlobalConfigurationDescriptors(), "dynamicGlobalConfigurationsList");
+			// Only rebuild if the dynamic global configuration list is shown
+			// to prevent configuration list to be cleared if it is (temporarily)
+			// not shown.
+			if ( isShowDynamicGlobalConfigurationsList() ) {
+				getDynamicGlobalConfigurationsList().rebuildHetero(req, json, getAllDynamicGlobalConfigurationDescriptors(), "dynamicGlobalConfigurationsList");
+			}
 		} catch (IOException e) {
 			throw new FormException("Error updating configuration", e, "dynamicGlobalConfigurationsList");
 		}
 		try {
 			this.targetTypeToStaticGlobalConfigurationsMap = null;
-			getStaticGlobalConfigurationsList().rebuild(req, json.getJSONObject("staticGlobalConfigurationsList"), getAllStaticGlobalConfigurationDescriptors());
+			JSONObject staticGlobalConfigurationJSON = json.getJSONObject("staticGlobalConfigurationsList");
+			if ( staticGlobalConfigurationJSON!=null && !staticGlobalConfigurationJSON.isNullObject() ) {
+				getStaticGlobalConfigurationsList().rebuild(req, staticGlobalConfigurationJSON, getAllStaticGlobalConfigurationDescriptors());
+			}
 		} catch (IOException e) {
 			throw new FormException("Error updating configuration", e, "staticGlobalConfigurationsList");
 		}

@@ -126,6 +126,16 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 		public String getDisplayName() {
 			return "Fortify SSC Jenkins Plugin";
 		}
+		
+		@Override
+	    public String getDynamicJobConfigurationAddButtonDisplayName() {
+			return "Enable Action";
+		}
+		
+	    @Override
+		public String getDynamicJobConfigurationDeleteButtonDisplayName() {
+			return "Disable Action";
+		}
 	
 		@Override
 		public final FortifySSCJenkinsBuilder createDefaultInstance() {
@@ -147,6 +157,11 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 		@Override
 		protected Class<AbstractFortifySSCDescriptorStatic> getStaticJobConfigurationDescriptorType() {
 			return AbstractFortifySSCDescriptorStatic.class;
+		}
+		
+		@Override
+		protected boolean includeDynamicConfigurationDescriptorsWithoutGlobalConfiguration() {
+			return false;
 		}
 		
 		@Override

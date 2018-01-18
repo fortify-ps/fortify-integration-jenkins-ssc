@@ -24,30 +24,32 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.multiaction;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.core.OrderComparator;
 
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribableGlobalConfiguration.AbstractMultiActionDescriptorGlobalConfiguration;
 import com.fortify.integration.jenkins.util.ModelHelper;
 import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import hudson.AbortException;
 import hudson.ExtensionList;
 import hudson.model.Describable;
-import hudson.model.Descriptor;
+import hudson.util.DescribableList;
 import hudson.util.ReflectionUtils;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 
 /**
  * To use, extend this class with correct generics types, and include the following in the
@@ -58,7 +60,7 @@ import jenkins.model.Jenkins;
  * </pre>
  * 
  * This will automatically load all available DescriptorActionJobType instances (based on the class type returned
- * by {@link #getDescribableGlobalConfigurationDescriptorType()}), and allow to enable, disable and configure these instances to
+ * by {@link #getDescribableGlobalConfigurationActionDescriptorType()}), and allow to enable, disable and configure these instances to
  * define the global configuration for this plugin.
  * 
  * @author Ruud Senden
@@ -66,38 +68,63 @@ import jenkins.model.Jenkins;
  */
 public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractMultiActionGlobalConfiguration<T>> extends AbstractGlobalConfiguration<T> 
 {
-	private List<AbstractMultiActionDescribableGlobalConfiguration<?>> enabledActionsDefaultConfigs;
-	private transient Map<Class<AbstractMultiActionConfigurableDescribable<?,?>>, AbstractMultiActionDescribableGlobalConfiguration<?>> targetTypeToEnabledActionsDefaultConfigsMap;
+	private volatile DescribableList<AbstractMultiActionDescribableGlobalConfiguration,AbstractMultiActionDescriptorGlobalConfiguration> dynamicGlobalConfigurationsList;
+	private volatile DescribableList<AbstractMultiActionDescribableGlobalConfiguration,AbstractMultiActionDescriptorGlobalConfiguration> staticGlobalConfigurationsList;
+	
+	private transient Map<Class<? extends AbstractMultiActionConfigurableDescribable>, AbstractMultiActionDescribableGlobalConfiguration> targetTypeToDynamicGlobalConfigurationsMap;
+	private transient Map<Class<? extends AbstractMultiActionConfigurableDescribable>, AbstractMultiActionDescribableGlobalConfiguration> targetTypeToStaticGlobalConfigurationsMap;
 
-	public AbstractMultiActionGlobalConfiguration() {
-		setEnabledActionsDefaultConfigs(getDefaultEnabledActionsDefaultConfigs());
+	public final DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> getDynamicGlobalConfigurationsList() {
+		if (dynamicGlobalConfigurationsList == null) {
+			dynamicGlobalConfigurationsList = new DescribableList<AbstractMultiActionDescribableGlobalConfiguration,AbstractMultiActionDescriptorGlobalConfiguration>(this);
+        }
+		return dynamicGlobalConfigurationsList;
 	}
 	
-	public final List<AbstractMultiActionDescribableGlobalConfiguration<?>> getEnabledActionsDefaultConfigs() {
-		return enabledActionsDefaultConfigs;
+	public final DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> getStaticGlobalConfigurationsList() {
+		if (staticGlobalConfigurationsList == null) {
+			staticGlobalConfigurationsList = new DescribableList<AbstractMultiActionDescribableGlobalConfiguration,AbstractMultiActionDescriptorGlobalConfiguration>(this);
+        }
+		return staticGlobalConfigurationsList;
 	}
 
 	@DataBoundSetter
-	public final void setEnabledActionsDefaultConfigs(List<AbstractMultiActionDescribableGlobalConfiguration<?>> enabledActionsDefaultConfigs) {
-		this.enabledActionsDefaultConfigs = enabledActionsDefaultConfigs;
-		this.targetTypeToEnabledActionsDefaultConfigsMap = null;
+	public void setDynamicGlobalConfigurationsList(List<? extends AbstractMultiActionDescribableGlobalConfiguration> dynamicGlobalConfigurations) throws IOException {
+		getDynamicGlobalConfigurationsList().replaceBy(dynamicGlobalConfigurations);
 	}
 
-	public final List<Descriptor<?>> getEnabledJobDescriptors() {
-		List<Descriptor<?>> result = Lists.newArrayList(Iterables.transform(enabledActionsDefaultConfigs,
-				new Function<AbstractMultiActionDescribableGlobalConfiguration<?>, Descriptor<?>>() {
-					@Override
-					public Descriptor<?> apply(AbstractMultiActionDescribableGlobalConfiguration<?> input) {
-						return Jenkins.getInstance().getDescriptorOrDie(input.getTargetType());
-					}
-				}));
+	@DataBoundSetter
+	public void setStaticGlobalConfigurationsList(List<? extends AbstractMultiActionDescribableGlobalConfiguration> staticGlobalConfigurations) throws IOException {
+		getStaticGlobalConfigurationsList().replaceBy(staticGlobalConfigurations);
+	}
+
+	public final DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> getSortedDynamicGlobalConfigurationsList() {
+		return getSortedDescribableList(getDynamicGlobalConfigurationsList());
+	}
+	
+	public final DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> getSortedStaticGlobalConfigurationsList() {
+		return getSortedDescribableList(getStaticGlobalConfigurationsList());
+	}
+
+	private DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> getSortedDescribableList(
+			DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> original) {
+		DescribableList<AbstractMultiActionDescribableGlobalConfiguration, AbstractMultiActionDescriptorGlobalConfiguration> result = 
+				new DescribableList<>(this, original);
 		result.sort(new OrderComparator());
 		return result;
 	}
+	
+	public final List<? extends AbstractMultiActionDescriptorGlobalConfiguration> getAllDynamicGlobalConfigurationDescriptors() {
+		return getAllGlobalConfigurationDescriptors(getDynamicGlobalConfigurationDescriptorType());
+	}
 
-	public final List<AbstractMultiActionDescriptorGlobalConfiguration<?>> getAllGlobalConfigurationDescriptors() {
-		ExtensionList<AbstractMultiActionDescriptorGlobalConfiguration<?>> list = Jenkins.getInstance().getExtensionList(getDescribableGlobalConfigurationDescriptorType());
-		List<AbstractMultiActionDescriptorGlobalConfiguration<?>> result = new ArrayList<>(list);
+	public final List<? extends AbstractMultiActionDescriptorGlobalConfiguration> getAllStaticGlobalConfigurationDescriptors() {
+		return getAllGlobalConfigurationDescriptors(getStaticGlobalConfigurationDescriptorType());
+	}
+
+	private List<? extends AbstractMultiActionDescriptorGlobalConfiguration> getAllGlobalConfigurationDescriptors(Class<? extends AbstractMultiActionDescriptorGlobalConfiguration> describableGlobalConfigurationActionDescriptorType) {
+		ExtensionList<? extends AbstractMultiActionDescriptorGlobalConfiguration> list = Jenkins.getInstance().getExtensionList(describableGlobalConfigurationActionDescriptorType);
+		List<? extends AbstractMultiActionDescriptorGlobalConfiguration> result = new ArrayList<>(list);
 		result.sort(new OrderComparator());
 		return result;
 	}
@@ -112,17 +139,16 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 	}
 
 	public final boolean isEnabled(Class<?> configurableDescribableType) {
-		return getTargetTypeToEnabledActionsDefaultConfigsMap().containsKey(configurableDescribableType);
+		return getTargetTypeToDynamicGlobalConfigurationsMap().containsKey(configurableDescribableType);
 	}
 
-	@SuppressWarnings("unchecked")
-	public final <R> R getDefaultConfig(Class<?> configurableDescribableType, Class<R> returnType) {
-		AbstractMultiActionDescribableGlobalConfiguration<?> config = getTargetTypeToEnabledActionsDefaultConfigsMap().get(configurableDescribableType);
-		return config == null ? null : (R)config.getTarget();
+	public final Describable<?> getDefaultConfiguration(Class<?> configurableDescribableType) {
+		AbstractMultiActionDescribableGlobalConfiguration config = getGlobalConfiguration(configurableDescribableType);
+		return config == null ? null : config.getTarget();
 	}
 	
 	public final boolean isOverrideAllowed(Class<?> configurableDescribableType, String propertyName) {
-		AbstractMultiActionDescribableGlobalConfiguration<?> config = getTargetTypeToEnabledActionsDefaultConfigsMap().get(configurableDescribableType);
+		AbstractMultiActionDescribableGlobalConfiguration config = getGlobalConfiguration(configurableDescribableType);
 		if ( config==null ) { return true; }
 		if ( config.isAllowOverride() ) { return true; }
 		return isGlobalConfigurationPropertyBlankOrNotSpecified(configurableDescribableType, propertyName);
@@ -145,7 +171,7 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 
 	@SuppressWarnings("unchecked")
 	public final <R> R getGlobalConfigurationPropertyValue(Class<?> configurableDescribableType, String propertyName, Class<R> returnType) {
-		AbstractMultiActionDescribableGlobalConfiguration<?> config = getTargetTypeToEnabledActionsDefaultConfigsMap().get(configurableDescribableType);
+		AbstractMultiActionDescribableGlobalConfiguration config = getGlobalConfiguration(configurableDescribableType);
 		try {
 			return config == null ? null : (R)ReflectionUtils.getPublicProperty(config.getTarget(), propertyName);
 		} catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
@@ -161,24 +187,41 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 			return value==null;
 		}
 	}
-
-	private final Map<Class<AbstractMultiActionConfigurableDescribable<?,?>>, AbstractMultiActionDescribableGlobalConfiguration<?>> getTargetTypeToEnabledActionsDefaultConfigsMap() {
-		if ( targetTypeToEnabledActionsDefaultConfigsMap == null ) {
-			targetTypeToEnabledActionsDefaultConfigsMap = Maps.uniqueIndex(enabledActionsDefaultConfigs, new Function<AbstractMultiActionDescribableGlobalConfiguration<?>, Class<AbstractMultiActionConfigurableDescribable<?,?>>> () {
-				@Override
-				public Class<AbstractMultiActionConfigurableDescribable<?,?>> apply(AbstractMultiActionDescribableGlobalConfiguration<?> input) {
-					return input.getTargetType();
-				}
-			    
-			    });
-		};
-		return targetTypeToEnabledActionsDefaultConfigsMap;
+	
+	private AbstractMultiActionDescribableGlobalConfiguration getGlobalConfiguration(Class<?> configurableDescribableType) {
+		AbstractMultiActionDescribableGlobalConfiguration result = getTargetTypeToDynamicGlobalConfigurationsMap().get(configurableDescribableType);
+		if ( result == null ) {
+			result = getTargetTypeToStaticGlobalConfigurationsMap().get(configurableDescribableType);
+		}
+		return result;
 	}
 
-	protected List<AbstractMultiActionDescribableGlobalConfiguration<?>> getDefaultEnabledActionsDefaultConfigs() {
-		return new ArrayList<>();
-		
-		/*
+	private final Map<Class<? extends AbstractMultiActionConfigurableDescribable>, AbstractMultiActionDescribableGlobalConfiguration> getTargetTypeToDynamicGlobalConfigurationsMap() {
+		if ( targetTypeToDynamicGlobalConfigurationsMap==null ) {
+			targetTypeToDynamicGlobalConfigurationsMap = createTargetTypesToDefaultConfigsMap(getDynamicGlobalConfigurationsList());
+		}
+		return targetTypeToDynamicGlobalConfigurationsMap;
+	}
+	
+	private final Map<Class<? extends AbstractMultiActionConfigurableDescribable>, AbstractMultiActionDescribableGlobalConfiguration> getTargetTypeToStaticGlobalConfigurationsMap() {
+		if ( targetTypeToStaticGlobalConfigurationsMap==null ) {
+			targetTypeToStaticGlobalConfigurationsMap = createTargetTypesToDefaultConfigsMap(getStaticGlobalConfigurationsList());
+		}
+		return targetTypeToStaticGlobalConfigurationsMap;
+	}
+
+	private Map<Class<? extends AbstractMultiActionConfigurableDescribable>, AbstractMultiActionDescribableGlobalConfiguration> createTargetTypesToDefaultConfigsMap(List<AbstractMultiActionDescribableGlobalConfiguration> defaultConfigs) {
+		return defaultConfigs==null ? new HashMap<>() : Maps.uniqueIndex(defaultConfigs, new Function<AbstractMultiActionDescribableGlobalConfiguration, Class<? extends AbstractMultiActionConfigurableDescribable>> () {
+			@Override
+			public Class<? extends AbstractMultiActionConfigurableDescribable> apply(AbstractMultiActionDescribableGlobalConfiguration input) {
+				return input.getTargetType();
+			}
+		    
+		});
+	}
+
+	/* TODO re-implement this
+	private List<AbstractMultiActionDescribableGlobalConfiguration> getDefaultEnabledActionsDefaultConfigs() {
 		return !enableAllActionsByDefault() 
 				? new ArrayList<>() 
 				: Lists.newArrayList(Iterables.transform(getAllGlobalConfigurationDescriptors(),
@@ -188,8 +231,9 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 							return (MultiActionDescribableType) input.createDefaultInstance();
 						}
 					}));
-		*/
+		
 	}
+	*/
 	
 	/*
 	protected boolean enableAllActionsByDefault() {
@@ -197,9 +241,29 @@ public abstract class AbstractMultiActionGlobalConfiguration<T extends AbstractM
 	}
 	*/
 	
-	protected abstract <D extends AbstractMultiActionDescriptorGlobalConfiguration<?>> Class<D> getDescribableGlobalConfigurationDescriptorType();
+	protected abstract <D extends AbstractMultiActionDescriptorGlobalConfiguration> Class<D> getDynamicGlobalConfigurationDescriptorType();
+	protected abstract <D extends AbstractMultiActionDescriptorGlobalConfiguration> Class<D> getStaticGlobalConfigurationDescriptorType();
 	
 	public final Class<?> getTargetType() {
 		return AbstractMultiActionDescribableGlobalConfiguration.class;
+	}
+	
+	@Override
+	public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+		this.targetTypeToDynamicGlobalConfigurationsMap = null;
+		this.targetTypeToStaticGlobalConfigurationsMap = null;
+		
+		try {
+			System.out.println("Dynamic before: "+getAllDynamicGlobalConfigurationDescriptors());
+			getDynamicGlobalConfigurationsList().rebuildHetero(req, json, getAllDynamicGlobalConfigurationDescriptors(), "dynamicGlobalConfiguration");
+			System.out.println("Dynamic after: "+getAllDynamicGlobalConfigurationDescriptors());
+			System.out.println("Static before: "+getAllStaticGlobalConfigurationDescriptors());
+			getStaticGlobalConfigurationsList().rebuild(req, json, getAllStaticGlobalConfigurationDescriptors());
+			System.out.println("Static after: "+getAllStaticGlobalConfigurationDescriptors());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return super.configure(req, json);
 	}
 }

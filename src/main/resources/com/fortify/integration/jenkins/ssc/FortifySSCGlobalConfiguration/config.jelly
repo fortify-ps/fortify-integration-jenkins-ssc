@@ -8,12 +8,14 @@
         <f:validateButton title="${%Validate}" progress="${%Testing...}" method="testConnection" with="sscUrl" />
    		
    		<j:if test="${descriptor.connectionAvailable}">
-   			<j:set var="isGlobalConfig" value="${true}"/>
-	   		<f:property field="applicationAndVersionNameConfig" title="${%ApplicationAndVersionNameConfig}"/>
+   			<f:entry field="staticGlobalConfigurationsList">
+	   			<f:descriptorList descriptors="${descriptor.allStaticGlobalConfigurationDescriptors}" 
+	   				targetType="${descriptor.targetType}" forceRowSet="true"/>
+	   		</f:entry>
 	   		
 		    <f:nested>
-		    	<f:hetero-list name="enabledActionsDefaultConfigs" items="${descriptor.getInstanceOrDefault(instance).enabledActionsDefaultConfigs}" 
-		    		descriptors="${descriptor.allGlobalConfigurationDescriptors}" targetType="${descriptor.targetType}" 
+		    	<f:hetero-list name="dynamicGlobalConfigurationsList" descriptors="${descriptor.allDynamicGlobalConfigurationDescriptors}"
+		    		items="${descriptor.dynamicGlobalConfigurationsList}" targetType="${descriptor.targetType}" 
 		    		hasHeader="true" addCaption="${%Enable Action}" deleteCaption="${%Disable Action}" 
 		    		oneEach="true" honorOrder="true" />
 		    </f:nested>

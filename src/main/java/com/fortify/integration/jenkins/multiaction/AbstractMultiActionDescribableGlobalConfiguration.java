@@ -40,7 +40,7 @@ import jenkins.model.Jenkins;
  *
  * @param <T>
  */
-public abstract class AbstractMultiActionDescribableGlobalConfiguration<T extends AbstractMultiActionDescribableGlobalConfiguration<T>> extends AbstractDescribable<T> {
+public abstract class AbstractMultiActionDescribableGlobalConfiguration extends AbstractDescribable<AbstractMultiActionDescribableGlobalConfiguration> {
 	private static final long serialVersionUID = 1L;
 	private boolean enabledByDefault = true;
 	private boolean allowOverride = true;
@@ -64,9 +64,9 @@ public abstract class AbstractMultiActionDescribableGlobalConfiguration<T extend
 	}
 
 	public abstract Describable<?> getTarget();
-	public abstract <TargetType extends AbstractMultiActionConfigurableDescribable<?, ?>> Class<TargetType> getTargetType();
+	public abstract Class<? extends AbstractMultiActionConfigurableDescribable> getTargetType();
 
-	public static abstract class AbstractMultiActionDescriptorGlobalConfiguration<T extends AbstractMultiActionDescribableGlobalConfiguration<T>> extends AbstractDescriptor<T> implements Ordered {
+	public static abstract class AbstractMultiActionDescriptorGlobalConfiguration extends AbstractDescriptor<AbstractMultiActionDescribableGlobalConfiguration> implements Ordered {
 		/* This would be nice, but causes Jenkins to fail from starting up
 		@Override
 		public String getDisplayName() {

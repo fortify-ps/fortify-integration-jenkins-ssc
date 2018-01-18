@@ -24,6 +24,8 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.describable;
 
+import java.io.PrintStream;
+
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -33,7 +35,6 @@ import com.fortify.client.ssc.api.SSCApplicationAPI;
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCConfigurableDescribable;
 import com.fortify.integration.jenkins.ssc.json.processor.AddNamesToComboBoxModel;
 import com.fortify.util.rest.json.JSONMap;
 
@@ -42,7 +43,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.util.ComboBoxModel;
 
-public class FortifySSCDescribableApplicationAndVersionName extends AbstractFortifySSCConfigurableDescribable<FortifySSCDescribableApplicationAndVersionName, FortifySSCDescribableApplicationAndVersionName> {
+public class FortifySSCDescribableApplicationAndVersionName extends AbstractFortifySSCDescribableStatic {
 	private static final long serialVersionUID = 1L;
 	private String applicationName = "";
 	private String versionName = "";
@@ -65,7 +66,11 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 	}
 	
 	public String getApplicationName() {
-		return isApplicationNameOverrideAllowed() ? applicationName : getDefaultConfiguration().getApplicationName();
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed("applicationName", applicationName);
+	}
+	
+	private String getApplicationNameWithLog(PrintStream log) {
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "applicationName", applicationName);
 	}
 
 	@DataBoundSetter
@@ -74,7 +79,11 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 	}
 
 	public String getVersionName() {
-		return isVersionNameOverrideAllowed() ? versionName : getDefaultConfiguration().getVersionName();
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed("versionName", versionName);
+	}
+	
+	private String getVersionNameWithLog(PrintStream log) {
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "versionName", versionName);
 	}
 
 	@DataBoundSetter
@@ -82,24 +91,10 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 		this.versionName = versionName;
 	}
 	
-	public boolean isApplicationNameOverrideAllowed() {
-		// Allow override if we either were previously configured to allow override, or if current global config allows override
-		//FortifySSCDescribableApplicationAndVersionNameGlobal globalConfig = FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig();
-		//return globalConfig==null || globalConfig.isApplicationNameOverrideAllowed();
-		return true; // TODO
-	}
-	
-	public boolean isVersionNameOverrideAllowed() {
-		// Allow override if we either were previously configured to allow override, or if current global config allows override
-		//FortifySSCDescribableApplicationAndVersionNameGlobal globalConfig = FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig();
-		//return globalConfig==null || globalConfig.isVersionNameOverrideAllowed();
-		return true; // TODO
-	}
-	
-	public JSONMap getApplicationVersion(EnvVars env, boolean failIfNotFound) throws AbortException {
+	public JSONMap getApplicationVersion(EnvVars env, PrintStream log, boolean failIfNotFound) throws AbortException {
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
-		String applicationName = getExpandedApplicationName(env);
-		String versionName = getExpandedVersionName(env);
+		String applicationName = getExpandedApplicationName(env, log);
+		String versionName = getExpandedVersionName(env, log);
 		checkNotBlank(applicationName, "Application name cannot be blank");
 		checkNotBlank(versionName, "Version name cannot be blank");
 		JSONMap applicationVersion = conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions()
@@ -110,16 +105,16 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 		return applicationVersion;
 	}
 	
-	public String getApplicationVersionId(EnvVars env) throws AbortException {
-		return getApplicationVersion(env, true).get("id", String.class);
+	public String getApplicationVersionId(EnvVars env, PrintStream log) throws AbortException {
+		return getApplicationVersion(env, log, true).get("id", String.class);
 	}
 
-	public String getExpandedVersionName(EnvVars env) {
-		return env.expand(getVersionName());
+	public String getExpandedVersionName(EnvVars env, PrintStream log) {
+		return env.expand(getVersionNameWithLog(log));
 	}
 
-	public String getExpandedApplicationName(EnvVars env) {
-		return env.expand(getApplicationName());
+	public String getExpandedApplicationName(EnvVars env, PrintStream log) {
+		return env.expand(getApplicationNameWithLog(log));
 	}
 	
 	private void checkNotBlank(String stringToCheck, String messageIfBlank) throws AbortException {
@@ -129,7 +124,12 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 	}
 	
 	@Extension
-	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractFortifySSCConfigurableDescriptor<FortifySSCDescribableApplicationAndVersionName, FortifySSCDescribableApplicationAndVersionName> {
+	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractFortifySSCDescriptorStatic {
+		@Override
+		protected FortifySSCDescribableApplicationAndVersionName getDefaultConfiguration() {
+			return (FortifySSCDescribableApplicationAndVersionName)super.getDefaultConfiguration();
+		}
+		
         public ComboBoxModel doFillApplicationNameItems() {
 			final ComboBoxModel items = new ComboBoxModel();
 			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
@@ -155,23 +155,13 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 		}
 		
 		@Override
-		public FortifySSCDescribableApplicationAndVersionName createDefaultInstanceWithConfiguration() {
-			return new FortifySSCDescribableApplicationAndVersionName(FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig());
-		}
-		
-		@Override
 		public FortifySSCDescribableApplicationAndVersionName createDefaultInstance() {
 			return new FortifySSCDescribableApplicationAndVersionName();
 		}
 		
 		@Override
-		protected FortifySSCDescribableApplicationAndVersionName getDefaultConfiguration() {
-			return FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig();
-		}
-		
-		@Override
 		public int getOrder() {
-			return 10;
+			return 100;
 		}
     }
 }

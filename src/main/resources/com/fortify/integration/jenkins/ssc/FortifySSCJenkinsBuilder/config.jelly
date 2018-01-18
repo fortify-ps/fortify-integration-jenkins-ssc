@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-	<j:set var="isGlobalConfig" value="${false}"/>
-	<f:entry field="with">
-    	<f:property />
-    </f:entry>
-    
+	<f:entry field="staticJobConfigurationsList">
+		<f:descriptorList descriptors="${descriptor.allStaticJobConfigurationDescriptors}" 
+			targetType="${descriptor.targetType}" forceRowSet="true"/>
+	</f:entry>
+	
     <f:nested>
-    	<f:hetero-list name="actions" items="${descriptor.getInstanceOrDefault(instance).actions}" 
-    		descriptors="${descriptor.enabledDescriptors}" targetType="${descriptor.targetType}" 
-    		hasHeader="true" addCaption="${%Add Action}" deleteCaption="${%Delete Action}" 
-    		honorOrder="true" />
+    	<f:hetero-list name="dynamicGlobalConfigurationsList" descriptors="${descriptor.allDynamicJobConfigurationDescriptors}"
+    		items="${instance.staticGlobalConfigurationsList}" targetType="${descriptor.targetType}" 
+    		hasHeader="true" addCaption="${%Enable Action}" deleteCaption="${%Disable Action}" 
+    		oneEach="true" honorOrder="true" />
     </f:nested>
 </j:jelly>

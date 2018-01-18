@@ -1,7 +1,6 @@
 package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javax.servlet.ServletException;
 
@@ -13,8 +12,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
-import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCDescribableActionGlobalConfiguration.AbstractFortifySSCDescriptorGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCDescribableStaticGlobalConfiguration.AbstractFortifySSCDescriptorStaticGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCDescribableActionGlobalConfiguration.AbstractFortifySSCDescriptorActionGlobalConfiguration;
 
 import hudson.Extension;
 import hudson.util.FormValidation;
@@ -24,7 +23,6 @@ import net.sf.json.JSONObject;
 @Extension
 public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConfiguration<FortifySSCGlobalConfiguration> {
 	private String sscUrl ="";
-	private FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameConfig;
 	private transient SSCAuthenticatingRestConnection conn = null;
 	
     /** @return the singleton instance */
@@ -46,15 +44,6 @@ public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConf
         save(); // Save immediately, so other global config sections can access SSC
     }
     
-    public FortifySSCDescribableApplicationAndVersionName getApplicationAndVersionNameConfig() {
-		return applicationAndVersionNameConfig;
-	}
-
-	@DataBoundSetter
-	public void setApplicationAndVersionNameConfig(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameConfig) {
-		this.applicationAndVersionNameConfig = applicationAndVersionNameConfig;
-	}
-    
     public SSCAuthenticatingRestConnection conn() {
     	if ( this.conn == null && StringUtils.isNotBlank(sscUrl) ) {
     		this.conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
@@ -64,14 +53,10 @@ public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConf
 	
 	@Override
 	public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
-		// Clear existing values 
-		// (if de-selected in UI, json will not contain object and thus not overwrite previous config)
-		setApplicationAndVersionNameConfig(null);
-		setEnabledActionsDefaultConfigs(new ArrayList<>());
-		
-		super.configure(req, json);
+		System.out.println(json.toString(2));
+		boolean result = super.configure(req, json);
 		save();
-		return true;
+		return result;
 	}
 
 	public FormValidation doCheckSscUrl(@QueryParameter String value) {
@@ -107,11 +92,17 @@ public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConf
 	public FortifySSCGlobalConfiguration createDefaultInstance() {
 		return new FortifySSCGlobalConfiguration();
 	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	
+	@SuppressWarnings("unchecked")
 	@Override
-	protected Class<AbstractFortifySSCDescriptorGlobalConfiguration> getDescribableGlobalConfigurationDescriptorType() {
-		return AbstractFortifySSCDescriptorGlobalConfiguration.class;
+	protected Class<AbstractFortifySSCDescriptorActionGlobalConfiguration> getDynamicGlobalConfigurationDescriptorType() {
+		return AbstractFortifySSCDescriptorActionGlobalConfiguration.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	protected Class<AbstractFortifySSCDescriptorStaticGlobalConfiguration> getStaticGlobalConfigurationDescriptorType() {
+		return AbstractFortifySSCDescriptorStaticGlobalConfiguration.class;
 	}
 
 }

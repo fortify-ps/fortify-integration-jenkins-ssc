@@ -32,7 +32,7 @@ import com.fortify.integration.jenkins.ssc.describable.action.FortifySSCDescriba
 import hudson.Extension;
 import hudson.model.Describable;
 
-public class FortifySSCDescribableCreateApplicationVersionActionGlobalConfiguration extends AbstractFortifySSCDescribableActionGlobalConfiguration<FortifySSCDescribableCreateApplicationVersionActionGlobalConfiguration> {
+public class FortifySSCDescribableCreateApplicationVersionActionGlobalConfiguration extends AbstractFortifySSCDescribableActionGlobalConfiguration {
 	private static final long serialVersionUID = 1L;
 	private FortifySSCDescribableCreateApplicationVersionAction target;
 	
@@ -48,14 +48,13 @@ public class FortifySSCDescribableCreateApplicationVersionActionGlobalConfigurat
 		this.target = target;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Class<FortifySSCDescribableCreateApplicationVersionAction> getTargetType() {
 		return FortifySSCDescribableCreateApplicationVersionAction.class;
 	}
 
 	@Extension
-	public static final class FortifySSCDescriptorCreateApplicationVersionActionGlobalConfiguration extends AbstractFortifySSCDescriptorGlobalConfiguration<FortifySSCDescribableCreateApplicationVersionActionGlobalConfiguration> {        
+	public static final class FortifySSCDescriptorCreateApplicationVersionActionGlobalConfiguration extends AbstractFortifySSCDescriptorActionGlobalConfiguration {        
         @Override
         public FortifySSCDescribableCreateApplicationVersionActionGlobalConfiguration createDefaultInstance() {
         	return new FortifySSCDescribableCreateApplicationVersionActionGlobalConfiguration();

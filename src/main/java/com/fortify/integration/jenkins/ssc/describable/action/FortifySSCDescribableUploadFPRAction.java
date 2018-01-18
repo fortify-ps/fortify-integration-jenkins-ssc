@@ -50,7 +50,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ListBoxModel;
 
-public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDescribableAction<FortifySSCDescribableUploadFPRAction, FortifySSCDescribableUploadFPRAction> {
+public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDescribableAction {
 	private static final long serialVersionUID = 1L;
 	private String fprAntFilter = "**/*.fpr";
 	private int processingTimeOutSeconds = 600;
@@ -119,7 +119,7 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 		PrintStream log = listener.getLogger();
 		EnvVars env = run.getEnvironment(listener);
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
-		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(env);
+		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(env, log);
 		FilePath fprFilePath = getFPRFilePath(workspace, log);
 		
 		final SSCArtifactAPI artifactApi = conn.api(SSCArtifactAPI.class);
@@ -155,12 +155,17 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 	
 	@Symbol("sscUploadFPR")
 	@Extension
-	public static final class FortifySSCDescriptorUploadFPRAction extends AbstractFortifySSCDescriptorAction<FortifySSCDescribableUploadFPRAction, FortifySSCDescribableUploadFPRAction> {
+	public static final class FortifySSCDescriptorUploadFPRAction extends AbstractFortifySSCDescriptorAction {
 		static final String DISPLAY_NAME = "Upload FPR file";
 
 		@Override
 		public FortifySSCDescribableUploadFPRAction createDefaultInstanceWithConfiguration() {
 			return new FortifySSCDescribableUploadFPRAction(getDefaultConfiguration());
+		}
+		
+		@Override
+		protected FortifySSCDescribableUploadFPRAction getDefaultConfiguration() {
+			return (FortifySSCDescribableUploadFPRAction)super.getDefaultConfiguration();
 		}
 		
 		@Override

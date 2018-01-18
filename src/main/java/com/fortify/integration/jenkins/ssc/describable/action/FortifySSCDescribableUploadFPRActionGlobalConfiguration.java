@@ -32,7 +32,7 @@ import com.fortify.integration.jenkins.ssc.describable.action.FortifySSCDescriba
 import hudson.Extension;
 import hudson.model.Describable;
 
-public class FortifySSCDescribableUploadFPRActionGlobalConfiguration extends AbstractFortifySSCDescribableActionGlobalConfiguration<FortifySSCDescribableUploadFPRActionGlobalConfiguration> {
+public class FortifySSCDescribableUploadFPRActionGlobalConfiguration extends AbstractFortifySSCDescribableActionGlobalConfiguration {
 	private static final long serialVersionUID = 1L;
 	private FortifySSCDescribableUploadFPRAction target;
 	
@@ -48,14 +48,13 @@ public class FortifySSCDescribableUploadFPRActionGlobalConfiguration extends Abs
 		this.target = target;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Class<FortifySSCDescribableUploadFPRAction> getTargetType() {
 		return FortifySSCDescribableUploadFPRAction.class;
 	}
 	
 	@Extension
-	public static final class FortifySSCDescriptorUploadFPRActionGlobalConfiguration extends AbstractFortifySSCDescriptorGlobalConfiguration<FortifySSCDescribableUploadFPRActionGlobalConfiguration> {        
+	public static final class FortifySSCDescriptorUploadFPRActionGlobalConfiguration extends AbstractFortifySSCDescriptorActionGlobalConfiguration {        
         @Override
         public FortifySSCDescribableUploadFPRActionGlobalConfiguration createDefaultInstance() {
         	return new FortifySSCDescribableUploadFPRActionGlobalConfiguration();

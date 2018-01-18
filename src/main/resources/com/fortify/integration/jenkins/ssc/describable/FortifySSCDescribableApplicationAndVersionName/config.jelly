@@ -11,7 +11,7 @@
 	
 	<f:entry field="applicationName" title="${%ApplicationName}">
 		<j:choose>
-			<j:when test="${instance.applicationNameOverrideAllowed}">
+			<j:when test="${instance.isOverrideAllowed('applicationName')}">
 			   <f:combobox />
 			</j:when>
 			<j:otherwise>
@@ -22,7 +22,7 @@
 	
 	<f:entry field="versionName" title="${%VersionName}">
 		<j:choose>
-			<j:when test="${instance.versionNameOverrideAllowed}">
+			<j:when test="${instance.isOverrideAllowed('versionName')}">
 			   <f:combobox />
 			</j:when>
 			<j:otherwise>

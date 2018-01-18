@@ -25,17 +25,24 @@
 package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Arrays;
 
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
 
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionBuilder;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable;
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCDescribableStatic.AbstractFortifySSCDescriptorStatic;
 import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
-import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCConfigurableDescribable;
 import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCDescribableAction;
+import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCDescribableAction.AbstractFortifySSCDescriptorAction;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -43,34 +50,54 @@ import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.Builder;
+import net.sf.json.JSONObject;
 
-public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder<AbstractFortifySSCDescribableAction<?,?>> {
-	// 'with' is a pretty strange name for this field, but it actually looks nice
-	// in pipeline jobs: performSSCAction( with: [applicationName: 'x', ...] actions: [...]) 
-	private FortifySSCDescribableApplicationAndVersionName with;
-	
+public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 	@DataBoundConstructor
 	public FortifySSCJenkinsBuilder() {}
 
 	public FortifySSCDescribableApplicationAndVersionName getWith() {
-		return with==null 
-				? new FortifySSCDescribableApplicationAndVersionName(FortifySSCGlobalConfiguration.get().getApplicationAndVersionNameConfig())
-				: with;
+		return getStaticJobConfiguration(FortifySSCDescribableApplicationAndVersionName.class);
 	}
 
+	// 'with' is a pretty strange name for this field, but it actually looks nice
+	// in pipeline jobs: performSSCAction( with: [applicationName: 'x', ...] actions: [...]) 
 	@DataBoundSetter
-	public void setWith(FortifySSCDescribableApplicationAndVersionName with) {
-		this.with = with;
-	}
-
-	@Override
-	protected void perform(AbstractFortifySSCDescribableAction<?,?> action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-		action.perform(with, build, workspace, launcher, listener);
+	public void setWith(FortifySSCDescribableApplicationAndVersionName with) throws IOException {
+		setStaticJobConfigurationsList(Arrays.asList(with));;
 	}
 	
 	@Override
-	protected String getStartPerformMessage() {
+	public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+		PrintStream log = listener.getLogger();
+		if ( StringUtils.isNotBlank(getStartPerformMessage()) ) {
+			log.println(getStartPerformMessage());
+		}
+		// TODO Move this to AbstractFortifySSCJobConfigWithApplicationVersionAction implementations that actually
+		//      need a workspace
+		if (workspace == null) { 
+			throw new AbortException("no workspace for " + build);
+		}
+		for ( AbstractMultiActionConfigurableDescribable action : getDynamicJobConfigurationsList()) {
+			if (action != null) {
+				perform(action, build, workspace, launcher, listener);
+			}
+		}
+	}
+
+	protected void perform(AbstractMultiActionConfigurableDescribable action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+		if ( action instanceof AbstractFortifySSCDescribableAction ) {
+			((AbstractFortifySSCDescribableAction)action).perform(getWith(), build, workspace, launcher, listener);
+		}
+	}
+	
+	private String getStartPerformMessage() {
 		return "HPE Security Fortify Jenkins plugin: " + FortifySSCGlobalConfiguration.get().conn().getBaseUrl();
+	}
+	
+	@Override
+	public void save() throws IOException {
+		// TODO Auto-generated method stub
 	}
 	
 	@Symbol("sscPerformActions")
@@ -97,10 +124,23 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder<Abstrac
 		protected AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
 			return FortifySSCGlobalConfiguration.get();
 		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		protected Class<AbstractFortifySSCDescriptorAction> getDynamicJobConfigurationDescriptorType() {
+			return AbstractFortifySSCDescriptorAction.class;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		protected Class<AbstractFortifySSCDescriptorStatic> getStaticJobConfigurationDescriptorType() {
+			return AbstractFortifySSCDescriptorStatic.class;
+		}
 		
-		public final Class<?> getTargetType() {
-			return AbstractFortifySSCConfigurableDescribable.class;
+		@Override
+		public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
+			System.out.println(json.toString(2));
+			return super.configure(req, json);
 		}
 	}
-
 }

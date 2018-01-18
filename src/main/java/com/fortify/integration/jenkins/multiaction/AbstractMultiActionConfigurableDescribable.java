@@ -34,13 +34,12 @@ import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import hudson.AbortException;
 import hudson.model.Describable;
 
-public abstract class AbstractMultiActionConfigurableDescribable<C extends Describable<C>, T extends AbstractMultiActionConfigurableDescribable<C, T>> extends AbstractDescribable<T> implements Serializable {
+public abstract class AbstractMultiActionConfigurableDescribable extends AbstractDescribable<AbstractMultiActionConfigurableDescribable> implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
-	@SuppressWarnings("unchecked")
 	@Override
-	public AbstractMultiActionConfigurableDescriptor<C,T> getDescriptor() {
-		return (AbstractMultiActionConfigurableDescriptor<C,T>) super.getDescriptor();
+	public AbstractMultiActionConfigurableDescriptor getDescriptor() {
+		return (AbstractMultiActionConfigurableDescriptor) super.getDescriptor();
 	}
 	
 	public final boolean isEnabled() {
@@ -58,12 +57,12 @@ public abstract class AbstractMultiActionConfigurableDescribable<C extends Descr
 	 * @return
 	 */
 	public final boolean isInstanceIsDefaultConfiguration() {
-		C defaultConfiguration = getDefaultConfiguration();
+		Describable<?> defaultConfiguration = getDefaultConfiguration();
 		return defaultConfiguration==null 
 				|| !defaultConfiguration.getClass().equals(this.getClass()) 
 				|| this == defaultConfiguration;
 	}
-	
+
 	public boolean isOverrideAllowed(String propertyName) {
 		return isInstanceIsDefaultConfiguration() 
 			|| getMultiActionGlobalConfiguration().isOverrideAllowed(this.getClass(), propertyName);
@@ -98,7 +97,7 @@ public abstract class AbstractMultiActionConfigurableDescribable<C extends Descr
 							this.getClass(), log, propertyName, currentValue);
 	}
 	
-	public final C getDefaultConfiguration() {
+	protected Describable<?> getDefaultConfiguration() {
 		return getDescriptor().getDefaultConfiguration();
 	}
 	
@@ -106,19 +105,13 @@ public abstract class AbstractMultiActionConfigurableDescribable<C extends Descr
 		return getDescriptor().getMultiActionGlobalConfiguration();
 	}
 	
-	public static abstract class AbstractMultiActionConfigurableDescriptor<C extends Describable<C>, T extends AbstractMultiActionConfigurableDescribable<C,T>> extends AbstractDescriptor<T> implements Ordered {		
-		/**
-		 * By default we return the dynamically added default configuration.
-		 * Subclasses that are statically configured must override this method.
-		 * This method assumes that the default configuration target type
-		 * is the same as the configurable type (C and T class parameters are
-		 * the same class). If not, this method must be overridden to get the 
-		 * default configuration using the correct types.
-		 * @return
-		 */
-		@SuppressWarnings("unchecked")
-		protected C getDefaultConfiguration() {
-			return (C)FortifySSCGlobalConfiguration.get().getDefaultConfig(getT(), getT());
+	public static abstract class AbstractMultiActionConfigurableDescriptor extends AbstractDescriptor<AbstractMultiActionConfigurableDescribable> implements Ordered {		
+		protected Describable<?> getDefaultConfiguration() {
+			return FortifySSCGlobalConfiguration.get().getDefaultConfiguration(getGlobalConfigurationTargetType());
+		}
+		
+		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
+			return getT();
 		}
 		
 		protected abstract AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration();

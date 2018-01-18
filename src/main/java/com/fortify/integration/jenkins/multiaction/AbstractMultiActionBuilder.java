@@ -25,27 +25,24 @@
 package com.fortify.integration.jenkins.multiaction;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.springframework.core.OrderComparator;
 
-import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable.AbstractMultiActionConfigurableDescriptor;
 
-import hudson.AbortException;
-import hudson.FilePath;
-import hudson.Launcher;
+import hudson.ExtensionList;
 import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.Saveable;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
+import hudson.util.DescribableList;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 
 /**
@@ -68,45 +65,59 @@ import jenkins.tasks.SimpleBuildStep;
  *
  * @param <DescribableActionJobType>
  */
-public abstract class AbstractMultiActionBuilder<DescribableActionJobType extends AbstractMultiActionConfigurableDescribable<?,?>> extends Builder implements SimpleBuildStep {
-	private List<DescribableActionJobType> actions;
-
-	public AbstractMultiActionBuilder() {
-		setActions(new ArrayList<>());
+public abstract class AbstractMultiActionBuilder extends Builder implements SimpleBuildStep, Saveable {
+	private volatile DescribableList<AbstractMultiActionConfigurableDescribable,AbstractMultiActionConfigurableDescriptor> dynamicJobConfigurationsList;
+	private volatile DescribableList<AbstractMultiActionConfigurableDescribable,AbstractMultiActionConfigurableDescriptor> staticJobConfigurationsList;
+	
+	public final DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getDynamicJobConfigurationsList() {
+		if (dynamicJobConfigurationsList == null) {
+			dynamicJobConfigurationsList = new DescribableList<AbstractMultiActionConfigurableDescribable,AbstractMultiActionConfigurableDescriptor>(this);
+        }
+		return dynamicJobConfigurationsList;
 	}
 	
-	public List<DescribableActionJobType> getActions() {
-		return actions;
+	public final DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getStaticJobConfigurationsList() {
+		if (staticJobConfigurationsList == null) {
+			staticJobConfigurationsList = new DescribableList<AbstractMultiActionConfigurableDescribable,AbstractMultiActionConfigurableDescriptor>(this);
+        }
+		return staticJobConfigurationsList;
 	}
 
 	@DataBoundSetter
-	public void setActions(List<DescribableActionJobType> actions) {
-		this.actions = actions;
+	public void setDynamicJobConfigurationsList(List<? extends AbstractMultiActionConfigurableDescribable> dynamicJobConfigurations) throws IOException {
+		getDynamicJobConfigurationsList().replaceBy(dynamicJobConfigurations);
 	}
 
-	@Override
-	public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-		PrintStream log = listener.getLogger();
-		if ( StringUtils.isNotBlank(getStartPerformMessage()) ) {
-			log.println(getStartPerformMessage());
-		}
-		// TODO Move this to AbstractFortifySSCJobConfigWithApplicationVersionAction implementations that actually
-		//      need a workspace
-		if (workspace == null) { 
-			throw new AbortException("no workspace for " + build);
-		}
-		for (DescribableActionJobType action : getActions()) {
-			if (action != null) {
-				perform(action, build, workspace, launcher, listener);
-			}
-		}
-	}
-
-	protected String getStartPerformMessage() {
-		return getDescriptor().getDisplayName();
+	@DataBoundSetter
+	public void setStaticJobConfigurationsList(List<? extends AbstractMultiActionConfigurableDescribable> staticJobConfigurations) throws IOException {
+		getStaticJobConfigurationsList().replaceBy(staticJobConfigurations);
 	}
 	
-	protected abstract void perform(DescribableActionJobType action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
+	public final DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getSortedDynamicJobConfigurationsList() {
+		return getSortedDescribableList(getDynamicJobConfigurationsList());
+	}
+	
+	public final DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getSortedStaticJobConfigurationsList() {
+		return getSortedDescribableList(getStaticJobConfigurationsList());
+	}
+
+	private DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getSortedDescribableList(
+			DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> original) {
+		DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> result = 
+				new DescribableList<>(this, original);
+		result.sort(new OrderComparator());
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected <R extends AbstractMultiActionConfigurableDescribable> R getStaticJobConfiguration(Class<R> type) {
+		for ( AbstractMultiActionConfigurableDescribable staticConfigurable : getStaticJobConfigurationsList() ) {
+			if ( staticConfigurable!=null && staticConfigurable.getClass().equals(type) ) {
+				return (R)staticConfigurable;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public BuildStepMonitor getRequiredMonitorService() {
@@ -126,9 +137,29 @@ public abstract class AbstractMultiActionBuilder<DescribableActionJobType extend
 			return result;
 		}
 		
-		public final List<Descriptor<?>> getEnabledDescriptors() {
-			return getMultiActionGlobalConfiguration().getEnabledJobDescriptors();
+		public final List<? extends AbstractMultiActionConfigurableDescriptor> getAllDynamicJobConfigurationDescriptors() {
+			return getAllJobConfigurationDescriptors(getDynamicJobConfigurationDescriptorType());
 		}
+
+		public final List<? extends AbstractMultiActionConfigurableDescriptor> getAllStaticJobConfigurationDescriptors() {
+			return getAllJobConfigurationDescriptors(getStaticJobConfigurationDescriptorType());
+		}
+
+		private List<? extends AbstractMultiActionConfigurableDescriptor> getAllJobConfigurationDescriptors(Class<? extends AbstractMultiActionConfigurableDescriptor> describableJobConfigurationActionDescriptorType) {
+			ExtensionList<? extends AbstractMultiActionConfigurableDescriptor> list = Jenkins.getInstance().getExtensionList(describableJobConfigurationActionDescriptorType);
+			List<? extends AbstractMultiActionConfigurableDescriptor> result = new ArrayList<>(list);
+			result.sort(new OrderComparator());
+			return result;
+		}
+		
+		public final Class<?> getTargetType() {
+			return AbstractMultiActionConfigurableDescribable.class;
+		}
+		
+		protected abstract <D extends AbstractMultiActionConfigurableDescriptor> Class<D> getDynamicJobConfigurationDescriptorType();
+		protected abstract <D extends AbstractMultiActionConfigurableDescriptor> Class<D> getStaticJobConfigurationDescriptorType();
+		
+		
 		
 		public abstract T createDefaultInstance();
 

@@ -27,12 +27,10 @@ package com.fortify.integration.jenkins.ssc.describable;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribableGlobalConfiguration;
-
 import hudson.Extension;
 import hudson.model.Describable;
 
-public class FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration extends AbstractMultiActionDescribableGlobalConfiguration<FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration> {
+public class FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration extends AbstractFortifySSCDescribableStaticGlobalConfiguration {
 	private static final long serialVersionUID = 1L;
 	private FortifySSCDescribableApplicationAndVersionName target;
 	
@@ -48,14 +46,13 @@ public class FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration e
 		this.target = target;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Class<FortifySSCDescribableApplicationAndVersionName> getTargetType() {
 		return FortifySSCDescribableApplicationAndVersionName.class;
 	}
 
 	@Extension
-	public static final class FortifySSCDescriptorApplicationAndVersionNameGlobalConfiguration extends AbstractMultiActionDescriptorGlobalConfiguration<FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration> {        
+	public static final class FortifySSCDescriptorApplicationAndVersionNameGlobalConfiguration extends AbstractFortifySSCDescriptorStaticGlobalConfiguration {        
         @Override
         public FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration createDefaultInstance() {
         	return new FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration();

@@ -26,10 +26,10 @@ package com.fortify.integration.jenkins.ssc.describable.action;
 
 import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribableGlobalConfiguration;
 
-public abstract class AbstractFortifySSCDescribableActionGlobalConfiguration<T extends AbstractFortifySSCDescribableActionGlobalConfiguration<T>> extends AbstractMultiActionDescribableGlobalConfiguration<T> {
+public abstract class AbstractFortifySSCDescribableActionGlobalConfiguration extends AbstractMultiActionDescribableGlobalConfiguration {
 	private static final long serialVersionUID = 1L;
 
-	public static abstract class AbstractFortifySSCDescriptorGlobalConfiguration<T extends AbstractFortifySSCDescribableActionGlobalConfiguration<T>> extends AbstractMultiActionDescriptorGlobalConfiguration<T> {
+	public static abstract class AbstractFortifySSCDescriptorActionGlobalConfiguration extends AbstractMultiActionDescriptorGlobalConfiguration {
 		
 	}
 }

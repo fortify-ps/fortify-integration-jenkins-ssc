@@ -34,10 +34,5 @@ public abstract class AbstractFortifySSCDescribableStaticGlobalConfiguration ext
 		public boolean isStatic() {
 			return true;
 		}
-		
-		@Override
-		public String getDisplayName() {
-			return "Configure defaul application/version name";
-		}
 	}
 }

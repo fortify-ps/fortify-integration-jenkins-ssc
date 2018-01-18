@@ -62,5 +62,10 @@ public class FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration e
         protected Class<? extends Describable<?>> getTargetType() {
         	return FortifySSCDescribableApplicationAndVersionName.class;
         }
+        
+        @Override
+		public String getDisplayName() {
+			return "Configure default application/version name";
+		}
     }
 }

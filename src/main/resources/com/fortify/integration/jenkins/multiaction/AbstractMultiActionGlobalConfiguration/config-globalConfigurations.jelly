@@ -6,9 +6,11 @@
     <j:if test="${descriptor.showStaticGlobalConfigurationsList}">
 		<f:entry field="staticGlobalConfigurationsList">
 			<f:descriptorList descriptors="${descriptor.allStaticGlobalConfigurationDescriptors}" 
-				targetType="${descriptor.targetType}" />
+				targetType="${descriptor.targetType}" forceRowSet="true"/>
 		</f:entry>
 	</j:if>
+	
+	<st:include page="config-between.jelly" optional="false" class="${descriptor.clazz}"/>
 	
 	<j:if test="${descriptor.showDynamicGlobalConfigurationsList}">
 	    <f:nested>

@@ -24,11 +24,17 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.configurable.action;
 
-import com.fortify.integration.jenkins.ssc.configurable.AbstractFortifySSCConfigurableDescribableGlobalConfiguration;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableWithErrorHandlerGlobalConfiguration;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 
-public abstract class AbstractFortifySSCDescribableActionGlobalConfiguration extends AbstractFortifySSCConfigurableDescribableGlobalConfiguration {
+public abstract class AbstractFortifySSCDescribableActionGlobalConfiguration extends AbstractConfigurableDescribableWithErrorHandlerGlobalConfiguration {
 	private static final long serialVersionUID = 1L;
 
-	public static abstract class AbstractFortifySSCDescriptorActionGlobalConfiguration extends AbstractFortifySSCDescriptorConfigurableDescribableGlobalConfiguration {
+	public static abstract class AbstractFortifySSCDescriptorActionGlobalConfiguration extends AbstractDescriptorConfigurableDescribableWithErrorHandlerGlobalConfiguration {
+		@Override
+		protected AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
+			return FortifySSCGlobalConfiguration.get();
+		}
 	}
 }

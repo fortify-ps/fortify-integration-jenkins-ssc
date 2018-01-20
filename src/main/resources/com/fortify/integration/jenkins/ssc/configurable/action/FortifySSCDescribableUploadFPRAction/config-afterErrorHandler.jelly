@@ -31,6 +31,7 @@
     			<f:select />
     		</j:when>
 			<j:otherwise>
+				${descriptor.addCheckBoxPropertyName('autoApprove')}
 				<f:checkbox json="true" readonly="${'true'!=instance.isOverrideAllowed('autoApprove')}" clazz="readOnly"/>
 			</j:otherwise>
 		</j:choose>

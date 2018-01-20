@@ -38,13 +38,13 @@ import org.kohsuke.stapler.DataBoundSetter;
 import com.fortify.integration.jenkins.configurable.AbstractConfigurableBuilder;
 import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribable;
 import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribable.AbstractDescriptorConfigurableDescribable;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableWithErrorHandler.ErrorData;
 import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
 import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName.FortifySSCDescriptorApplicationAndVersionName;
 import com.fortify.integration.jenkins.ssc.configurable.action.AbstractFortifySSCDescribableAction;
 import com.fortify.integration.jenkins.ssc.configurable.action.AbstractFortifySSCDescribableAction.AbstractFortifySSCDescriptorAction;
 
-import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -83,22 +83,38 @@ public class FortifySSCJenkinsBuilder extends AbstractConfigurableBuilder {
 		if ( StringUtils.isNotBlank(getStartPerformMessage()) ) {
 			log.println(getStartPerformMessage());
 		}
-		// TODO Move this to AbstractFortifySSCJobConfigWithApplicationVersionAction implementations that actually
-		//      need a workspace
-		if (workspace == null) { 
-			throw new AbortException("no workspace for " + build);
-		}
+		ErrorData currentErrorData = new ErrorData();
 		for ( AbstractConfigurableDescribable action : getDynamicJobConfigurationsList()) {
 			if (action != null) {
-				perform(action, build, workspace, launcher, listener);
+				if ( !perform(action, build, workspace, launcher, listener, currentErrorData) ) { break; }
 			}
 		}
+		currentErrorData.markBuild(build);
 	}
 
-	protected void perform(AbstractConfigurableDescribable action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+	/**
+	 * Perform the given action
+	 * @param action
+	 * @param build
+	 * @param workspace
+	 * @param launcher
+	 * @param listener
+	 * @param currentErrorData
+	 * @return true if we can continue with the next action, false otherwise
+	 * @throws InterruptedException
+	 * @throws IOException
+	 */
+	protected boolean perform(AbstractConfigurableDescribable action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, ErrorData currentErrorData) throws InterruptedException, IOException {
+		PrintStream log = listener.getLogger();
 		if ( action instanceof AbstractFortifySSCDescribableAction ) {
-			((AbstractFortifySSCDescribableAction)action).performWithCheck(getWith(), build, workspace, launcher, listener);
+			AbstractFortifySSCDescribableAction sscAction = (AbstractFortifySSCDescribableAction)action;
+			try {
+				sscAction.performWithCheck(getWith(), build, workspace, launcher, listener);
+			} catch ( Exception e ) {
+				return !sscAction.handleException(log, e, currentErrorData);
+			}
 		}
+		return true;
 	}
 	
 	private String getStartPerformMessage() {

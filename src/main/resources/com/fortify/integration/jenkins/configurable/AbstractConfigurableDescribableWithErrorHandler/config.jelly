@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+	<j:set var="instance" value="${descriptor.getInstanceOrDefault(instance)}"/>
+	
+	<style type="text/css">
+		.readOnly {
+			background-color: lightgrey;
+		}
+	</style>
+	
+	<f:entry field="stopOnFailure" title="${%StopOnFailure}">
+		<j:choose>
+			<j:when test="${isGlobalConfig}">
+    			<f:select />
+    		</j:when>
+			<j:otherwise>
+				${descriptor.addCheckBoxPropertyName('stopOnFailure')}
+				<f:checkbox json="true" default="true" readonly="${'true'!=instance.isOverrideAllowed('stopOnFailure')}" clazz="readOnly"/>
+			</j:otherwise>
+		</j:choose>
+	</f:entry>
+	
+	<f:entry field="buildResultOnFailure" title="${%BuildResultOnFailure}">
+		<j:choose>
+			<j:when test="${instance.isOverrideAllowed('buildResultOnFailure')}">
+			   <f:select />
+			</j:when>
+			<j:otherwise>
+				<f:readOnlyTextbox clazz="readOnly" />
+			</j:otherwise>
+		</j:choose>   
+	</f:entry>
+	
+	<st:include page="config-afterErrorHandler.jelly" optional="true" class="${descriptor.clazz}"/>
+	
+</j:jelly>

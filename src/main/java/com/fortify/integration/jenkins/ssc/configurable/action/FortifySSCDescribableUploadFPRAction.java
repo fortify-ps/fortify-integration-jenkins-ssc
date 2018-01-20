@@ -77,7 +77,7 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 	}
 	
 	public String getFprAntFilter() {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed("fprAntFilter", fprAntFilter);
+		return getFprAntFilterWithLog(null);
 	}
 	
 	private String getFprAntFilterWithLog(PrintStream log) {
@@ -90,7 +90,7 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 	}
 
 	public int getProcessingTimeOutSeconds() {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed("processingTimeOutSeconds", processingTimeOutSeconds);
+		return getProcessingTimeOutSecondsWithLog(null);
 	}
 	
 	private int getProcessingTimeOutSecondsWithLog(PrintStream log) {
@@ -103,7 +103,7 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 	}
 
 	public String getAutoApprove() {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed("autoApprove", autoApprove);
+		return getAutoApproveWithLog(null);
 	}
 	
 	private String getAutoApproveWithLog(PrintStream log) {
@@ -197,10 +197,7 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 		}
 		
 		public ListBoxModel doFillAutoApproveItems() {
-			final ListBoxModel items = ModelHelper.createListBoxModelWithNotSpecifiedOption();
-			items.add("Yes", "true");
-			items.add("No", "false");
-			return items;
+			return ModelHelper.createBooleanListBoxModel(true);
 		}
     }
 }

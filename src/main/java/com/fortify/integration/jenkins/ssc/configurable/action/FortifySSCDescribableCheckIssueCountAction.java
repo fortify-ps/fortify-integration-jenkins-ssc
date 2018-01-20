@@ -106,7 +106,7 @@ public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifyS
 	}
 
 	public int getRhsNumber(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "number", rhsNumber);
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "rhsNumber", rhsNumber);
 	}
 
 	@DataBoundSetter
@@ -183,7 +183,7 @@ public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifyS
 		}
 		
 		public ListBoxModel doFillOperatorItems() {
-			final ListBoxModel items = ModelHelper.createListBoxModelWithNotSpecifiedOption();
+			final ListBoxModel items = ModelHelper.createListBoxModel(true);
 			items.add("<");
 			items.add("=");
 			items.add(">");

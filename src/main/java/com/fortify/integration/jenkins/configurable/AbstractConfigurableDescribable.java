@@ -26,11 +26,15 @@ package com.fortify.integration.jenkins.configurable;
 
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.core.Ordered;
 
 import hudson.AbortException;
 import hudson.model.Describable;
+import net.sf.json.JSONObject;
 
 public abstract class AbstractConfigurableDescribable extends AbstractDescribable<AbstractConfigurableDescribable> implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -104,13 +108,39 @@ public abstract class AbstractConfigurableDescribable extends AbstractDescribabl
 		return getDescriptor().getConfigurableGlobalConfiguration();
 	}
 	
-	public static abstract class AbstractDescriptorConfigurableDescribable extends AbstractDescriptor<AbstractConfigurableDescribable> implements Ordered {		
+	public static abstract class AbstractDescriptorConfigurableDescribable extends AbstractDescriptor<AbstractConfigurableDescribable> implements Ordered {
+		private transient Set<String> checkBoxPropertyNames = new HashSet<String>();
+		
 		protected Describable<?> getDefaultConfiguration() {
 			return getConfigurableGlobalConfiguration().getDefaultConfiguration(getGlobalConfigurationTargetType());
 		}
 		
 		public final boolean isGlobalConfigurationAvailable() {
 			return getConfigurableGlobalConfiguration().isGlobalConfigurationAvailable(getGlobalConfigurationTargetType());
+		}
+		
+		@Override
+		public AbstractConfigurableDescribable newInstance(StaplerRequest req, JSONObject formData) throws hudson.model.Descriptor.FormException {
+			addUncheckedCheckboxValues(formData);
+			return super.newInstance(req, formData);
+		}
+		
+		@Override
+		public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
+			addUncheckedCheckboxValues(json);
+			return super.configure(req, json);
+		}
+		
+		private final void addUncheckedCheckboxValues(JSONObject formData) {
+			for ( String propertyName : checkBoxPropertyNames ) {
+				if ( !formData.containsKey(propertyName) ) {
+					formData.put(propertyName, false);
+				}
+			}
+		}
+		
+		public final void addCheckBoxPropertyName(String propertyName) {
+			this.checkBoxPropertyNames.add(propertyName);
 		}
 		
 		protected abstract Class<? extends Describable<?>> getGlobalConfigurationTargetType();

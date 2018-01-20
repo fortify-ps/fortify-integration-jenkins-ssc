@@ -34,6 +34,8 @@ import org.kohsuke.stapler.QueryParameter;
 import com.fortify.client.ssc.api.SSCApplicationAPI;
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribable;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.json.processor.AddNamesToComboBoxModel;
 import com.fortify.util.rest.json.JSONMap;
@@ -44,7 +46,7 @@ import hudson.Extension;
 import hudson.model.Describable;
 import hudson.util.ComboBoxModel;
 
-public class FortifySSCDescribableApplicationAndVersionName extends AbstractFortifySSCConfigurableDescribable {
+public class FortifySSCDescribableApplicationAndVersionName extends AbstractConfigurableDescribable {
 	private static final long serialVersionUID = 1L;
 	private String applicationName = "";
 	private String versionName = "";
@@ -125,11 +127,16 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 	}
 	
 	@Extension
-	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractFortifySSCDescriptorConfigurableDescribable {
+	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractDescriptorConfigurableDescribable {
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
 			return "Configure application and version name";
+		}
+		
+		@Override
+		protected AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
+			return FortifySSCGlobalConfiguration.get();
 		}
 		
 		@Override

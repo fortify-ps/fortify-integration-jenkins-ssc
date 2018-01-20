@@ -32,9 +32,18 @@ public class ModelHelper {
 	private static final String NOT_SPECIFIED = "Not Specified"; // TODO I18N this
 	private ModelHelper() {}
 
-	public static final ListBoxModel createListBoxModelWithNotSpecifiedOption() {
+	public static final ListBoxModel createListBoxModel(boolean includeNotSpecified) {
 		ListBoxModel result = new ListBoxModel();
-		result.add("Not Specified");
+		if ( includeNotSpecified ) {
+			result.add("Not Specified");
+		}
+		return result;
+	}
+	
+	public static final ListBoxModel createBooleanListBoxModel(boolean includeNotSpecified) {
+		ListBoxModel result = createListBoxModel(includeNotSpecified);
+		result.add("Yes", Boolean.TRUE.toString());
+		result.add("No", Boolean.FALSE.toString());
 		return result;
 	}
 	

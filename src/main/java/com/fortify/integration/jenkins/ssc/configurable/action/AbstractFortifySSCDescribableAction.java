@@ -26,24 +26,45 @@ package com.fortify.integration.jenkins.ssc.configurable.action;
 
 import java.io.IOException;
 
-import com.fortify.integration.jenkins.ssc.configurable.AbstractFortifySSCConfigurableDescribable;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableWithErrorHandler;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
 
+import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 
-public abstract class AbstractFortifySSCDescribableAction extends AbstractFortifySSCConfigurableDescribable {
+public abstract class AbstractFortifySSCDescribableAction extends AbstractConfigurableDescribableWithErrorHandler {
 	private static final long serialVersionUID = 1L;
 
-	public final void performWithCheck(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+	public final void performWithCheck(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		failIfGlobalConfigurationUnavailable(getDescriptor().getDisplayName()+" not enabled in global configuration");
-		listener.getLogger().println("Performing action "+getDescriptor().getDisplayName());
-		perform(applicationAndVersionNameJobConfig, run, workspace, launcher, listener);
+		listener.getLogger().println("Performing action '"+getDescriptor().getDisplayName()+"'");
+		if ( requiresWorkspace() && workspace == null ) { 
+			throw new AbortException("no workspace for " + build);
+		}
+		perform(applicationAndVersionNameJobConfig, build, workspace, launcher, listener);
 	}
 	
-	public abstract void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
+	/**
+	 * By default this method returns true, indicating that this action requires
+	 * a workspace. Actions that don't require a workspace should override this
+	 * method to return false.
+	 * @return
+	 */
+	protected boolean requiresWorkspace() {
+		return true;
+	}
+
+	public abstract void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
 	
-	public static abstract class AbstractFortifySSCDescriptorAction extends AbstractFortifySSCDescriptorConfigurableDescribable {}
+	public static abstract class AbstractFortifySSCDescriptorAction extends AbstractDescriptorConfigurableDescribableWithErrorHandler {
+		@Override
+		protected AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
+			return FortifySSCGlobalConfiguration.get();
+		}
+	}
 }

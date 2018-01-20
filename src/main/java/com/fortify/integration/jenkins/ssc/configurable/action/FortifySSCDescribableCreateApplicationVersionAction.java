@@ -72,7 +72,7 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
 	}
 	
 	public String getIssueTemplateName() {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed("issueTemplateName", issueTemplateName);
+		return getIssueTemplateNameWithLog(null);
 	}
 	
 	private String getIssueTemplateNameWithLog(PrintStream log) {
@@ -133,7 +133,7 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
 		}
 		
 		public ListBoxModel doFillIssueTemplateNameItems() {
-			final ListBoxModel items = ModelHelper.createListBoxModelWithNotSpecifiedOption();
+			final ListBoxModel items = ModelHelper.createListBoxModel(true);
 			JSONList issueTemplates = getIssueTemplates();
 			for ( JSONMap issueTemplate : issueTemplates.asValueType(JSONMap.class) ) {
 				items.add(issueTemplate.get("name", String.class));

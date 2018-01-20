@@ -29,8 +29,6 @@ import java.io.Serializable;
 
 import org.springframework.core.Ordered;
 
-import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
-
 import hudson.AbortException;
 import hudson.model.Describable;
 
@@ -103,20 +101,20 @@ public abstract class AbstractConfigurableDescribable extends AbstractDescribabl
 	}
 	
 	protected final AbstractConfigurableGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
-		return getDescriptor().getMultiActionGlobalConfiguration();
+		return getDescriptor().getConfigurableGlobalConfiguration();
 	}
 	
 	public static abstract class AbstractDescriptorConfigurableDescribable extends AbstractDescriptor<AbstractConfigurableDescribable> implements Ordered {		
 		protected Describable<?> getDefaultConfiguration() {
-			return FortifySSCGlobalConfiguration.get().getDefaultConfiguration(getGlobalConfigurationTargetType());
+			return getConfigurableGlobalConfiguration().getDefaultConfiguration(getGlobalConfigurationTargetType());
 		}
 		
 		public final boolean isGlobalConfigurationAvailable() {
-			return getMultiActionGlobalConfiguration().isGlobalConfigurationAvailable(getGlobalConfigurationTargetType());
+			return getConfigurableGlobalConfiguration().isGlobalConfigurationAvailable(getGlobalConfigurationTargetType());
 		}
 		
 		protected abstract Class<? extends Describable<?>> getGlobalConfigurationTargetType();
 		
-		protected abstract AbstractConfigurableGlobalConfiguration<?> getMultiActionGlobalConfiguration();
+		protected abstract AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration();
 	}
 }

@@ -27,8 +27,6 @@ package com.fortify.integration.jenkins.configurable;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.springframework.core.Ordered;
 
-import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
-
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
@@ -81,11 +79,11 @@ public abstract class AbstractConfigurableDescribableGlobalConfiguration extends
 		}
 		
 		public final boolean isStatic() {
-			return FortifySSCGlobalConfiguration.get().isStatic(getTargetType());
+			return getConfigurableGlobalConfiguration().isStatic(getTargetType());
 		}
 		
 		public final boolean isDynamic() {
-			return FortifySSCGlobalConfiguration.get().isDynamic(getTargetType());
+			return getConfigurableGlobalConfiguration().isDynamic(getTargetType());
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -94,5 +92,7 @@ public abstract class AbstractConfigurableDescribableGlobalConfiguration extends
 		}
 		
 		protected abstract Class<? extends Describable<?>> getTargetType();
+		
+		protected abstract AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration();
 	}
 }

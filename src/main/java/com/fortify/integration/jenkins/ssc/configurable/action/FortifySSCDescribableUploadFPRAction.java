@@ -35,9 +35,9 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 import com.fortify.client.ssc.api.SSCArtifactAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
+import com.fortify.integration.jenkins.configurable.ModelHelper;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
-import com.fortify.integration.jenkins.util.ModelHelper;
 import com.fortify.util.rest.json.JSONMap;
 
 import hudson.AbortException;

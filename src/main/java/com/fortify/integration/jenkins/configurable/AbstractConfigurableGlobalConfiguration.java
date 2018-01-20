@@ -39,7 +39,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.core.OrderComparator;
 
 import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableGlobalConfiguration.AbstractDescriptorConfigurableDescribableGlobalConfiguration;
-import com.fortify.integration.jenkins.util.ModelHelper;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 

@@ -27,12 +27,10 @@ package com.fortify.integration.jenkins.ssc.configurable;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableGlobalConfiguration;
-
 import hudson.Extension;
 import hudson.model.Describable;
 
-public class FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration extends AbstractConfigurableDescribableGlobalConfiguration {
+public class FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration extends AbstractFortifySSCConfigurableDescribableGlobalConfiguration {
 	private static final long serialVersionUID = 1L;
 	private FortifySSCDescribableApplicationAndVersionName target;
 	
@@ -54,7 +52,7 @@ public class FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration e
 	}
 
 	@Extension
-	public static final class FortifySSCDescriptorApplicationAndVersionNameGlobalConfiguration extends AbstractDescriptorConfigurableDescribableGlobalConfiguration {        
+	public static final class FortifySSCDescriptorApplicationAndVersionNameGlobalConfiguration extends AbstractFortifySSCDescriptorConfigurableDescribableGlobalConfiguration {        
         @Override
         public FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration createDefaultInstance() {
         	return new FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration();

@@ -22,19 +22,24 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.configurable;
+package com.fortify.integration.jenkins.configurable;
 
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribable;
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import org.apache.commons.lang.StringUtils;
 
-public abstract class AbstractFortifySSCConfigurableDescribable extends AbstractConfigurableDescribable {
-	private static final long serialVersionUID = 1L;
+import hudson.util.ListBoxModel;
 
-	public static abstract class AbstractFortifySSCDescriptorConfigurableDescribable extends AbstractDescriptorConfigurableDescribable {
-		@Override
-		protected AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
-			return FortifySSCGlobalConfiguration.get();
-		}
+public class ModelHelper {
+	private static final String NOT_SPECIFIED = "Not Specified"; // TODO I18N this
+	private ModelHelper() {}
+
+	public static final ListBoxModel createListBoxModelWithNotSpecifiedOption() {
+		ListBoxModel result = new ListBoxModel();
+		result.add("Not Specified");
+		return result;
 	}
+	
+	public static final boolean isNotSpecified(String value) {
+		return StringUtils.isBlank(value) || NOT_SPECIFIED.equals(value);
+	}
+	
 }

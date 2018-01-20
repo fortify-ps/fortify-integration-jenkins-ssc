@@ -10,7 +10,7 @@
       	</f:block>
    	</j:if>
 	
-	<j:if test="${!descriptor.static}">
+	<j:if test="${descriptor.dynamic}">
 		<f:entry field="enabledByDefault" title="${%EnableByDefault}">
 			<f:checkbox checked="${descriptor.getInstanceOrDefault(instance).enabledByDefault}" />
 		</f:entry> 

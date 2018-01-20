@@ -22,27 +22,33 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.multiaction;
+package com.fortify.integration.jenkins.configurable;
+
+import java.io.Serializable;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
-import jenkins.model.GlobalConfiguration;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
 
-public abstract class AbstractGlobalConfiguration<T extends AbstractGlobalConfiguration<T>> extends GlobalConfiguration {
-
-	public AbstractGlobalConfiguration() {
-		super();
-	}
+public abstract class AbstractDescribable<T extends AbstractDescribable<T>> extends AbstractDescribableImpl<T> implements Serializable {
+	private static final long serialVersionUID = 1L;
 
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
 	}
-
-	public T getInstanceOrDefault(T instance) {
-		return instance!=null ? instance : createDefaultInstance();
+	
+	public static abstract class AbstractDescriptor<T extends AbstractDescribable<T>> extends Descriptor<T> {
+		public T getInstanceOrDefault(T instance) {
+			return instance!=null ? instance : createDefaultInstanceWithConfiguration();
+		}
+		
+		public T createDefaultInstanceWithConfiguration() {
+			return createDefaultInstance();
+		};
+		
+		public abstract T createDefaultInstance();
 	}
-
-	public abstract T createDefaultInstance();
-
 }

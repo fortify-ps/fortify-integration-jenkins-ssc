@@ -22,12 +22,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable.action;
+package com.fortify.integration.jenkins.ssc.configurable.action;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.ssc.describable.action.FortifySSCDescribableCreateApplicationVersionAction.FortifySSCDescriptorCreateApplicationVersionAction;
+import com.fortify.integration.jenkins.ssc.configurable.action.FortifySSCDescribableCreateApplicationVersionAction.FortifySSCDescriptorCreateApplicationVersionAction;
 
 import hudson.Extension;
 import hudson.model.Describable;

@@ -22,17 +22,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable.action;
+package com.fortify.integration.jenkins.ssc.configurable;
 
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionDescribableGlobalConfiguration;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribable;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 
-public abstract class AbstractFortifySSCDescribableActionGlobalConfiguration extends AbstractMultiActionDescribableGlobalConfiguration {
+public abstract class AbstractFortifySSCConfigurableDescribable extends AbstractConfigurableDescribable {
 	private static final long serialVersionUID = 1L;
 
-	public static abstract class AbstractFortifySSCDescriptorActionGlobalConfiguration extends AbstractMultiActionDescriptorGlobalConfiguration {
+	public static abstract class AbstractFortifySSCDescriptorConfigurableDescribable extends AbstractDescriptorConfigurableDescribable {
 		@Override
-		public boolean isStatic() {
-			return false;
+		protected AbstractConfigurableGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
+			return FortifySSCGlobalConfiguration.get();
 		}
 	}
 }

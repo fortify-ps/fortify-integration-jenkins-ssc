@@ -22,7 +22,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable.action;
+package com.fortify.integration.jenkins.ssc.configurable.action;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,8 +36,9 @@ import org.kohsuke.stapler.DataBoundSetter;
 import com.fortify.client.ssc.api.SSCArtifactAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
 import com.fortify.integration.jenkins.util.ModelHelper;
+import com.fortify.util.rest.json.JSONMap;
 
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -51,6 +52,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ListBoxModel;
 
+// TODO Add functionality for aborting if processing is not complete after time-out
 public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDescribableAction {
 	private static final long serialVersionUID = 1L;
 	private String fprAntFilter = "**/*.fpr";
@@ -119,8 +121,11 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 		PrintStream log = listener.getLogger();
 		EnvVars env = run.getEnvironment(listener);
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
+		
 		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(env, log);
-		FilePath fprFilePath = getFPRFilePath(workspace, log);
+		final FilePath fprFilePath = getFPRFilePath(workspace, log);
+		final int processingTimeoutSeconds = getProcessingTimeOutSecondsWithLog(log); 
+		final String autoApprove = getAutoApproveWithLog(log);
 		
 		final SSCArtifactAPI artifactApi = conn.api(SSCArtifactAPI.class);
 		String artifactId = fprFilePath.act(new FileCallable<String>() {
@@ -130,15 +135,17 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 
 			@Override
 			public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-				final int processingTimeoutSeconds = getProcessingTimeOutSecondsWithLog(log); 
-				if ( "true".equals(getAutoApproveWithLog(log)) ) {
+				if ( "true".equals(autoApprove) ) {
 					return artifactApi.uploadArtifactAndWaitProcessingCompletionWithApproval(applicationVersionId, f, "Auto-approved by Jenkins", processingTimeoutSeconds);
 				} else {
 					return artifactApi.uploadArtifactAndWaitProcessingCompletion(applicationVersionId, f, processingTimeoutSeconds);
 				}
 			}
 		});
-		log.println(artifactApi.getArtifactById(artifactId, true));
+		JSONMap artifact = artifactApi.getArtifactById(artifactId, true);
+		if ( processingTimeoutSeconds>0 && !"PROCESS_COMPLETE".equals(artifact.get("status")) ) {
+			throw new AbortException("Artifact was uploaded but not processed");
+		}
 	}
 
 	private FilePath getFPRFilePath(FilePath workspace, PrintStream log) throws IOException, InterruptedException {

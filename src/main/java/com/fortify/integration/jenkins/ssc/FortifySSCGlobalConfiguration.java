@@ -1,6 +1,8 @@
 package com.fortify.integration.jenkins.ssc;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 
 import javax.servlet.ServletException;
 
@@ -11,9 +13,10 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCDescribableStaticGlobalConfiguration.AbstractFortifySSCDescriptorStaticGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCDescribableActionGlobalConfiguration.AbstractFortifySSCDescriptorActionGlobalConfiguration;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableGlobalConfiguration.AbstractDescriptorConfigurableDescribableGlobalConfiguration;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration.FortifySSCDescriptorApplicationAndVersionNameGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.configurable.action.AbstractFortifySSCDescribableActionGlobalConfiguration.AbstractFortifySSCDescriptorActionGlobalConfiguration;
 
 import hudson.Extension;
 import hudson.util.FormValidation;
@@ -21,7 +24,7 @@ import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
 
 @Extension
-public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConfiguration<FortifySSCGlobalConfiguration> {
+public class FortifySSCGlobalConfiguration extends AbstractConfigurableGlobalConfiguration<FortifySSCGlobalConfiguration> {
 	private String sscUrl ="";
 	private transient SSCAuthenticatingRestConnection conn = null;
 	
@@ -112,16 +115,15 @@ public class FortifySSCGlobalConfiguration extends AbstractMultiActionGlobalConf
 		return new FortifySSCGlobalConfiguration();
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") // TODO How to fix this warning?
 	@Override
-	protected Class<AbstractFortifySSCDescriptorActionGlobalConfiguration> getDynamicGlobalConfigurationDescriptorType() {
-		return AbstractFortifySSCDescriptorActionGlobalConfiguration.class;
+	protected Collection<Class<? extends AbstractDescriptorConfigurableDescribableGlobalConfiguration>> getDynamicGlobalConfigurationDescriptorTypes() {
+		return Arrays.asList(AbstractFortifySSCDescriptorActionGlobalConfiguration.class);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") // TODO How to fix this warning?
 	@Override
-	protected Class<AbstractFortifySSCDescriptorStaticGlobalConfiguration> getStaticGlobalConfigurationDescriptorType() {
-		return AbstractFortifySSCDescriptorStaticGlobalConfiguration.class;
+	protected Collection<Class<? extends AbstractDescriptorConfigurableDescribableGlobalConfiguration>> getStaticGlobalConfigurationDescriptorTypes() {
+		return Arrays.asList(FortifySSCDescriptorApplicationAndVersionNameGlobalConfiguration.class);
 	}
-
 }

@@ -22,19 +22,27 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.configurable;
 
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable;
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-public abstract class AbstractFortifySSCConfigurableDescribable extends AbstractMultiActionConfigurableDescribable {
-	private static final long serialVersionUID = 1L;
+import jenkins.model.GlobalConfiguration;
 
-	public static abstract class AbstractFortifySSCConfigurableDescriptor extends AbstractMultiActionConfigurableDescriptor {
-		@Override
-		protected AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
-			return FortifySSCGlobalConfiguration.get();
-		}
+public abstract class AbstractGlobalConfiguration<T extends AbstractGlobalConfiguration<T>> extends GlobalConfiguration {
+
+	public AbstractGlobalConfiguration() {
+		super();
 	}
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
+
+	public T getInstanceOrDefault(T instance) {
+		return instance!=null ? instance : createDefaultInstance();
+	}
+
+	public abstract T createDefaultInstance();
+
 }

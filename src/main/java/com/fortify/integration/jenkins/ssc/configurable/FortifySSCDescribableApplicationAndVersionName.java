@@ -22,7 +22,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.ssc.configurable;
 
 import java.io.PrintStream;
 
@@ -35,7 +35,6 @@ import com.fortify.client.ssc.api.SSCApplicationAPI;
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.describable.action.FortifySSCDescribableUploadFPRAction;
 import com.fortify.integration.jenkins.ssc.json.processor.AddNamesToComboBoxModel;
 import com.fortify.util.rest.json.JSONMap;
 
@@ -45,7 +44,7 @@ import hudson.Extension;
 import hudson.model.Describable;
 import hudson.util.ComboBoxModel;
 
-public class FortifySSCDescribableApplicationAndVersionName extends AbstractFortifySSCDescribableStatic {
+public class FortifySSCDescribableApplicationAndVersionName extends AbstractFortifySSCConfigurableDescribable {
 	private static final long serialVersionUID = 1L;
 	private String applicationName = "";
 	private String versionName = "";
@@ -126,7 +125,13 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 	}
 	
 	@Extension
-	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractFortifySSCDescriptorStatic {
+	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractFortifySSCDescriptorConfigurableDescribable {
+		@Override
+		public String getDisplayName() {
+			// TODO Internationalize this
+			return "Configure application and version name";
+		}
+		
 		@Override
 		public FortifySSCDescribableApplicationAndVersionName createDefaultInstanceWithConfiguration() {
 			return new FortifySSCDescribableApplicationAndVersionName(getDefaultConfiguration());
@@ -163,12 +168,6 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractFort
 						.processAll(new AddNamesToComboBoxModel(items));
 			}
 			return items;
-		}
-		
-		@Override
-		public String getDisplayName() {
-			// TODO Internationalize this
-			return "Configure application and version name";
 		}
 		
 		@Override

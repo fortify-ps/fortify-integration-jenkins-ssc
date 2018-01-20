@@ -22,7 +22,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.multiaction;
+package com.fortify.integration.jenkins.configurable;
 
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -34,12 +34,12 @@ import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import hudson.AbortException;
 import hudson.model.Describable;
 
-public abstract class AbstractMultiActionConfigurableDescribable extends AbstractDescribable<AbstractMultiActionConfigurableDescribable> implements Serializable {
+public abstract class AbstractConfigurableDescribable extends AbstractDescribable<AbstractConfigurableDescribable> implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	@Override
-	public AbstractMultiActionConfigurableDescriptor getDescriptor() {
-		return (AbstractMultiActionConfigurableDescriptor) super.getDescriptor();
+	public AbstractDescriptorConfigurableDescribable getDescriptor() {
+		return (AbstractDescriptorConfigurableDescribable) super.getDescriptor();
 	}
 	
 	public final void failIfGlobalConfigurationUnavailable(String message) throws AbortException {
@@ -102,11 +102,11 @@ public abstract class AbstractMultiActionConfigurableDescribable extends Abstrac
 		return getDescriptor().getDefaultConfiguration();
 	}
 	
-	protected final AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
+	protected final AbstractConfigurableGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
 		return getDescriptor().getMultiActionGlobalConfiguration();
 	}
 	
-	public static abstract class AbstractMultiActionConfigurableDescriptor extends AbstractDescriptor<AbstractMultiActionConfigurableDescribable> implements Ordered {		
+	public static abstract class AbstractDescriptorConfigurableDescribable extends AbstractDescriptor<AbstractConfigurableDescribable> implements Ordered {		
 		protected Describable<?> getDefaultConfiguration() {
 			return FortifySSCGlobalConfiguration.get().getDefaultConfiguration(getGlobalConfigurationTargetType());
 		}
@@ -117,6 +117,6 @@ public abstract class AbstractMultiActionConfigurableDescribable extends Abstrac
 		
 		protected abstract Class<? extends Describable<?>> getGlobalConfigurationTargetType();
 		
-		protected abstract AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration();
+		protected abstract AbstractConfigurableGlobalConfiguration<?> getMultiActionGlobalConfiguration();
 	}
 }

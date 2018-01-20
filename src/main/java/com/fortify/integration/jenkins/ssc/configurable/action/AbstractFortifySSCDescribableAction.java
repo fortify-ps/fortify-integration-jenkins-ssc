@@ -22,12 +22,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable.action;
+package com.fortify.integration.jenkins.ssc.configurable.action;
 
 import java.io.IOException;
 
-import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCConfigurableDescribable;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.ssc.configurable.AbstractFortifySSCConfigurableDescribable;
+import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
 
 import hudson.FilePath;
 import hudson.Launcher;
@@ -45,5 +45,5 @@ public abstract class AbstractFortifySSCDescribableAction extends AbstractFortif
 	
 	public abstract void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
 	
-	public static abstract class AbstractFortifySSCDescriptorAction extends AbstractFortifySSCConfigurableDescriptor {}
+	public static abstract class AbstractFortifySSCDescriptorAction extends AbstractFortifySSCDescriptorConfigurableDescribable {}
 }

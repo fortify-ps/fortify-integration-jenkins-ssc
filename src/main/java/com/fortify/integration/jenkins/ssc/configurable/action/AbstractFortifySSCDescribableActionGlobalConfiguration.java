@@ -22,15 +22,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.ssc.configurable.action;
 
-public abstract class AbstractFortifySSCDescribableStatic extends AbstractFortifySSCConfigurableDescribable {
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableGlobalConfiguration;
+
+public abstract class AbstractFortifySSCDescribableActionGlobalConfiguration extends AbstractConfigurableDescribableGlobalConfiguration {
 	private static final long serialVersionUID = 1L;
 
-	public static abstract class AbstractFortifySSCDescriptorStatic extends AbstractFortifySSCConfigurableDescriptor {
-		@Override
-		public String getDisplayName() {
-			return "Application Version";
-		}
+	public static abstract class AbstractFortifySSCDescriptorActionGlobalConfiguration extends AbstractDescriptorConfigurableDescribableGlobalConfiguration {
 	}
 }

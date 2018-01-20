@@ -27,6 +27,7 @@ package com.fortify.integration.jenkins.ssc;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -34,14 +35,14 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionBuilder;
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable;
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable.AbstractMultiActionConfigurableDescriptor;
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.describable.AbstractFortifySSCDescribableStatic.AbstractFortifySSCDescriptorStatic;
-import com.fortify.integration.jenkins.ssc.describable.FortifySSCDescribableApplicationAndVersionName;
-import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCDescribableAction;
-import com.fortify.integration.jenkins.ssc.describable.action.AbstractFortifySSCDescribableAction.AbstractFortifySSCDescriptorAction;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableBuilder;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribable;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribable.AbstractDescriptorConfigurableDescribable;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName.FortifySSCDescriptorApplicationAndVersionName;
+import com.fortify.integration.jenkins.ssc.configurable.action.AbstractFortifySSCDescribableAction;
+import com.fortify.integration.jenkins.ssc.configurable.action.AbstractFortifySSCDescribableAction.AbstractFortifySSCDescriptorAction;
 
 import hudson.AbortException;
 import hudson.Extension;
@@ -52,7 +53,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.DescribableList;
 
-public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
+public class FortifySSCJenkinsBuilder extends AbstractConfigurableBuilder {
 	@DataBoundConstructor
 	public FortifySSCJenkinsBuilder() {}
 
@@ -67,12 +68,12 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 		setStaticJobConfigurationsList(Arrays.asList(with));;
 	}
 	
-	public final DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getActions() {
+	public final DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> getActions() {
 		return getDynamicJobConfigurationsList();
 	}
 	
 	@DataBoundSetter
-	public void setActions(List<? extends AbstractMultiActionConfigurableDescribable> dynamicJobConfigurations) throws IOException {
+	public void setActions(List<? extends AbstractConfigurableDescribable> dynamicJobConfigurations) throws IOException {
 		setDynamicJobConfigurationsList(dynamicJobConfigurations);
 	}
 	
@@ -87,14 +88,14 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 		if (workspace == null) { 
 			throw new AbortException("no workspace for " + build);
 		}
-		for ( AbstractMultiActionConfigurableDescribable action : getDynamicJobConfigurationsList()) {
+		for ( AbstractConfigurableDescribable action : getDynamicJobConfigurationsList()) {
 			if (action != null) {
 				perform(action, build, workspace, launcher, listener);
 			}
 		}
 	}
 
-	protected void perform(AbstractMultiActionConfigurableDescribable action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+	protected void perform(AbstractConfigurableDescribable action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		if ( action instanceof AbstractFortifySSCDescribableAction ) {
 			((AbstractFortifySSCDescribableAction)action).performWithCheck(getWith(), build, workspace, launcher, listener);
 		}
@@ -111,7 +112,7 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 	
 	@Symbol("sscPerformActions")
 	@Extension
-	public static class DescriptorImpl extends AbstractDescriptorMultiActionBuilder {
+	public static class DescriptorImpl extends AbstractDescriptorConfigurableBuilder {
 	
 		@SuppressWarnings("rawtypes")
 		@Override
@@ -140,20 +141,20 @@ public class FortifySSCJenkinsBuilder extends AbstractMultiActionBuilder {
 		}
 		
 		@Override
-		protected AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
+		protected AbstractConfigurableGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
 			return FortifySSCGlobalConfiguration.get();
 		}
-
-		@SuppressWarnings("unchecked")
+		
+		@SuppressWarnings("unchecked") // TODO How to fix this warning?
 		@Override
-		protected Class<AbstractFortifySSCDescriptorAction> getDynamicJobConfigurationDescriptorType() {
-			return AbstractFortifySSCDescriptorAction.class;
+		protected Collection<Class<? extends AbstractDescriptorConfigurableDescribable>> getDynamicJobConfigurationDescriptorTypes() {
+			return Arrays.asList(AbstractFortifySSCDescriptorAction.class);
 		}
 
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("unchecked") // TODO How to fix this warning?
 		@Override
-		protected Class<AbstractFortifySSCDescriptorStatic> getStaticJobConfigurationDescriptorType() {
-			return AbstractFortifySSCDescriptorStatic.class;
+		protected Collection<Class<? extends AbstractDescriptorConfigurableDescribable>> getStaticJobConfigurationDescriptorTypes() {
+			return Arrays.asList(FortifySSCDescriptorApplicationAndVersionName.class);
 		}
 		
 		@Override

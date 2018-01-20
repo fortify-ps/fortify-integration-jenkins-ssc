@@ -22,10 +22,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.multiaction;
+package com.fortify.integration.jenkins.configurable;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -33,7 +34,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.core.OrderComparator;
 
-import com.fortify.integration.jenkins.multiaction.AbstractMultiActionConfigurableDescribable.AbstractMultiActionConfigurableDescriptor;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribable.AbstractDescriptorConfigurableDescribable;
 
 import hudson.ExtensionList;
 import hudson.model.Saveable;
@@ -65,35 +66,35 @@ import net.sf.json.JSONObject;
  *
  * @param <DescribableActionJobType>
  */
-public abstract class AbstractMultiActionBuilder extends Builder implements SimpleBuildStep, Saveable {
-	private volatile DescribableList<AbstractMultiActionConfigurableDescribable,AbstractMultiActionConfigurableDescriptor> dynamicJobConfigurationsList;
-	private volatile DescribableList<AbstractMultiActionConfigurableDescribable,AbstractMultiActionConfigurableDescriptor> staticJobConfigurationsList;
+public abstract class AbstractConfigurableBuilder extends Builder implements SimpleBuildStep, Saveable {
+	private volatile DescribableList<AbstractConfigurableDescribable,AbstractDescriptorConfigurableDescribable> dynamicJobConfigurationsList;
+	private volatile DescribableList<AbstractConfigurableDescribable,AbstractDescriptorConfigurableDescribable> staticJobConfigurationsList;
 	
-	public final DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getDynamicJobConfigurationsList() {
+	public final DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> getDynamicJobConfigurationsList() {
 		if (dynamicJobConfigurationsList == null) {
-			dynamicJobConfigurationsList = getDescriptor().addDefaultDynamicJobConfigurationsList(new DescribableList<AbstractMultiActionConfigurableDescribable,AbstractMultiActionConfigurableDescriptor>(this));
+			dynamicJobConfigurationsList = getDescriptor().addDefaultDynamicJobConfigurationsList(new DescribableList<AbstractConfigurableDescribable,AbstractDescriptorConfigurableDescribable>(this));
         }
 		return dynamicJobConfigurationsList;
 	}
 	
-	public final DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> getStaticJobConfigurationsList() {
+	public final DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> getStaticJobConfigurationsList() {
 		if (staticJobConfigurationsList == null) {
-			staticJobConfigurationsList = new DescribableList<AbstractMultiActionConfigurableDescribable,AbstractMultiActionConfigurableDescriptor>(this);
+			staticJobConfigurationsList = new DescribableList<AbstractConfigurableDescribable,AbstractDescriptorConfigurableDescribable>(this);
         }
 		return staticJobConfigurationsList;
 	}
 
-	protected void setDynamicJobConfigurationsList(List<? extends AbstractMultiActionConfigurableDescribable> dynamicJobConfigurations) throws IOException {
+	protected void setDynamicJobConfigurationsList(List<? extends AbstractConfigurableDescribable> dynamicJobConfigurations) throws IOException {
 		getDynamicJobConfigurationsList().replaceBy(dynamicJobConfigurations);
 	}
 
-	protected void setStaticJobConfigurationsList(List<? extends AbstractMultiActionConfigurableDescribable> staticJobConfigurations) throws IOException {
+	protected void setStaticJobConfigurationsList(List<? extends AbstractConfigurableDescribable> staticJobConfigurations) throws IOException {
 		getStaticJobConfigurationsList().replaceBy(staticJobConfigurations);
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected <R extends AbstractMultiActionConfigurableDescribable> R getStaticJobConfiguration(Class<R> type) {
-		for ( AbstractMultiActionConfigurableDescribable staticConfigurable : getStaticJobConfigurationsList() ) {
+	protected <R extends AbstractConfigurableDescribable> R getStaticJobConfiguration(Class<R> type) {
+		for ( AbstractConfigurableDescribable staticConfigurable : getStaticJobConfigurationsList() ) {
 			if ( staticConfigurable!=null && staticConfigurable.getClass().equals(type) ) {
 				return (R)staticConfigurable;
 			}
@@ -102,8 +103,8 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 	}
 	
 	@Override
-	public AbstractDescriptorMultiActionBuilder getDescriptor() {
-		return (AbstractDescriptorMultiActionBuilder)super.getDescriptor();
+	public AbstractDescriptorConfigurableBuilder getDescriptor() {
+		return (AbstractDescriptorConfigurableBuilder)super.getDescriptor();
 	}
 
 	@Override
@@ -116,9 +117,9 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 		return ToStringBuilder.reflectionToString(this);
 	}
 	
-	public static abstract class AbstractDescriptorMultiActionBuilder extends BuildStepDescriptor<Builder> {
+	public static abstract class AbstractDescriptorConfigurableBuilder extends BuildStepDescriptor<Builder> {
 
-		public final AbstractMultiActionBuilder getInstanceOrDefault(AbstractMultiActionBuilder instance) {
+		public final AbstractConfigurableBuilder getInstanceOrDefault(AbstractConfigurableBuilder instance) {
 			return instance!=null ? instance : createDefaultInstance();
 		}
 		
@@ -138,21 +139,24 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 			return "Delete";
 		}
 		
-		public final List<? extends AbstractMultiActionConfigurableDescriptor> getAllDynamicJobConfigurationDescriptors() {
-			return getAllJobConfigurationDescriptors(getDynamicJobConfigurationDescriptorType(), includeDynamicConfigurationDescriptorsWithoutGlobalConfiguration());
+		public final List<? extends AbstractDescriptorConfigurableDescribable> getAllDynamicJobConfigurationDescriptors() {
+			return getAllJobConfigurationDescriptors(getDynamicJobConfigurationDescriptorTypes(), includeDynamicConfigurationDescriptorsWithoutGlobalConfiguration());
 		}
 
-		public final List<? extends AbstractMultiActionConfigurableDescriptor> getAllStaticJobConfigurationDescriptors() {
-			return getAllJobConfigurationDescriptors(getStaticJobConfigurationDescriptorType(), includeStaticConfigurationDescriptorsWithoutGlobalConfiguration());
+		public final List<? extends AbstractDescriptorConfigurableDescribable> getAllStaticJobConfigurationDescriptors() {
+			return getAllJobConfigurationDescriptors(getStaticJobConfigurationDescriptorTypes(), includeStaticConfigurationDescriptorsWithoutGlobalConfiguration());
 		}
 
-		private final List<? extends AbstractMultiActionConfigurableDescriptor> getAllJobConfigurationDescriptors(Class<? extends AbstractMultiActionConfigurableDescriptor> describableJobConfigurationActionDescriptorType, boolean includeDescriptorsWithoutGlobalConfiguration) {
-			ExtensionList<? extends AbstractMultiActionConfigurableDescriptor> list = Jenkins.getInstance().getExtensionList(describableJobConfigurationActionDescriptorType);
-			List<? extends AbstractMultiActionConfigurableDescriptor> result = new ArrayList<>(list);
+		private final <D extends AbstractDescriptorConfigurableDescribable> List<D> getAllJobConfigurationDescriptors(Collection<Class<D>> types, boolean includeDescriptorsWithoutGlobalConfiguration) {
+			List<D> result = new ArrayList<>();
+			for ( Class<D> type : types ) {
+				ExtensionList<D> list = Jenkins.getInstance().getExtensionList(type);
+				result.addAll(list);
+			}
 			if ( !includeDescriptorsWithoutGlobalConfiguration ) {
-				result.removeIf(new Predicate<AbstractMultiActionConfigurableDescriptor>() {
+				result.removeIf(new Predicate<AbstractDescriptorConfigurableDescribable>() {
 					@Override
-					public boolean test(AbstractMultiActionConfigurableDescriptor d) {
+					public boolean test(AbstractDescriptorConfigurableDescribable d) {
 						return !d.isGlobalConfigurationAvailable();
 					}
 				});
@@ -161,8 +165,8 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 			return result;
 		}
 		
-		private DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> addDefaultDynamicJobConfigurationsList(DescribableList<AbstractMultiActionConfigurableDescribable, AbstractMultiActionConfigurableDescriptor> list) {
-            for ( AbstractMultiActionConfigurableDescriptor descriptor :  getAllDynamicJobConfigurationDescriptors() ) {
+		private DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> addDefaultDynamicJobConfigurationsList(DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> list) {
+            for ( AbstractDescriptorConfigurableDescribable descriptor :  getAllDynamicJobConfigurationDescriptors() ) {
                 if ( getMultiActionGlobalConfiguration().isEnabledByDefault(descriptor.getGlobalConfigurationTargetType()) ) {
                     list.add(descriptor.createDefaultInstanceWithConfiguration());
                 }
@@ -179,12 +183,12 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 		}
 		
 		public final Class<?> getTargetType() {
-			return AbstractMultiActionConfigurableDescribable.class;
+			return AbstractConfigurableDescribable.class;
 		}
 		
 		@Override
 		public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-			AbstractMultiActionBuilder newInstance = (AbstractMultiActionBuilder) super.newInstance(req, formData);
+			AbstractConfigurableBuilder newInstance = (AbstractConfigurableBuilder) super.newInstance(req, formData);
 		
 			try {
 				newInstance.getDynamicJobConfigurationsList().rebuildHetero(req, formData, getAllDynamicJobConfigurationDescriptors(), "dynamicJobConfigurationsList");
@@ -203,12 +207,12 @@ public abstract class AbstractMultiActionBuilder extends Builder implements Simp
 			return newInstance;
 		}
 		
-		protected abstract <D extends AbstractMultiActionConfigurableDescriptor> Class<D> getDynamicJobConfigurationDescriptorType();
-		protected abstract <D extends AbstractMultiActionConfigurableDescriptor> Class<D> getStaticJobConfigurationDescriptorType();
+		protected abstract <D extends AbstractDescriptorConfigurableDescribable> Collection<Class<D>> getDynamicJobConfigurationDescriptorTypes();
+		protected abstract <D extends AbstractDescriptorConfigurableDescribable> Collection<Class<D>> getStaticJobConfigurationDescriptorTypes();
 		
-		public abstract AbstractMultiActionBuilder createDefaultInstance();
+		public abstract AbstractConfigurableBuilder createDefaultInstance();
 
-		protected abstract AbstractMultiActionGlobalConfiguration<?> getMultiActionGlobalConfiguration();
+		protected abstract AbstractConfigurableGlobalConfiguration<?> getMultiActionGlobalConfiguration();
 	}
 
 }

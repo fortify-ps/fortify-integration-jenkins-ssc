@@ -22,50 +22,52 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.describable;
+package com.fortify.integration.jenkins.ssc.configurable.action;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
+import com.fortify.integration.jenkins.ssc.configurable.action.FortifySSCDescribableUploadFPRAction.FortifySSCDescriptorUploadFPRAction;
+
 import hudson.Extension;
 import hudson.model.Describable;
 
-public class FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration extends AbstractFortifySSCDescribableStaticGlobalConfiguration {
+public class FortifySSCDescribableCheckIssueCountActionGlobalConfiguration extends AbstractFortifySSCDescribableActionGlobalConfiguration {
 	private static final long serialVersionUID = 1L;
-	private FortifySSCDescribableApplicationAndVersionName target;
+	private FortifySSCDescribableCheckIssueCountAction target;
 	
 	@DataBoundConstructor
-	public FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration() {}
+	public FortifySSCDescribableCheckIssueCountActionGlobalConfiguration() {}
 	
-	public FortifySSCDescribableApplicationAndVersionName getTarget() {
+	public FortifySSCDescribableCheckIssueCountAction getTarget() {
 		return target;
 	}
 
 	@DataBoundSetter
-	public void setTarget(FortifySSCDescribableApplicationAndVersionName target) {
+	public void setTarget(FortifySSCDescribableCheckIssueCountAction target) {
 		this.target = target;
 	}
 	
 	@Override
-	public Class<FortifySSCDescribableApplicationAndVersionName> getTargetType() {
-		return FortifySSCDescribableApplicationAndVersionName.class;
+	public Class<FortifySSCDescribableCheckIssueCountAction> getTargetType() {
+		return FortifySSCDescribableCheckIssueCountAction.class;
 	}
-
+	
 	@Extension
-	public static final class FortifySSCDescriptorApplicationAndVersionNameGlobalConfiguration extends AbstractFortifySSCDescriptorStaticGlobalConfiguration {        
+	public static final class FortifySSCDescriptorUploadFPRActionGlobalConfiguration extends AbstractFortifySSCDescriptorActionGlobalConfiguration {        
         @Override
-        public FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration createDefaultInstance() {
-        	return new FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration();
+        public FortifySSCDescribableCheckIssueCountActionGlobalConfiguration createDefaultInstance() {
+        	return new FortifySSCDescribableCheckIssueCountActionGlobalConfiguration();
         }
         
         @Override
         protected Class<? extends Describable<?>> getTargetType() {
-        	return FortifySSCDescribableApplicationAndVersionName.class;
+        	return FortifySSCDescribableUploadFPRAction.class;
         }
         
         @Override
-		public String getDisplayName() {
-			return "Configure default application/version name";
-		}
+        public String getDisplayName() {
+        	return FortifySSCDescriptorUploadFPRAction.DISPLAY_NAME;
+        }
     }
 }

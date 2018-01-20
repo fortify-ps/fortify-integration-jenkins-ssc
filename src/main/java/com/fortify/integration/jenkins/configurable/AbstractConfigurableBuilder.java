@@ -46,26 +46,6 @@ import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 
-/**
- * To use, extend this class with correct generics types, and include the following in the
- * config.jelly page for your concrete implementation:
- * 
- * <pre>
- 	<f:nested>
-    	<f:hetero-list name="actions" items="${descriptor.getInstanceOrDefault(instance).actions}" 
-    		descriptors="${descriptor.enabledDescriptors}" targetType="${descriptor.targetType}" 
-    		hasHeader="true" addCaption="${%Add Action}" deleteCaption="${%Delete Action}" 
-    		honorOrder="true" />
-    </f:nested>
- * </pre>
- * 
- * This will automatically load all actions enabled in the global configuration, 
- * and allow to enable, disable and configure these instances for the current job.
- * 
- * @author Ruud Senden
- *
- * @param <DescribableActionJobType>
- */
 public abstract class AbstractConfigurableBuilder extends Builder implements SimpleBuildStep, Saveable {
 	private volatile DescribableList<AbstractConfigurableDescribable,AbstractDescriptorConfigurableDescribable> dynamicJobConfigurationsList;
 	private volatile DescribableList<AbstractConfigurableDescribable,AbstractDescriptorConfigurableDescribable> staticJobConfigurationsList;

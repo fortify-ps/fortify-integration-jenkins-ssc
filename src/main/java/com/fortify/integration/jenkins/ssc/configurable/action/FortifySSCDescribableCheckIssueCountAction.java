@@ -30,12 +30,14 @@ import java.io.PrintStream;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 import com.fortify.client.ssc.api.SSCIssueAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
 import com.fortify.integration.jenkins.util.ModelHelper;
+import com.fortify.util.rest.json.JSONMap;
 
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -45,14 +47,15 @@ import hudson.Launcher;
 import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 // TODO Add support for selecting SSC filterset
 public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifySSCDescribableAction {
 	private static final long serialVersionUID = 1L;
 	private String searchString = "";
-	private String operator = "GT";
-	private int number = 0;
+	private String operator = ">";
+	private int rhsNumber = 0;
 	
 	/**
 	 * Default constructor
@@ -68,7 +71,7 @@ public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifyS
 		if ( other != null ) {
 			setSearchString(other.getSearchString());
 			setOperator(other.getOperator());
-			setNumber(other.getNumber());
+			setRhsNumber(other.getRhsNumber());
 		}
 	}
 	
@@ -98,17 +101,17 @@ public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifyS
 		this.operator = operator;
 	}
 	
-	public int getNumber() {
-		return getNumber(null);
+	public int getRhsNumber() {
+		return getRhsNumber(null);
 	}
 
-	public int getNumber(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "number", number);
+	public int getRhsNumber(PrintStream log) {
+		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "number", rhsNumber);
 	}
 
 	@DataBoundSetter
-	public void setNumber(int number) {
-		this.number = number;
+	public void setRhsNumber(int rhsNumber) {
+		this.rhsNumber = rhsNumber;
 	}
 
 	@Override
@@ -116,17 +119,17 @@ public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifyS
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
 		EnvVars env = run.getEnvironment(listener);
-		int numberToCompare = getNumber(log);
+		int numberToCompare = getRhsNumber(log);
 		String operator = getOperator(log);
 		String searchString = getSearchString(log);
 		
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(env, log);
 		int numberOfIssues = conn.api(SSCIssueAPI.class).queryIssues(applicationVersionId)
-			.paramFilter(searchString).maxResults(number+1).paramFields("id").useCache(false)
+			.paramFilter(searchString).maxResults(rhsNumber+1).paramFields("id").useCache(false)
 			.build().getAll().size();
-		if ( !compare(numberOfIssues, operator, numberToCompare) ) {
-			throw new AbortException("Issue count check "+numberOfIssues+" "+operator+" "+numberToCompare+" failed");
+		if ( compare(numberOfIssues, operator, numberToCompare) ) {
+			throw new AbortException("Number of issues matching '"+searchString+"' "+operator+" "+numberToCompare);
 		}
 	}
 
@@ -145,7 +148,7 @@ public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifyS
 	
 	@Symbol("checkIssueCount")
 	@Extension
-	public static final class FortifySSCDescriptorCheckIssueCount extends AbstractFortifySSCDescriptorAction {
+	public static final class FortifySSCDescriptorCheckIssueCountAction extends AbstractFortifySSCDescriptorAction {
 		static final String DISPLAY_NAME = "Check Issue Count";
 
 		@Override
@@ -185,6 +188,16 @@ public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifyS
 			items.add("=");
 			items.add(">");
 			return items;
+		}
+		
+		public FormValidation doCheckSearchString(@QueryParameter String searchString) {
+			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
+			JSONMap result = conn.api(SSCIssueAPI.class).validateIssueSearchString(searchString);
+			if ( Boolean.TRUE.equals(result.get("valid", Boolean.class)) ) { //explicit equals to prevent rare NPE
+				return FormValidation.ok();
+			} else {
+				return FormValidation.error(result.get("msg", String.class));
+			}
 		}
     }
 }

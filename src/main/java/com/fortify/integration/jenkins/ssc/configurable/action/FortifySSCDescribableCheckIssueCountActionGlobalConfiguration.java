@@ -27,7 +27,7 @@ package com.fortify.integration.jenkins.ssc.configurable.action;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.ssc.configurable.action.FortifySSCDescribableUploadFPRAction.FortifySSCDescriptorUploadFPRAction;
+import com.fortify.integration.jenkins.ssc.configurable.action.FortifySSCDescribableCheckIssueCountAction.FortifySSCDescriptorCheckIssueCountAction;
 
 import hudson.Extension;
 import hudson.model.Describable;
@@ -67,7 +67,7 @@ public class FortifySSCDescribableCheckIssueCountActionGlobalConfiguration exten
         
         @Override
         public String getDisplayName() {
-        	return FortifySSCDescriptorUploadFPRAction.DISPLAY_NAME;
+        	return FortifySSCDescriptorCheckIssueCountAction.DISPLAY_NAME;
         }
     }
 }

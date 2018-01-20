@@ -40,7 +40,6 @@ import jenkins.model.Jenkins;
  * 
  * @author Ruud Senden
  *
- * @param <T>
  */
 public abstract class AbstractConfigurableDescribableGlobalConfiguration extends AbstractDescribable<AbstractConfigurableDescribableGlobalConfiguration> {
 	private static final long serialVersionUID = 1L;

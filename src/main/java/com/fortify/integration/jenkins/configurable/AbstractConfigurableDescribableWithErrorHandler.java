@@ -27,6 +27,7 @@ package com.fortify.integration.jenkins.configurable;
 import java.io.PrintStream;
 
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 import hudson.model.Result;
 import hudson.model.Run;
@@ -54,7 +55,6 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 
 	@DataBoundSetter
 	public void setStopOnFailure(String stopOnFailure) {
-		System.out.println("setStopOnFailure: "+stopOnFailure);
 		this.stopOnFailure = stopOnFailure;
 	}
 
@@ -85,12 +85,12 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 			return 0;
 		}
 		
-		public ListBoxModel doFillStopOnFailureItems() {
-			return ModelHelper.createBooleanListBoxModel(true);
+		public ListBoxModel doFillStopOnFailureItems(@QueryParameter String isGlobalConfig) {
+			return ModelHelper.createBooleanListBoxModel("true".equals(isGlobalConfig));
 		}
 		
-		public ListBoxModel doFillBuildResultOnFailureItems() {
-			final ListBoxModel items = ModelHelper.createListBoxModel(true);
+		public ListBoxModel doFillBuildResultOnFailureItems(@QueryParameter String isGlobalConfig) {
+			final ListBoxModel items = ModelHelper.createListBoxModel("true".equals(isGlobalConfig));
 			items.add(Result.SUCCESS.toString());
 			items.add(Result.UNSTABLE.toString());
 			items.add(Result.FAILURE.toString());

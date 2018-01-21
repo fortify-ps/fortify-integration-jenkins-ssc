@@ -32,6 +32,7 @@ import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 import com.fortify.client.ssc.api.SSCArtifactAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
@@ -196,8 +197,8 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 			return 200;
 		}
 		
-		public ListBoxModel doFillAutoApproveItems() {
-			return ModelHelper.createBooleanListBoxModel(true);
+		public ListBoxModel doFillAutoApproveItems(@QueryParameter String isGlobalConfig) {
+			return ModelHelper.createBooleanListBoxModel("true".equals(isGlobalConfig));
 		}
     }
 }

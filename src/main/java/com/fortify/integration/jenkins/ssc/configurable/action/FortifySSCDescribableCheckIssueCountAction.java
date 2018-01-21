@@ -182,8 +182,8 @@ public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifyS
 			return 500;
 		}
 		
-		public ListBoxModel doFillOperatorItems() {
-			final ListBoxModel items = ModelHelper.createListBoxModel(true);
+		public ListBoxModel doFillOperatorItems(@QueryParameter String isGlobalConfig) {
+			final ListBoxModel items = ModelHelper.createListBoxModel("true".equals(isGlobalConfig));
 			items.add("<");
 			items.add("=");
 			items.add(">");

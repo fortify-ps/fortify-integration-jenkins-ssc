@@ -21,6 +21,7 @@
 	</f:entry>
 	
 	<j:set var="isGlobalConfig" value="${true}"/>
+	<j:set var="isGlobalConfigString" value="true"/>
 	<f:entry field="target">
 		<f:property/>
 	</f:entry> 

@@ -30,6 +30,7 @@ import java.io.PrintStream;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 import com.fortify.client.ssc.api.SSCIssueTemplateAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
@@ -132,8 +133,8 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
 			return DISPLAY_NAME;
 		}
 		
-		public ListBoxModel doFillIssueTemplateNameItems() {
-			final ListBoxModel items = ModelHelper.createListBoxModel(true);
+		public ListBoxModel doFillIssueTemplateNameItems(@QueryParameter String isGlobalConfig) {
+			final ListBoxModel items = ModelHelper.createListBoxModel("true".equals(isGlobalConfig));
 			JSONList issueTemplates = getIssueTemplates();
 			for ( JSONMap issueTemplate : issueTemplates.asValueType(JSONMap.class) ) {
 				items.add(issueTemplate.get("name", String.class));

@@ -28,6 +28,7 @@ import hudson.model.Job;
 import hudson.model.Run;
 import jenkins.model.TransientActionFactory;
 
+@SuppressWarnings("rawtypes")
 @Extension
 /**
  * We don't use {@link TransientProjectActionFactory} because it appears to be cached and requires Jenkins to restart.
@@ -39,13 +40,15 @@ public class FortifySSCActionFactory extends TransientActionFactory<Job> {
   }
 
   @Override
-  public Collection<? extends Action> createFor(Job project) {
+  public Collection<? extends Action> createFor(Job job) {
     List<FortifySSCPageAction> actions = new LinkedList<>();
 
     // don't fetch builds that haven't finished yet
-    Run<?, ?> lastBuild = project.getLastCompletedBuild();
+    Run<?, ?> lastBuild = job.getLastCompletedBuild();
 
-    if (lastBuild != null) {
+    if (lastBuild != null) { 
+      // TODO Don't include the action if the job no longer has the FortifySSCJenkinsBuilder/PublishResultsToJenkins step,
+      //      even if the last build had this step enabled
       for (FortifySSCPublishAction a : lastBuild.getActions(FortifySSCPublishAction.class)) {
         actions.add(new FortifySSCPageAction(a));
       }

@@ -42,8 +42,8 @@ import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescriba
 import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
 import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName.FortifySSCDescriptorApplicationAndVersionName;
-import com.fortify.integration.jenkins.ssc.configurable.action.AbstractFortifySSCDescribableAction;
-import com.fortify.integration.jenkins.ssc.configurable.action.AbstractFortifySSCDescribableAction.AbstractFortifySSCDescriptorAction;
+import com.fortify.integration.jenkins.ssc.configurable.op.AbstractFortifySSCDescribableOp;
+import com.fortify.integration.jenkins.ssc.configurable.op.AbstractFortifySSCDescribableOp.AbstractFortifySSCDescriptorOp;
 
 import hudson.Extension;
 import hudson.FilePath;
@@ -62,18 +62,18 @@ public class FortifySSCJenkinsBuilder extends AbstractConfigurableBuilder {
 	}
 
 	// 'with' is a pretty strange name for this field, but it actually looks nice
-	// in pipeline jobs: performSSCAction( with: [applicationName: 'x', ...] actions: [...]) 
+	// in pipeline jobs: performOnSSC( with: [applicationName: 'x', ...] ops: [...]) 
 	@DataBoundSetter
 	public void setWith(FortifySSCDescribableApplicationAndVersionName with) throws IOException {
 		setStaticJobConfigurationsList(Arrays.asList(with));;
 	}
 	
-	public final DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> getActions() {
+	public final DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> getOps() {
 		return getDynamicJobConfigurationsList();
 	}
 	
 	@DataBoundSetter
-	public void setActions(List<? extends AbstractConfigurableDescribable> dynamicJobConfigurations) throws IOException {
+	public void setOps(List<? extends AbstractConfigurableDescribable> dynamicJobConfigurations) throws IOException {
 		setDynamicJobConfigurationsList(dynamicJobConfigurations);
 	}
 	
@@ -84,34 +84,34 @@ public class FortifySSCJenkinsBuilder extends AbstractConfigurableBuilder {
 			log.println(getStartPerformMessage());
 		}
 		ErrorData currentErrorData = new ErrorData();
-		for ( AbstractConfigurableDescribable action : getDynamicJobConfigurationsList()) {
-			if (action != null) {
-				if ( !perform(action, build, workspace, launcher, listener, currentErrorData) ) { break; }
+		for ( AbstractConfigurableDescribable describable : getDynamicJobConfigurationsList()) {
+			if (describable != null) {
+				if ( !perform(describable, build, workspace, launcher, listener, currentErrorData) ) { break; }
 			}
 		}
 		currentErrorData.markBuild(build);
 	}
 
 	/**
-	 * Perform the given action
-	 * @param action
+	 * Perform the given operation
+	 * @param describable
 	 * @param build
 	 * @param workspace
 	 * @param launcher
 	 * @param listener
 	 * @param currentErrorData
-	 * @return true if we can continue with the next action, false otherwise
+	 * @return true if we can continue with the next operation, false otherwise
 	 * @throws InterruptedException
 	 * @throws IOException
 	 */
-	protected boolean perform(AbstractConfigurableDescribable action, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, ErrorData currentErrorData) throws InterruptedException, IOException {
+	protected boolean perform(AbstractConfigurableDescribable describable, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, ErrorData currentErrorData) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		if ( action instanceof AbstractFortifySSCDescribableAction ) {
-			AbstractFortifySSCDescribableAction sscAction = (AbstractFortifySSCDescribableAction)action;
+		if ( describable instanceof AbstractFortifySSCDescribableOp ) {
+			AbstractFortifySSCDescribableOp op = (AbstractFortifySSCDescribableOp)describable;
 			try {
-				sscAction.performWithCheck(getWith(), build, workspace, launcher, listener);
+				op.performWithCheck(getWith(), build, workspace, launcher, listener);
 			} catch ( Exception e ) {
-				return !sscAction.handleException(log, e, currentErrorData);
+				return !op.handleException(log, e, currentErrorData);
 			}
 		}
 		return true;
@@ -121,12 +121,7 @@ public class FortifySSCJenkinsBuilder extends AbstractConfigurableBuilder {
 		return "HPE Security Fortify Jenkins plugin: " + FortifySSCGlobalConfiguration.get().conn().getBaseUrl();
 	}
 	
-	@Override
-	public void save() throws IOException {
-		// TODO Auto-generated method stub
-	}
-	
-	@Symbol("sscPerformActions")
+	@Symbol("performOnSSC")
 	@Extension
 	public static class DescriptorImpl extends AbstractDescriptorConfigurableBuilder {
 	
@@ -143,12 +138,12 @@ public class FortifySSCJenkinsBuilder extends AbstractConfigurableBuilder {
 		
 		@Override
 	    public String getDynamicJobConfigurationAddButtonDisplayName() {
-			return "Enable Action";
+			return "Enable Operation";
 		}
 		
 	    @Override
 		public String getDynamicJobConfigurationDeleteButtonDisplayName() {
-			return "Disable Action";
+			return "Disable Operation";
 		}
 	
 		@Override
@@ -157,14 +152,14 @@ public class FortifySSCJenkinsBuilder extends AbstractConfigurableBuilder {
 		}
 		
 		@Override
-		protected AbstractConfigurableGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
+		protected AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
 			return FortifySSCGlobalConfiguration.get();
 		}
 		
 		@SuppressWarnings("unchecked") // TODO How to fix this warning?
 		@Override
 		protected Collection<Class<? extends AbstractDescriptorConfigurableDescribable>> getDynamicJobConfigurationDescriptorTypes() {
-			return Arrays.asList(AbstractFortifySSCDescriptorAction.class);
+			return Arrays.asList(AbstractFortifySSCDescriptorOp.class);
 		}
 
 		@SuppressWarnings("unchecked") // TODO How to fix this warning?
@@ -177,5 +172,10 @@ public class FortifySSCJenkinsBuilder extends AbstractConfigurableBuilder {
 		protected boolean includeDynamicConfigurationDescriptorsWithoutGlobalConfiguration() {
 			return false;
 		}
+	}
+
+	@Override
+	public void save() throws IOException {
+		// TODO Auto-generated method stub
 	}
 }

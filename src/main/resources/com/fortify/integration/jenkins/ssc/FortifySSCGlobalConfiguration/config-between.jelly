@@ -3,7 +3,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler" >
 	<f:block>
     	<div class="section-header">
-      		${%Configure Enabled Actions}
+      		${%Configure Enabled Operations}
     	</div>
   	</f:block>
 </j:jelly>

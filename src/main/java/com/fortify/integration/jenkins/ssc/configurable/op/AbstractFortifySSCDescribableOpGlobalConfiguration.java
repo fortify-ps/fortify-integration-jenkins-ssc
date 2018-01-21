@@ -22,48 +22,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.configurable;
+package com.fortify.integration.jenkins.ssc.configurable.op;
 
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableGlobalConfiguration;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableWithErrorHandlerGlobalConfiguration;
 import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 
-import hudson.Extension;
-
-public class FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration extends AbstractConfigurableDescribableGlobalConfiguration {
+public abstract class AbstractFortifySSCDescribableOpGlobalConfiguration extends AbstractConfigurableDescribableWithErrorHandlerGlobalConfiguration {
 	private static final long serialVersionUID = 1L;
-	private FortifySSCDescribableApplicationAndVersionName target;
-	
-	@DataBoundConstructor
-	public FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration() {}
-	
-	public FortifySSCDescribableApplicationAndVersionName getTarget() {
-		return target;
-	}
 
-	@DataBoundSetter
-	public void setTarget(FortifySSCDescribableApplicationAndVersionName target) {
-		this.target = target;
-	}
-
-	@Extension
-	public static final class FortifySSCDescriptorApplicationAndVersionNameGlobalConfiguration extends AbstractDescriptorConfigurableDescribableGlobalConfiguration {        
+	public static abstract class AbstractFortifySSCDescriptorOpGlobalConfiguration extends AbstractDescriptorConfigurableDescribableWithErrorHandlerGlobalConfiguration {
 		@Override
 		protected AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
 			return FortifySSCGlobalConfiguration.get();
 		}
-		
-		@Override
-        public FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration createDefaultInstance() {
-        	return new FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration();
-        }
-        
-        @Override
-		public String getDisplayName() {
-			return "Configure default application/version name";
-		}
-    }
+	}
 }

@@ -61,9 +61,17 @@ public abstract class AbstractConfigurableDescribableGlobalConfiguration extends
 	public void setAllowOverride(boolean allowOverride) {
 		this.allowOverride = allowOverride;
 	}
+	
+	public final Class<? extends Describable<?>> getTargetType() {
+		return getDescriptor().getTargetType();
+	}
+	
+	@Override
+	public AbstractDescriptorConfigurableDescribableGlobalConfiguration getDescriptor() {
+		return (AbstractDescriptorConfigurableDescribableGlobalConfiguration) super.getDescriptor();
+	}
 
 	public abstract Describable<?> getTarget();
-	public abstract Class<? extends AbstractConfigurableDescribable> getTargetType();
 
 	public static abstract class AbstractDescriptorConfigurableDescribableGlobalConfiguration extends AbstractDescriptor<AbstractConfigurableDescribableGlobalConfiguration> implements Ordered {
 		/* This would be nice, but causes Jenkins to fail from starting up
@@ -91,7 +99,10 @@ public abstract class AbstractConfigurableDescribableGlobalConfiguration extends
 			return (TD) Jenkins.getInstance().getDescriptorOrDie(getTargetType());
 		}
 		
-		protected abstract Class<? extends Describable<?>> getTargetType();
+		@SuppressWarnings("unchecked")
+		protected final Class<? extends Describable<?>> getTargetType() {
+			return getPropertyType("target").clazz;
+		}
 		
 		protected abstract AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration();
 	}

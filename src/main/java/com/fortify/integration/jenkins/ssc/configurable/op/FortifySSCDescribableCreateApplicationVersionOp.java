@@ -22,7 +22,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.configurable.action;
+package com.fortify.integration.jenkins.ssc.configurable.op;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -52,7 +52,7 @@ import hudson.util.ListBoxModel;
 
 // TODO Override set* methods to check whether values are being overridden when not allowed
 // TODO Don't display if global configuration disallows creating application versions
-public class FortifySSCDescribableCreateApplicationVersionAction extends AbstractFortifySSCDescribableAction {
+public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFortifySSCDescribableOp {
 	private static final long serialVersionUID = 1L;
 	private String issueTemplateName = null;
 	
@@ -60,13 +60,13 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableCreateApplicationVersionAction() {}
+	public FortifySSCDescribableCreateApplicationVersionOp() {}
 	
 	/**
 	 * Copy constructor
 	 * @param other
 	 */
-	public FortifySSCDescribableCreateApplicationVersionAction(FortifySSCDescribableCreateApplicationVersionAction other) {
+	public FortifySSCDescribableCreateApplicationVersionOp(FortifySSCDescribableCreateApplicationVersionOp other) {
 		if ( other != null ) {
 			setIssueTemplateName(other.getIssueTemplateName());
 		}
@@ -104,27 +104,27 @@ public class FortifySSCDescribableCreateApplicationVersionAction extends Abstrac
 
 	@Symbol("sscCreateApplicationVersionIfNotExisting")
 	@Extension
-	public static final class FortifySSCDescriptorCreateApplicationVersionAction extends AbstractFortifySSCDescriptorAction {
+	public static final class FortifySSCDescriptorCreateApplicationVersionOp extends AbstractFortifySSCDescriptorOp {
 		static final String DISPLAY_NAME = "Create application version if it does not yet exist";
 
 		@Override
-		public FortifySSCDescribableCreateApplicationVersionAction createDefaultInstanceWithConfiguration() {
-			return new FortifySSCDescribableCreateApplicationVersionAction(getDefaultConfiguration());
+		public FortifySSCDescribableCreateApplicationVersionOp createDefaultInstanceWithConfiguration() {
+			return new FortifySSCDescribableCreateApplicationVersionOp(getDefaultConfiguration());
 		}
 		
 		@Override
-		public FortifySSCDescribableCreateApplicationVersionAction createDefaultInstance() {
-			return new FortifySSCDescribableCreateApplicationVersionAction();
+		public FortifySSCDescribableCreateApplicationVersionOp createDefaultInstance() {
+			return new FortifySSCDescribableCreateApplicationVersionOp();
 		}
 		
 		@Override
-		protected FortifySSCDescribableCreateApplicationVersionAction getDefaultConfiguration() {
-			return (FortifySSCDescribableCreateApplicationVersionAction)super.getDefaultConfiguration();
+		protected FortifySSCDescribableCreateApplicationVersionOp getDefaultConfiguration() {
+			return (FortifySSCDescribableCreateApplicationVersionOp)super.getDefaultConfiguration();
 		}
 		
 		@Override
 		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
-			return FortifySSCDescribableCreateApplicationVersionAction.class;
+			return FortifySSCDescribableCreateApplicationVersionOp.class;
 		}
 		
 		@Override

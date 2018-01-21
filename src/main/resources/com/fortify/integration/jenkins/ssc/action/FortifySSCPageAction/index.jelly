@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+    <st:header name="Content-Type" value="text/html;charset=UTF-8" />
+    <l:layout norefresh="true" >
+    	
+    	<st:include page="sidepanel.jelly" it="${it.action.job}"/>
+        <l:side-panel/>
+        <l:main-panel>
+            <h1>List of Fortify SSC issues</h1>
+            TODO
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

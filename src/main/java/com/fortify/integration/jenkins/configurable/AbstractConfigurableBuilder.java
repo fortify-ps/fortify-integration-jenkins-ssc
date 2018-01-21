@@ -147,7 +147,7 @@ public abstract class AbstractConfigurableBuilder extends Builder implements Sim
 		
 		private DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> addDefaultDynamicJobConfigurationsList(DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> list) {
             for ( AbstractDescriptorConfigurableDescribable descriptor :  getAllDynamicJobConfigurationDescriptors() ) {
-                if ( getMultiActionGlobalConfiguration().isEnabledByDefault(descriptor.getGlobalConfigurationTargetType()) ) {
+                if ( getConfigurableGlobalConfiguration().isEnabledByDefault(descriptor.getGlobalConfigurationTargetType()) ) {
                     list.add(descriptor.createDefaultInstanceWithConfiguration());
                 }
             }
@@ -192,7 +192,7 @@ public abstract class AbstractConfigurableBuilder extends Builder implements Sim
 		
 		public abstract AbstractConfigurableBuilder createDefaultInstance();
 
-		protected abstract AbstractConfigurableGlobalConfiguration<?> getMultiActionGlobalConfiguration();
+		protected abstract AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration();
 	}
 
 }

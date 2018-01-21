@@ -22,19 +22,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.configurable.action;
+package com.fortify.integration.jenkins.ssc.action;
 
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableWithErrorHandlerGlobalConfiguration;
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import hudson.model.InvisibleAction;
+import hudson.model.Job;
 
-public abstract class AbstractFortifySSCDescribableActionGlobalConfiguration extends AbstractConfigurableDescribableWithErrorHandlerGlobalConfiguration {
-	private static final long serialVersionUID = 1L;
-
-	public static abstract class AbstractFortifySSCDescriptorActionGlobalConfiguration extends AbstractDescriptorConfigurableDescribableWithErrorHandlerGlobalConfiguration {
-		@Override
-		protected AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
-			return FortifySSCGlobalConfiguration.get();
-		}
+public final class FortifySSCPublishAction extends InvisibleAction {
+	private final Job<?, ?> job;
+	public FortifySSCPublishAction(Job<?, ?> job) {
+		this.job = job;
+	}
+	
+	public Job<?, ?> getJob() {
+		return job;
 	}
 }

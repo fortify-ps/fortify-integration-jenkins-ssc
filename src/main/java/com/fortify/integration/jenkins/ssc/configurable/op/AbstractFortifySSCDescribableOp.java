@@ -22,7 +22,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.configurable.action;
+package com.fortify.integration.jenkins.ssc.configurable.op;
 
 import java.io.IOException;
 
@@ -37,7 +37,12 @@ import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 
-public abstract class AbstractFortifySSCDescribableAction extends AbstractConfigurableDescribableWithErrorHandler {
+/**
+ * Abstract base class for all SSC operations. Each operation 
+ * @author Ruud Senden
+ *
+ */
+public abstract class AbstractFortifySSCDescribableOp extends AbstractConfigurableDescribableWithErrorHandler {
 	private static final long serialVersionUID = 1L;
 
 	public final void performWithCheck(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
@@ -51,7 +56,7 @@ public abstract class AbstractFortifySSCDescribableAction extends AbstractConfig
 	
 	/**
 	 * By default this method returns true, indicating that this action requires
-	 * a workspace. Actions that don't require a workspace should override this
+	 * a workspace. Operations that don't require a workspace should override this
 	 * method to return false.
 	 * @return
 	 */
@@ -61,7 +66,7 @@ public abstract class AbstractFortifySSCDescribableAction extends AbstractConfig
 
 	public abstract void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
 	
-	public static abstract class AbstractFortifySSCDescriptorAction extends AbstractDescriptorConfigurableDescribableWithErrorHandler {
+	public static abstract class AbstractFortifySSCDescriptorOp extends AbstractDescriptorConfigurableDescribableWithErrorHandler {
 		@Override
 		protected AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
 			return FortifySSCGlobalConfiguration.get();

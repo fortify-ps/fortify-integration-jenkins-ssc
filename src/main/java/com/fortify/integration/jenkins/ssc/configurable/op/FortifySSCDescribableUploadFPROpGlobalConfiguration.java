@@ -22,52 +22,41 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.configurable.action;
+package com.fortify.integration.jenkins.ssc.configurable.op;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.ssc.configurable.action.FortifySSCDescribableUploadFPRAction.FortifySSCDescriptorUploadFPRAction;
+import com.fortify.integration.jenkins.ssc.configurable.op.FortifySSCDescribableUploadFPROp.FortifySSCDescriptorUploadFPROp;
 
 import hudson.Extension;
-import hudson.model.Describable;
 
-public class FortifySSCDescribableUploadFPRActionGlobalConfiguration extends AbstractFortifySSCDescribableActionGlobalConfiguration {
+public class FortifySSCDescribableUploadFPROpGlobalConfiguration extends AbstractFortifySSCDescribableOpGlobalConfiguration {
 	private static final long serialVersionUID = 1L;
-	private FortifySSCDescribableUploadFPRAction target;
+	private FortifySSCDescribableUploadFPROp target;
 	
 	@DataBoundConstructor
-	public FortifySSCDescribableUploadFPRActionGlobalConfiguration() {}
+	public FortifySSCDescribableUploadFPROpGlobalConfiguration() {}
 	
-	public FortifySSCDescribableUploadFPRAction getTarget() {
+	public FortifySSCDescribableUploadFPROp getTarget() {
 		return target;
 	}
 
 	@DataBoundSetter
-	public void setTarget(FortifySSCDescribableUploadFPRAction target) {
+	public void setTarget(FortifySSCDescribableUploadFPROp target) {
 		this.target = target;
 	}
 	
-	@Override
-	public Class<FortifySSCDescribableUploadFPRAction> getTargetType() {
-		return FortifySSCDescribableUploadFPRAction.class;
-	}
-	
 	@Extension
-	public static final class FortifySSCDescriptorUploadFPRActionGlobalConfiguration extends AbstractFortifySSCDescriptorActionGlobalConfiguration {        
+	public static final class FortifySSCDescriptorUploadFPROpGlobalConfiguration extends AbstractFortifySSCDescriptorOpGlobalConfiguration {        
         @Override
-        public FortifySSCDescribableUploadFPRActionGlobalConfiguration createDefaultInstance() {
-        	return new FortifySSCDescribableUploadFPRActionGlobalConfiguration();
-        }
-        
-        @Override
-        protected Class<? extends Describable<?>> getTargetType() {
-        	return FortifySSCDescribableUploadFPRAction.class;
+        public FortifySSCDescribableUploadFPROpGlobalConfiguration createDefaultInstance() {
+        	return new FortifySSCDescribableUploadFPROpGlobalConfiguration();
         }
         
         @Override
         public String getDisplayName() {
-        	return FortifySSCDescriptorUploadFPRAction.DISPLAY_NAME;
+        	return FortifySSCDescriptorUploadFPROp.DISPLAY_NAME;
         }
     }
 }

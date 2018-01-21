@@ -22,7 +22,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.configurable.action;
+package com.fortify.integration.jenkins.ssc.configurable.op;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +54,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.ListBoxModel;
 
 // TODO Add functionality for aborting if processing is not complete after time-out
-public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDescribableAction {
+public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescribableOp {
 	private static final long serialVersionUID = 1L;
 	private String fprAntFilter = "**/*.fpr";
 	private int processingTimeOutSeconds = 600;
@@ -64,13 +64,13 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableUploadFPRAction() {}
+	public FortifySSCDescribableUploadFPROp() {}
 	
 	/**
 	 * Copy constructor
 	 * @param other
 	 */
-	public FortifySSCDescribableUploadFPRAction(FortifySSCDescribableUploadFPRAction other) {
+	public FortifySSCDescribableUploadFPROp(FortifySSCDescribableUploadFPROp other) {
 		if ( other != null ) {
 			setFprAntFilter(other.getFprAntFilter());
 			setProcessingTimeOutSeconds(other.getProcessingTimeOutSeconds());
@@ -163,27 +163,27 @@ public class FortifySSCDescribableUploadFPRAction extends AbstractFortifySSCDesc
 	
 	@Symbol("sscUploadFPR")
 	@Extension
-	public static final class FortifySSCDescriptorUploadFPRAction extends AbstractFortifySSCDescriptorAction {
+	public static final class FortifySSCDescriptorUploadFPROp extends AbstractFortifySSCDescriptorOp {
 		static final String DISPLAY_NAME = "Upload FPR file";
 
 		@Override
-		public FortifySSCDescribableUploadFPRAction createDefaultInstanceWithConfiguration() {
-			return new FortifySSCDescribableUploadFPRAction(getDefaultConfiguration());
+		public FortifySSCDescribableUploadFPROp createDefaultInstanceWithConfiguration() {
+			return new FortifySSCDescribableUploadFPROp(getDefaultConfiguration());
 		}
 		
 		@Override
-		public FortifySSCDescribableUploadFPRAction createDefaultInstance() {
-			return new FortifySSCDescribableUploadFPRAction();
+		public FortifySSCDescribableUploadFPROp createDefaultInstance() {
+			return new FortifySSCDescribableUploadFPROp();
 		}
 		
 		@Override
-		protected FortifySSCDescribableUploadFPRAction getDefaultConfiguration() {
-			return (FortifySSCDescribableUploadFPRAction)super.getDefaultConfiguration();
+		protected FortifySSCDescribableUploadFPROp getDefaultConfiguration() {
+			return (FortifySSCDescribableUploadFPROp)super.getDefaultConfiguration();
 		}
 		
 		@Override
 		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
-			return FortifySSCDescribableUploadFPRAction.class;
+			return FortifySSCDescribableUploadFPROp.class;
 		}
 		
 		@Override

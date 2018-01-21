@@ -16,7 +16,7 @@ import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableGlobalConfiguration.AbstractDescriptorConfigurableDescribableGlobalConfiguration;
 import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration.FortifySSCDescriptorApplicationAndVersionNameGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.configurable.action.AbstractFortifySSCDescribableActionGlobalConfiguration.AbstractFortifySSCDescriptorActionGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.configurable.op.AbstractFortifySSCDescribableOpGlobalConfiguration.AbstractFortifySSCDescriptorOpGlobalConfiguration;
 
 import hudson.Extension;
 import hudson.util.FormValidation;
@@ -66,12 +66,12 @@ public class FortifySSCGlobalConfiguration extends AbstractConfigurableGlobalCon
     
     @Override
     public String getDynamicGlobalConfigurationAddButtonDisplayName() {
-		return "Enable Action";
+		return "Enable Operation";
 	}
 	
     @Override
 	public String getDynamicGlobalConfigurationDeleteButtonDisplayName() {
-		return "Disable Action";
+		return "Disable Operation";
 	}
 	
 	@Override
@@ -118,7 +118,7 @@ public class FortifySSCGlobalConfiguration extends AbstractConfigurableGlobalCon
 	@SuppressWarnings("unchecked") // TODO How to fix this warning?
 	@Override
 	protected Collection<Class<? extends AbstractDescriptorConfigurableDescribableGlobalConfiguration>> getDynamicGlobalConfigurationDescriptorTypes() {
-		return Arrays.asList(AbstractFortifySSCDescriptorActionGlobalConfiguration.class);
+		return Arrays.asList(AbstractFortifySSCDescriptorOpGlobalConfiguration.class);
 	}
 
 	@SuppressWarnings("unchecked") // TODO How to fix this warning?

@@ -45,7 +45,7 @@ public abstract class AbstractConfigurableDescribable extends AbstractDescribabl
 	}
 	
 	public final void failIfGlobalConfigurationUnavailable(String message) throws AbortException {
-		getMultiActionGlobalConfiguration().failIfGlobalConfigurationUnavailable(this.getClass(), message);
+		getConfigurableGlobalConfiguration().failIfGlobalConfigurationUnavailable(this.getClass(), message);
 	}
 	
 	public final boolean isGlobalConfigurationAvailable() {
@@ -68,7 +68,7 @@ public abstract class AbstractConfigurableDescribable extends AbstractDescribabl
 
 	public boolean isOverrideAllowed(String propertyName) {
 		return isInstanceIsDefaultConfiguration() 
-			|| getMultiActionGlobalConfiguration().isOverrideAllowed(this.getClass(), propertyName);
+			|| getConfigurableGlobalConfiguration().isOverrideAllowed(this.getClass(), propertyName);
 	}
 	
 	/**
@@ -84,7 +84,7 @@ public abstract class AbstractConfigurableDescribable extends AbstractDescribabl
 	protected final <V> V getPropertyValueOrDefaultValueIfOverrideDisallowed(String propertyName, V currentValue) {
 		return isInstanceIsDefaultConfiguration() 
 					? currentValue 
-					: getMultiActionGlobalConfiguration().getPropertyValueOrDefaultValueIfOverrideDisallowed(
+					: getConfigurableGlobalConfiguration().getPropertyValueOrDefaultValueIfOverrideDisallowed(
 							this.getClass(), propertyName, currentValue);
 	}
 	
@@ -96,7 +96,7 @@ public abstract class AbstractConfigurableDescribable extends AbstractDescribabl
 	protected final <V> V getPropertyValueOrDefaultValueIfOverrideDisallowed(PrintStream log, String propertyName, V currentValue) {
 		return isInstanceIsDefaultConfiguration() 
 					? currentValue 
-					: getMultiActionGlobalConfiguration().getPropertyValueOrDefaultValueIfOverrideDisallowed(
+					: getConfigurableGlobalConfiguration().getPropertyValueOrDefaultValueIfOverrideDisallowed(
 							this.getClass(), log, propertyName, currentValue);
 	}
 	
@@ -104,7 +104,7 @@ public abstract class AbstractConfigurableDescribable extends AbstractDescribabl
 		return getDescriptor().getDefaultConfiguration();
 	}
 	
-	protected final AbstractConfigurableGlobalConfiguration<?> getMultiActionGlobalConfiguration() {
+	protected final AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
 		return getDescriptor().getConfigurableGlobalConfiguration();
 	}
 	

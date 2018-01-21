@@ -22,7 +22,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.ssc.configurable.action;
+package com.fortify.integration.jenkins.ssc.configurable.op;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -51,7 +51,7 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 // TODO Add support for selecting SSC filterset
-public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifySSCDescribableAction {
+public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDescribableOp {
 	private static final long serialVersionUID = 1L;
 	private String searchString = "";
 	private String operator = ">";
@@ -61,13 +61,13 @@ public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifyS
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableCheckIssueCountAction() {}
+	public FortifySSCDescribableCheckIssueCountOp() {}
 	
 	/**
 	 * Copy constructor
 	 * @param other
 	 */
-	public FortifySSCDescribableCheckIssueCountAction(FortifySSCDescribableCheckIssueCountAction other) {
+	public FortifySSCDescribableCheckIssueCountOp(FortifySSCDescribableCheckIssueCountOp other) {
 		if ( other != null ) {
 			setSearchString(other.getSearchString());
 			setOperator(other.getOperator());
@@ -148,27 +148,27 @@ public class FortifySSCDescribableCheckIssueCountAction extends AbstractFortifyS
 	
 	@Symbol("checkIssueCount")
 	@Extension
-	public static final class FortifySSCDescriptorCheckIssueCountAction extends AbstractFortifySSCDescriptorAction {
+	public static final class FortifySSCDescriptorCheckIssueCountOp extends AbstractFortifySSCDescriptorOp {
 		static final String DISPLAY_NAME = "Check Issue Count";
 
 		@Override
-		public FortifySSCDescribableCheckIssueCountAction createDefaultInstanceWithConfiguration() {
-			return new FortifySSCDescribableCheckIssueCountAction(getDefaultConfiguration());
+		public FortifySSCDescribableCheckIssueCountOp createDefaultInstanceWithConfiguration() {
+			return new FortifySSCDescribableCheckIssueCountOp(getDefaultConfiguration());
 		}
 		
 		@Override
-		public FortifySSCDescribableCheckIssueCountAction createDefaultInstance() {
-			return new FortifySSCDescribableCheckIssueCountAction();
+		public FortifySSCDescribableCheckIssueCountOp createDefaultInstance() {
+			return new FortifySSCDescribableCheckIssueCountOp();
 		}
 		
 		@Override
-		protected FortifySSCDescribableCheckIssueCountAction getDefaultConfiguration() {
-			return (FortifySSCDescribableCheckIssueCountAction)super.getDefaultConfiguration();
+		protected FortifySSCDescribableCheckIssueCountOp getDefaultConfiguration() {
+			return (FortifySSCDescribableCheckIssueCountOp)super.getDefaultConfiguration();
 		}
 		
 		@Override
 		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
-			return FortifySSCDescribableCheckIssueCountAction.class;
+			return FortifySSCDescribableCheckIssueCountOp.class;
 		}
 		
 		@Override

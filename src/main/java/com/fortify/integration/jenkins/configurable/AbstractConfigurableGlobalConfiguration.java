@@ -50,28 +50,13 @@ import hudson.util.ReflectionUtils;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
-/**
- * To use, extend this class with correct generics types, and include the following in the
- * config.jelly page for your concrete implementation:
- * 
- * <pre>
- 	TODO
- * </pre>
- * 
- * This will automatically load all available DescriptorActionJobType instances (based on the class type returned
- * by {@link #getDescribableGlobalConfigurationActionDescriptorType()}), and allow to enable, disable and configure these instances to
- * define the global configuration for this plugin.
- * 
- * @author Ruud Senden
- *
- */
 public abstract class AbstractConfigurableGlobalConfiguration<T extends AbstractConfigurableGlobalConfiguration<T>> extends AbstractGlobalConfiguration<T> 
 {
 	private volatile DescribableList<AbstractConfigurableDescribableGlobalConfiguration,AbstractDescriptorConfigurableDescribableGlobalConfiguration> dynamicGlobalConfigurationsList;
 	private volatile DescribableList<AbstractConfigurableDescribableGlobalConfiguration,AbstractDescriptorConfigurableDescribableGlobalConfiguration> staticGlobalConfigurationsList;
 	
-	private transient Map<Class<? extends AbstractConfigurableDescribable>, AbstractConfigurableDescribableGlobalConfiguration> targetTypeToDynamicGlobalConfigurationsMap;
-	private transient Map<Class<? extends AbstractConfigurableDescribable>, AbstractConfigurableDescribableGlobalConfiguration> targetTypeToStaticGlobalConfigurationsMap;
+	private transient Map<Class<? extends Describable<?>>, AbstractConfigurableDescribableGlobalConfiguration> targetTypeToDynamicGlobalConfigurationsMap;
+	private transient Map<Class<? extends Describable<?>>, AbstractConfigurableDescribableGlobalConfiguration> targetTypeToStaticGlobalConfigurationsMap;
 
 	public final DescribableList<AbstractConfigurableDescribableGlobalConfiguration, AbstractDescriptorConfigurableDescribableGlobalConfiguration> getDynamicGlobalConfigurationsList() {
 		if (dynamicGlobalConfigurationsList == null) {
@@ -202,50 +187,29 @@ public abstract class AbstractConfigurableGlobalConfiguration<T extends Abstract
 		return result;
 	}
 
-	private final Map<Class<? extends AbstractConfigurableDescribable>, AbstractConfigurableDescribableGlobalConfiguration> getTargetTypeToDynamicGlobalConfigurationsMap() {
+	private final Map<Class<? extends Describable<?>>, AbstractConfigurableDescribableGlobalConfiguration> getTargetTypeToDynamicGlobalConfigurationsMap() {
 		if ( targetTypeToDynamicGlobalConfigurationsMap==null ) {
 			targetTypeToDynamicGlobalConfigurationsMap = createTargetTypesToDefaultConfigsMap(getDynamicGlobalConfigurationsList());
 		}
 		return targetTypeToDynamicGlobalConfigurationsMap;
 	}
 	
-	private final Map<Class<? extends AbstractConfigurableDescribable>, AbstractConfigurableDescribableGlobalConfiguration> getTargetTypeToStaticGlobalConfigurationsMap() {
+	private final Map<Class<? extends Describable<?>>, AbstractConfigurableDescribableGlobalConfiguration> getTargetTypeToStaticGlobalConfigurationsMap() {
 		if ( targetTypeToStaticGlobalConfigurationsMap==null ) {
 			targetTypeToStaticGlobalConfigurationsMap = createTargetTypesToDefaultConfigsMap(getStaticGlobalConfigurationsList());
 		}
 		return targetTypeToStaticGlobalConfigurationsMap;
 	}
 
-	private Map<Class<? extends AbstractConfigurableDescribable>, AbstractConfigurableDescribableGlobalConfiguration> createTargetTypesToDefaultConfigsMap(List<AbstractConfigurableDescribableGlobalConfiguration> defaultConfigs) {
-		return defaultConfigs==null ? new HashMap<>() : Maps.uniqueIndex(defaultConfigs, new Function<AbstractConfigurableDescribableGlobalConfiguration, Class<? extends AbstractConfigurableDescribable>> () {
+	private Map<Class<? extends Describable<?>>, AbstractConfigurableDescribableGlobalConfiguration> createTargetTypesToDefaultConfigsMap(List<AbstractConfigurableDescribableGlobalConfiguration> defaultConfigs) {
+		return defaultConfigs==null ? new HashMap<>() : Maps.uniqueIndex(defaultConfigs, new Function<AbstractConfigurableDescribableGlobalConfiguration, Class<? extends Describable<?>>> () {
 			@Override
-			public Class<? extends AbstractConfigurableDescribable> apply(AbstractConfigurableDescribableGlobalConfiguration input) {
+			public Class<? extends Describable<?>> apply(AbstractConfigurableDescribableGlobalConfiguration input) {
 				return input.getTargetType();
 			}
 		    
 		});
 	}
-
-	/* TODO re-implement this
-	private List<AbstractMultiActionDescribableGlobalConfiguration> getDefaultEnabledActionsDefaultConfigs() {
-		return !enableAllActionsByDefault() 
-				? new ArrayList<>() 
-				: Lists.newArrayList(Iterables.transform(getAllGlobalConfigurationDescriptors(),
-					new Function<AbstractMultiActionDescriptor, MultiActionDescribableType>() {
-						@Override
-						public MultiActionDescribableType apply(AbstractMultiActionDescriptor input) {
-							return (MultiActionDescribableType) input.createDefaultInstance();
-						}
-					}));
-		
-	}
-	*/
-	
-	/*
-	protected boolean enableAllActionsByDefault() {
-		return true;
-	}
-	*/
 	
 	protected abstract <D extends AbstractDescriptorConfigurableDescribableGlobalConfiguration> Collection<Class<D>> getDynamicGlobalConfigurationDescriptorTypes();
 	protected abstract <D extends AbstractDescriptorConfigurableDescribableGlobalConfiguration> Collection<Class<D>> getStaticGlobalConfigurationDescriptorTypes();

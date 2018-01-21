@@ -21,12 +21,26 @@ doFill*Items() methods:
 Jelly files:
  - Use combobox instead of select to allow variables
  - Create jelly tag library for common patterns (override allowed, global config, ...)
- - Add refresh button to load data from SSC?
+ - Add refresh button to load data from SSC:
+   - Removes the need to call isConnectionAvailable() in global config page
+   - Add 'Refresh' button with name='refreshXXXItems':
+     - onclick: update value to something random
+     - doFill*Items: Add dependency on refreshXXXItems
+     - How to display 'In progress' icon?
+     - Based on initial value of button, don't actually load data from SSC 
+       (to improve performance when loading global config/job config page)
  
 Add SSC operations:
  - Invoke Audit Assistant
  - Generate report on SSC and optionally download to workspace
  
+Check default values are always applied correctly:
+ - Previously default build result was not correctly displayed on job configuration page if 
+   override is allowed (i.e. in select box) but was properly displayed if override not allowed
+   (i.e. in read-only text box). Check whether this is still the case.
+
+Add help-*.html files
+
 Update JavaDoc
 
 Update user documentation:

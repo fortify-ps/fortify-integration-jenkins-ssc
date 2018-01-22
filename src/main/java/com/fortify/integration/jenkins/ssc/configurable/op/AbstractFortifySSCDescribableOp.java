@@ -44,6 +44,10 @@ import hudson.model.TaskListener;
  */
 public abstract class AbstractFortifySSCDescribableOp extends AbstractConfigurableDescribableWithErrorHandler {
 	private static final long serialVersionUID = 1L;
+	
+	public AbstractFortifySSCDescribableOp(AbstractConfigurableDescribableWithErrorHandler other) {
+		super(other);
+	}
 
 	public final void performWithCheck(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		failIfGlobalConfigurationUnavailable(getDescriptor().getDisplayName()+" not enabled in global configuration");

@@ -60,13 +60,14 @@ public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDe
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableCheckIssueCountOp() {}
+	public FortifySSCDescribableCheckIssueCountOp() { super(null); }
 	
 	/**
 	 * Copy constructor
 	 * @param other
 	 */
 	public FortifySSCDescribableCheckIssueCountOp(FortifySSCDescribableCheckIssueCountOp other) {
+		super(other);
 		if ( other != null ) {
 			setSearchString(other.getSearchString());
 			setOperator(other.getOperator());

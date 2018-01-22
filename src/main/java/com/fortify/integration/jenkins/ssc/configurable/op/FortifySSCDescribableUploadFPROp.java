@@ -62,13 +62,14 @@ public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescriba
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableUploadFPROp() {}
+	public FortifySSCDescribableUploadFPROp() { super(null); }
 	
 	/**
 	 * Copy constructor
 	 * @param other
 	 */
 	public FortifySSCDescribableUploadFPROp(FortifySSCDescribableUploadFPROp other) {
+		super(other);
 		if ( other != null ) {
 			setFprAntFilter(other.getFprAntFilter());
 			setProcessingTimeOutSeconds(other.getProcessingTimeOutSeconds());

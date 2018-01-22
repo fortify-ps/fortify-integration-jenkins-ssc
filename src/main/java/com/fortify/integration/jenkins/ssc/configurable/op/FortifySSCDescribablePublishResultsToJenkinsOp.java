@@ -50,13 +50,14 @@ public class FortifySSCDescribablePublishResultsToJenkinsOp extends AbstractFort
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribablePublishResultsToJenkinsOp() {}
+	public FortifySSCDescribablePublishResultsToJenkinsOp() { super(null); }
 	
 	/**
 	 * Copy constructor
 	 * @param other
 	 */
 	public FortifySSCDescribablePublishResultsToJenkinsOp(FortifySSCDescribablePublishResultsToJenkinsOp other) {
+		super(other);
 		if ( other != null ) {
 			// TODO If we add any configurable properties
 		}

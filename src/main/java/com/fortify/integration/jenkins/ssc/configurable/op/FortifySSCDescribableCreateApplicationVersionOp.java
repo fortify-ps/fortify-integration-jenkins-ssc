@@ -58,13 +58,14 @@ public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFor
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableCreateApplicationVersionOp() {}
+	public FortifySSCDescribableCreateApplicationVersionOp() { super(null); }
 	
 	/**
 	 * Copy constructor
 	 * @param other
 	 */
 	public FortifySSCDescribableCreateApplicationVersionOp(FortifySSCDescribableCreateApplicationVersionOp other) {
+		super(other);
 		if ( other != null ) {
 			setIssueTemplateName(other.getIssueTemplateName());
 		}

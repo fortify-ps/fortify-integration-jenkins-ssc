@@ -50,7 +50,7 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 	}
 	
 	public String getStopOnFailureWithLog(PrintStream log, EnvVars env) {
-		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "stopOnFailure", stopOnFailure);
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "stopOnFailure", stopOnFailure, true);
 	}
 
 	@DataBoundSetter
@@ -63,7 +63,7 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 	}
 	
 	public String getBuildResultOnFailureWithLog(PrintStream log, EnvVars env) {
-		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "buildResultOnFailure", buildResultOnFailure);
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "buildResultOnFailure", buildResultOnFailure, true);
 	}
 
 	@DataBoundSetter

@@ -138,15 +138,19 @@ public abstract class AbstractConfigurableGlobalConfiguration<T extends Abstract
 		return isGlobalConfigurationPropertyBlank(configurableDescribableType, propertyName);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(Class<?> configurableDescribableType, PrintStream log, EnvVars envVars, String propertyName, V currentValue) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(configurableDescribableType, log, envVars, propertyName, currentValue, false);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(Class<?> configurableDescribableType, PrintStream log, EnvVars envVars, String propertyName, V currentValue, boolean overrideFailOnOverride) {
 		V result = null;
 		if ( isOverrideAllowed(configurableDescribableType, propertyName) ) {
 			result = currentValue;
 		} else {
 			result = (V)getGlobalConfigurationPropertyValue(configurableDescribableType, propertyName, Object.class);
 			if ( log != null && !ObjectUtils.equals(result, currentValue)) {
-				if ( getGlobalConfiguration(configurableDescribableType).isFailOnOverride() ) {
+				if ( !overrideFailOnOverride && getGlobalConfiguration(configurableDescribableType).isFailOnOverride() ) {
 					throw new IllegalArgumentException("Property "+propertyName+" may not be overridden");
 				} else {
 					log.println("WARNING: Using default configuration value '"+result+"' for property "+propertyName+" because override is disabled in global configuration");

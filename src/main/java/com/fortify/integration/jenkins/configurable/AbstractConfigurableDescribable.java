@@ -88,6 +88,25 @@ public abstract class AbstractConfigurableDescribable extends AbstractDescribabl
 							this.getClass(), log, envVars, propertyName, currentValue);
 	}
 	
+	/**
+	 * Same as {@link #getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(PrintStream, EnvVars, String, Object)},
+	 * but doesn't throw an exception if overrideFailOnOverride is set to true. This method usually shouldn't
+	 * be called, except for methods that define how to handle errors 
+	 * (i.e. {@link AbstractConfigurableDescribableWithErrorHandler}).
+	 * @param log
+	 * @param envVars
+	 * @param propertyName
+	 * @param currentValue
+	 * @param overrideFailOnOverride
+	 * @return
+	 */
+	protected final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(PrintStream log, EnvVars envVars, String propertyName, V currentValue, boolean overrideFailOnOverride) {
+		return isInstanceIsDefaultConfiguration() 
+					? currentValue 
+					: getConfigurableGlobalConfiguration().getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(
+							this.getClass(), log, envVars, propertyName, currentValue, overrideFailOnOverride);
+	}
+	
 	protected Describable<?> getDefaultConfiguration() {
 		return getDescriptor().getDefaultConfiguration();
 	}

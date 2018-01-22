@@ -1,42 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:ff="/lib/fortifyform">
 	<j:set var="instance" value="${descriptor.getInstanceOrDefault(instance)}"/>
 	<f:invisibleEntry>
 		<f:textbox name="isGlobalConfig" value="${isGlobalConfigString}"/>
 	</f:invisibleEntry>
 	
     <f:entry field="fprAntFilter" title="${%FPRAntFilter}">
-    	<j:choose>
-			<j:when test="${instance.isOverrideAllowed('fprAntFilter')}">
-        		<f:textbox />
-        	</j:when>
-			<j:otherwise>
-				<f:readOnlyTextbox clazz="readOnly" />
-			</j:otherwise>
-		</j:choose>	
+    	<ff:textboxWithOverride />
     </f:entry>
     
     <f:entry field="processingTimeOutSeconds" title="${%ProcessingTimeOutSeconds}">
-    	<j:choose>
-			<j:when test="${instance.isOverrideAllowed('processingTimeOutSeconds')}">
-        		<f:number />
-        	</j:when>
-			<j:otherwise>
-				<f:readOnlyTextbox clazz="readOnly" />
-			</j:otherwise>
-		</j:choose>	
+    	<ff:textboxWithOverride />
     </f:entry>
     
     <f:entry field="autoApprove" title="${%AutoApprove}">
-    	<j:choose>
-			<j:when test="${isGlobalConfig}">
-    			<f:select />
-    		</j:when>
-			<j:otherwise>
-				${descriptor.addCheckBoxPropertyName('autoApprove')}
-				<f:checkbox json="true" readonly="${'true'!=instance.isOverrideAllowed('autoApprove')}" clazz="readOnly"/>
-			</j:otherwise>
-		</j:choose>
+    	<ff:comboboxWithOverride />
     </f:entry>
 </j:jelly>

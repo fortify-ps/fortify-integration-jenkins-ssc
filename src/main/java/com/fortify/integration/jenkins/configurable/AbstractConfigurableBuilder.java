@@ -103,14 +103,6 @@ public abstract class AbstractConfigurableBuilder extends Builder implements Sim
 			return instance!=null ? instance : createDefaultInstance();
 		}
 		
-		public boolean isShowStaticJobConfigurationsList() {
-			return true;
-		}
-		
-		public boolean isShowDynamicJobConfigurationsList() {
-			return true;
-		}
-		
 		public String getDynamicJobConfigurationAddButtonDisplayName() {
 			return "Add";
 		}

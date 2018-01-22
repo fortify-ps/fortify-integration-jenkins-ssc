@@ -45,6 +45,7 @@ import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApp
 import com.fortify.integration.jenkins.ssc.configurable.op.AbstractFortifySSCDescribableOp;
 import com.fortify.integration.jenkins.ssc.configurable.op.AbstractFortifySSCDescribableOp.AbstractFortifySSCDescriptorOp;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -104,14 +105,15 @@ public class FortifySSCJenkinsBuilder extends AbstractConfigurableBuilder {
 	 * @throws InterruptedException
 	 * @throws IOException
 	 */
-	protected boolean perform(AbstractConfigurableDescribable describable, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, ErrorData currentErrorData) throws InterruptedException, IOException {
+	protected boolean perform(AbstractConfigurableDescribable describable, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, ErrorData currentErrorData) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
+		EnvVars env = run.getEnvironment(listener);
 		if ( describable instanceof AbstractFortifySSCDescribableOp ) {
 			AbstractFortifySSCDescribableOp op = (AbstractFortifySSCDescribableOp)describable;
 			try {
-				op.performWithCheck(getWith(), build, workspace, launcher, listener);
+				op.performWithCheck(getWith(), run, workspace, launcher, listener);
 			} catch ( Exception e ) {
-				return !op.handleException(log, e, currentErrorData);
+				return !op.handleException(log, env, e, currentErrorData);
 			}
 		}
 		return true;

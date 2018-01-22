@@ -7,7 +7,15 @@
 	    </f:entry>
 	    <f:validateButton title="${%Validate}" progress="${%Testing...}" method="testConnection" with="sscUrl" />
 	    
-	    <st:include page="config-globalConfigurations.jelly" optional="false" class="${descriptor.clazz}"/>
+	    <st:include page="config-staticGlobalConfigurations.jelly" optional="false" class="${descriptor.clazz}"/>
+	    
+	    <f:block>
+    		<div class="section-header">
+      			${%Configure Enabled Operations}
+    		</div>
+  		</f:block>
+  		
+  		<st:include page="config-dynamicGlobalConfigurations.jelly" optional="false" class="${descriptor.clazz}"/>
 	    
 	</f:section>
 </j:jelly>

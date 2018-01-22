@@ -29,6 +29,7 @@ import org.springframework.core.Ordered;
 
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 
 /**
@@ -40,9 +41,10 @@ import jenkins.model.Jenkins;
  *
  */
 public abstract class AbstractConfigurableDescribableGlobalConfiguration extends AbstractDescribable<AbstractConfigurableDescribableGlobalConfiguration> {
+	public static enum AllowOverride { YES, WARN, FAIL }
 	private static final long serialVersionUID = 1L;
 	private boolean enabledByDefault = true;
-	private boolean allowOverride = true;
+	private AllowOverride allowOverride = AllowOverride.YES;
 	
 	public boolean isEnabledByDefault() {
 		return enabledByDefault;
@@ -53,12 +55,20 @@ public abstract class AbstractConfigurableDescribableGlobalConfiguration extends
 		this.enabledByDefault = enabledByDefault;
 	}
 	
-	public boolean isAllowOverride() {
+	public boolean isOverrideAllowed() {
+		return AllowOverride.YES.equals(allowOverride);
+	}
+	
+	public boolean isFailOnOverride() {
+		return AllowOverride.FAIL.equals(allowOverride);
+	}
+	
+	public AllowOverride getAllowOverride() {
 		return allowOverride;
 	}
 
 	@DataBoundSetter
-	public void setAllowOverride(boolean allowOverride) {
+	public void setAllowOverride(AllowOverride allowOverride) {
 		this.allowOverride = allowOverride;
 	}
 	
@@ -84,6 +94,14 @@ public abstract class AbstractConfigurableDescribableGlobalConfiguration extends
 		@Override
 		public int getOrder() {
 			return getTargetDescriptor().getOrder();
+		}
+		
+		public ListBoxModel doFillAllowOverrideItems() {
+			final ListBoxModel items = new ListBoxModel();
+			items.add("Yes", AllowOverride.YES.toString());
+			items.add("No (fail if overridden)", AllowOverride.FAIL.toString());
+			items.add("No (use default if overridden)", AllowOverride.WARN.toString());
+			return items;
 		}
 		
 		public final boolean isStatic() {

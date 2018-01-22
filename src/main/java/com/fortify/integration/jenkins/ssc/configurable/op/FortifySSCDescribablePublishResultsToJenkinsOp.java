@@ -67,7 +67,7 @@ public class FortifySSCDescribablePublishResultsToJenkinsOp extends AbstractFort
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
 		EnvVars env = run.getEnvironment(listener);
-		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(env, log);
+		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(log, env);
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		run.addOrReplaceAction(new FortifySSCPublishAction(run.getParent()));
 	}

@@ -55,16 +55,6 @@ public class FortifySSCGlobalConfiguration extends AbstractConfigurableGlobalCon
     }
     
     @Override
-    public boolean isShowDynamicGlobalConfigurationsList() {
-    	return FortifySSCGlobalConfiguration.get().isConnectionAvailable();
-    }
-    
-    @Override
-    public boolean isShowStaticGlobalConfigurationsList() {
-    	return FortifySSCGlobalConfiguration.get().isConnectionAvailable();
-    }
-    
-    @Override
     public String getDynamicGlobalConfigurationAddButtonDisplayName() {
 		return "Enable Operation";
 	}
@@ -77,6 +67,8 @@ public class FortifySSCGlobalConfiguration extends AbstractConfigurableGlobalCon
 	@Override
 	public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
 		boolean result = super.configure(req, json);
+		// Update the connection objct, in case sscUrl was changed without cliking the Validate button
+		this.conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
 		save();
 		return result;
 	}
@@ -90,23 +82,12 @@ public class FortifySSCGlobalConfiguration extends AbstractConfigurableGlobalCon
 	
 	public FormValidation doTestConnection(@QueryParameter("sscUrl") final String sscUrl) throws IOException, ServletException {
 		try {
-	    	SSCAuthenticatingRestConnection conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
+	    	this.conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
 	    	conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions().maxResults(1).build().getAll();
 	    	// TODO Fix this if possible (automatically save and return to config page)
-	        return FormValidation.warning("Success; please apply the changes and refresh this page to see additional configuration options");
+	        return FormValidation.ok("Success");
 	    } catch (RuntimeException e) {
 	        return FormValidation.error("Client error : "+e.getMessage());
-	    }
-	}
-	
-	// TODO Remove code duplication with method above
-	public boolean isConnectionAvailable() {
-		try {
-	    	SSCAuthenticatingRestConnection conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
-	    	conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions().maxResults(1).build().getAll();
-	        return true;
-	    } catch (RuntimeException e) {
-	        return false;
 	    }
 	}
 	

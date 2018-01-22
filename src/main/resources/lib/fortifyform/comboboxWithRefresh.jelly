@@ -1,0 +1,71 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Bruce Chapman, Alan Harder
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!-- Tomcat doesn't like us using the attribute called 'class' -->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:ff="/lib/fortifyform">
+  <st:documentation>
+    Editable drop-down combo box that supports the data binding and AJAX updates.
+    Your descriptor should have the 'doFillXyzItems' method, which returns a ComboBoxModel
+    representation of the items in your combo box, and your instance field should
+    hold the current value. The 'doFillXyzItems' method should have a 'refresh[fieldName]'
+    query parameter to allow for refresh. Upon first invocation, this parameter will be
+    a blank string (so for performance reasons you can opt to not load any values just yet).
+    whenever the refresh icon is clicked, this parameter will contain the current timestamp.
+
+    <st:attribute name="clazz">
+      Additional CSS classes that the control gets.
+    </st:attribute>
+    <st:attribute name="field">
+      Used for databinding.
+    </st:attribute>
+  </st:documentation>
+  
+  <st:once>
+  <script language="JavaScript">
+  function refreshField(refreshFieldName) {
+  	var e = document.getElementById(refreshFieldName);
+  	e.value=''+new Date().getTime();
+  	if ("createEvent" in document) {
+    	var evt = document.createEvent("HTMLEvents");
+    	evt.initEvent("change", false, true);
+    	e.dispatchEvent(evt);
+	} else {
+    	e.fireEvent("onchange");
+  	}
+  }
+  </script>
+  </st:once>
+ 
+  <j:set var="instance" value="${descriptor.getInstanceOrDefault(instance)}"/>
+  <j:set var="refreshField" value="refresh${field.substring(0, 1).toUpperCase() + field.substring(1)}"/>
+
+  <div style="float:left;width:90%;">
+  	<input type="hidden" id="${refreshField}" name="_.${refreshField}" value=""/>
+  	<f:combobox />
+  </div>
+  <div style="float:left">
+    <img src="${rootURL}/plugin/fortify-jenkins-plugin/icons/refresh.png" width="20px" height="20px" onclick="refreshField('${refreshField}')"/>
+  </div>
+</j:jelly>

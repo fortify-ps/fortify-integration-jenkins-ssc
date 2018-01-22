@@ -34,7 +34,6 @@ import org.kohsuke.stapler.QueryParameter;
 
 import com.fortify.client.ssc.api.SSCIssueAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
-import com.fortify.integration.jenkins.configurable.ModelHelper;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
 import com.fortify.util.rest.json.JSONMap;
@@ -47,15 +46,15 @@ import hudson.Launcher;
 import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.util.ComboBoxModel;
 import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
 
 // TODO Add support for selecting SSC filterset
 public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDescribableOp {
 	private static final long serialVersionUID = 1L;
 	private String searchString = "";
 	private String operator = ">";
-	private int rhsNumber = 0;
+	private String rhsNumber = "0";
 	
 	/**
 	 * Default constructor
@@ -76,11 +75,11 @@ public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDe
 	}
 	
 	public String getSearchString() {
-		return getSearchString(null);
+		return getExpandedSearchString(null, null);
 	}
 	
-	public String getSearchString(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "searchString", searchString);
+	public String getExpandedSearchString(PrintStream log, EnvVars env) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "searchString", searchString);
 	}
 
 	@DataBoundSetter
@@ -89,11 +88,11 @@ public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDe
 	}
 
 	public String getOperator() {
-		return getOperator(null);
+		return getOperator(null, null);
 	}
 	
-	public String getOperator(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "operator", operator);
+	public String getOperator(PrintStream log, EnvVars env) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "operator", operator);
 	}
 
 	@DataBoundSetter
@@ -101,16 +100,16 @@ public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDe
 		this.operator = operator;
 	}
 	
-	public int getRhsNumber() {
-		return getRhsNumber(null);
+	public String getRhsNumber() {
+		return getRhsNumber(null, null);
 	}
 
-	public int getRhsNumber(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "rhsNumber", rhsNumber);
+	public String getRhsNumber(PrintStream log, EnvVars env) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "rhsNumber", rhsNumber);
 	}
 
 	@DataBoundSetter
-	public void setRhsNumber(int rhsNumber) {
+	public void setRhsNumber(String rhsNumber) {
 		this.rhsNumber = rhsNumber;
 	}
 
@@ -119,14 +118,15 @@ public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDe
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
 		EnvVars env = run.getEnvironment(listener);
-		int numberToCompare = getRhsNumber(log);
-		String operator = getOperator(log);
-		String searchString = getSearchString(log);
+		//TODO Check really an int
+		int numberToCompare = Integer.parseInt(getRhsNumber(log, env));
+		String operator = getOperator(log, env);
+		String searchString = getExpandedSearchString(log, env);
 		
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
-		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(env, log);
+		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(log, env);
 		int numberOfIssues = conn.api(SSCIssueAPI.class).queryIssues(applicationVersionId)
-			.paramFilter(searchString).maxResults(rhsNumber+1).paramFields("id").useCache(false)
+			.paramFilter(searchString).maxResults(numberToCompare+1).paramFields("id").useCache(false)
 			.build().getAll().size();
 		if ( compare(numberOfIssues, operator, numberToCompare) ) {
 			throw new AbortException("Number of issues matching '"+searchString+"' "+operator+" "+numberToCompare);
@@ -182,8 +182,8 @@ public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDe
 			return 500;
 		}
 		
-		public ListBoxModel doFillOperatorItems(@QueryParameter String isGlobalConfig) {
-			final ListBoxModel items = ModelHelper.createListBoxModel("true".equals(isGlobalConfig));
+		public ComboBoxModel doFillOperatorItems() {
+			final ComboBoxModel items = new ComboBoxModel();
 			items.add("<");
 			items.add("=");
 			items.add(">");
@@ -191,12 +191,25 @@ public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDe
 		}
 		
 		public FormValidation doCheckSearchString(@QueryParameter String searchString) {
-			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
-			JSONMap result = conn.api(SSCIssueAPI.class).validateIssueSearchString(searchString);
-			if ( Boolean.TRUE.equals(result.get("valid", Boolean.class)) ) { //explicit equals to prevent rare NPE
-				return FormValidation.ok();
+			if ( searchString != null && searchString.contains("${") ) {
+				return FormValidation.warning("Cannot validate search string containing variables");
 			} else {
-				return FormValidation.error(result.get("msg", String.class));
+				try {
+					SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
+					if ( conn != null ) {
+						JSONMap result = conn.api(SSCIssueAPI.class).validateIssueSearchString(searchString);
+						if ( Boolean.TRUE.equals(result.get("valid", Boolean.class)) ) { //explicit equals to prevent rare NPE
+							return FormValidation.ok();
+						} else {
+							return FormValidation.error(result.get("msg", String.class));
+						}
+					} else {
+						return FormValidation.error("Cannot validate search string: SSC connection not available");
+					}
+				} catch ( Exception e ) {
+					e.printStackTrace();
+					return FormValidation.error("Cannot validate search string: "+e.getMessage());
+				}
 			}
 		}
     }

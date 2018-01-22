@@ -17,7 +17,7 @@
 	</j:if>
 	
 	<f:entry field="allowOverride" title="${%AllowOverride}">
-		<f:checkbox checked="${descriptor.getInstanceOrDefault(instance).allowOverride}" />
+		<f:select />
 	</f:entry>
 	
 	<j:set var="isGlobalConfig" value="${true}"/>

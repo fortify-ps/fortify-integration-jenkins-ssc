@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler" >
-	<st:include page="config-jobConfigurations.jelly" optional="false" class="${descriptor.clazz}"/>
+	<st:include page="config-staticJobConfigurations.jelly" optional="false" class="${descriptor.clazz}"/>
+	<st:include page="config-dynamicJobConfigurations.jelly" optional="false" class="${descriptor.clazz}"/>
 </j:jelly>

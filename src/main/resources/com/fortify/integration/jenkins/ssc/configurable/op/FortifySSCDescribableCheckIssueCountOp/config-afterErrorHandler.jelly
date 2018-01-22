@@ -1,41 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:ff="/lib/fortifyform">
 	<j:set var="instance" value="${descriptor.getInstanceOrDefault(instance)}"/>
 	<f:invisibleEntry>
 		<f:textbox name="isGlobalConfig" value="${isGlobalConfigString}"/>
 	</f:invisibleEntry>
 	
     <f:entry field="searchString" title="${%SearchString}">
-    	<j:choose>
-			<j:when test="${instance.isOverrideAllowed('searchString')}">
-        		<f:textbox />
-        	</j:when>
-			<j:otherwise>
-				<f:readOnlyTextbox clazz="readOnly" />
-			</j:otherwise>
-		</j:choose>	
+    	<ff:textboxWithOverride /> <!-- TODO Make this a combobox with sample sample search strings? -->
     </f:entry>
     
     <f:entry field="operator" title="${%Operator}">
-    	<j:choose>
-			<j:when test="${instance.isOverrideAllowed('operator')}">
-        		<f:select />
-        	</j:when>
-			<j:otherwise>
-				<f:readOnlyTextbox clazz="readOnly" />
-			</j:otherwise>
-		</j:choose>	
+    	<ff:comboboxWithOverride />
     </f:entry>
     
     <f:entry field="rhsNumber" title="${%RhsNumber}">
-    	<j:choose>
-			<j:when test="${instance.isOverrideAllowed('rhsNumber')}">
-        		<f:number />
-        	</j:when>
-			<j:otherwise>
-				<f:readOnlyTextbox clazz="readOnly" />
-			</j:otherwise>
-		</j:choose>	
+    	<ff:textboxWithOverride />
     </f:entry>
 </j:jelly>

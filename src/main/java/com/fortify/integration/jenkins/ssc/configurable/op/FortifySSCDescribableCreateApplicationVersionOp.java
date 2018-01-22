@@ -27,6 +27,7 @@ package com.fortify.integration.jenkins.ssc.configurable.op;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -34,7 +35,6 @@ import org.kohsuke.stapler.QueryParameter;
 
 import com.fortify.client.ssc.api.SSCIssueTemplateAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
-import com.fortify.integration.jenkins.configurable.ModelHelper;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
 import com.fortify.util.rest.json.JSONList;
@@ -48,13 +48,11 @@ import hudson.Launcher;
 import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.util.ListBoxModel;
+import hudson.util.ComboBoxModel;
 
-// TODO Override set* methods to check whether values are being overridden when not allowed
-// TODO Don't display if global configuration disallows creating application versions
 public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFortifySSCDescribableOp {
 	private static final long serialVersionUID = 1L;
-	private String issueTemplateName = null;
+	private String issueTemplateName = getDescriptor().getDefaultIssueTemplateName();
 	
 	/**
 	 * Default constructor
@@ -73,11 +71,11 @@ public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFor
 	}
 	
 	public String getIssueTemplateName() {
-		return getIssueTemplateNameWithLog(null);
+		return getExpandedIssueTemplateName(null, null);
 	}
 	
-	private String getIssueTemplateNameWithLog(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "issueTemplateName", issueTemplateName);
+	private String getExpandedIssueTemplateName(PrintStream log, EnvVars env) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "issueTemplateName", issueTemplateName);
 	}
 
 	@DataBoundSetter
@@ -91,15 +89,20 @@ public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFor
 	{
 		EnvVars env = run.getEnvironment(listener);
 		PrintStream log = listener.getLogger();
-		JSONMap applicationVersion = applicationAndVersionNameJobConfig.getApplicationVersion(env, log, false);
+		JSONMap applicationVersion = applicationAndVersionNameJobConfig.getApplicationVersion(log, env, false);
 		if ( applicationVersion == null ) {
-			createApplicationVersion(log, applicationAndVersionNameJobConfig.getExpandedApplicationName(env, log), applicationAndVersionNameJobConfig.getExpandedVersionName(env, log));
+			createApplicationVersion(log, env, applicationAndVersionNameJobConfig.getExpandedApplicationName(log, env), applicationAndVersionNameJobConfig.getExpandedVersionName(log, env));
 		}
 	}
 	
-	private void createApplicationVersion(PrintStream log, String expandedApplicationName, String expandedVersionName) throws AbortException {
-		String issueTemplateName = getIssueTemplateNameWithLog(log);
+	private void createApplicationVersion(PrintStream log, EnvVars env, String expandedApplicationName, String expandedVersionName) throws AbortException {
+		String issueTemplateName = getExpandedIssueTemplateName(log, env);
 		throw new AbortException("Creating application versions not yet implemented");
+	}
+	
+	@Override
+	public FortifySSCDescriptorCreateApplicationVersionOp getDescriptor() {
+		return (FortifySSCDescriptorCreateApplicationVersionOp)super.getDescriptor();
 	}
 
 	@Symbol("sscCreateApplicationVersionIfNotExisting")
@@ -133,11 +136,14 @@ public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFor
 			return DISPLAY_NAME;
 		}
 		
-		public ListBoxModel doFillIssueTemplateNameItems(@QueryParameter String isGlobalConfig) {
-			final ListBoxModel items = ModelHelper.createListBoxModel("true".equals(isGlobalConfig));
-			JSONList issueTemplates = getIssueTemplates();
-			for ( JSONMap issueTemplate : issueTemplates.asValueType(JSONMap.class) ) {
-				items.add(issueTemplate.get("name", String.class));
+		public ComboBoxModel doFillIssueTemplateNameItems(@QueryParameter String refreshIssueTemplateName) {
+			final ComboBoxModel items = new ComboBoxModel();
+			if ( StringUtils.isNotBlank(refreshIssueTemplateName) ) {
+				// Exceptions are already handled in getIssueTemplates(), so no need for try/catch
+				JSONList issueTemplates = getIssueTemplates();
+				for ( JSONMap issueTemplate : issueTemplates.asValueType(JSONMap.class) ) {
+					items.add(issueTemplate.get("name", String.class));
+				}
 			}
 			return items;
 		}
@@ -148,7 +154,14 @@ public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFor
         
         protected JSONList getIssueTemplates() {
         	SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
-			return conn == null ? new JSONList() : conn.api(SSCIssueTemplateAPI.class).getIssueTemplates(true);
+        	if ( conn != null ) {
+        		try {
+        			return conn.api(SSCIssueTemplateAPI.class).getIssueTemplates(true);
+        		} catch ( Exception e ) {
+        			e.printStackTrace();
+        		}
+        	}
+        	return new JSONList();
 		}
 		
 		@Override

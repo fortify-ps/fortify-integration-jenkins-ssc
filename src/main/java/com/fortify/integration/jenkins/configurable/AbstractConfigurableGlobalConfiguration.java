@@ -43,6 +43,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.model.Describable;
 import hudson.util.DescribableList;
@@ -60,14 +61,14 @@ public abstract class AbstractConfigurableGlobalConfiguration<T extends Abstract
 
 	public final DescribableList<AbstractConfigurableDescribableGlobalConfiguration, AbstractDescriptorConfigurableDescribableGlobalConfiguration> getDynamicGlobalConfigurationsList() {
 		if (dynamicGlobalConfigurationsList == null) {
-			dynamicGlobalConfigurationsList = new DescribableList<AbstractConfigurableDescribableGlobalConfiguration,AbstractDescriptorConfigurableDescribableGlobalConfiguration>(this);
+			dynamicGlobalConfigurationsList = addDefaultDescribables(new DescribableList<AbstractConfigurableDescribableGlobalConfiguration,AbstractDescriptorConfigurableDescribableGlobalConfiguration>(this), getAllDynamicGlobalConfigurationDescriptors());
         }
 		return dynamicGlobalConfigurationsList;
 	}
 	
 	public final DescribableList<AbstractConfigurableDescribableGlobalConfiguration, AbstractDescriptorConfigurableDescribableGlobalConfiguration> getStaticGlobalConfigurationsList() {
 		if (staticGlobalConfigurationsList == null) {
-			staticGlobalConfigurationsList = new DescribableList<AbstractConfigurableDescribableGlobalConfiguration,AbstractDescriptorConfigurableDescribableGlobalConfiguration>(this);
+			staticGlobalConfigurationsList = addDefaultDescribables(new DescribableList<AbstractConfigurableDescribableGlobalConfiguration,AbstractDescriptorConfigurableDescribableGlobalConfiguration>(this), getAllStaticGlobalConfigurationDescriptors());
         }
 		return staticGlobalConfigurationsList;
 	}
@@ -88,14 +89,6 @@ public abstract class AbstractConfigurableGlobalConfiguration<T extends Abstract
 		}
 		result.sort(new OrderComparator());
 		return result;
-	}
-	
-	public boolean isShowStaticGlobalConfigurationsList() {
-		return true;
-	}
-	
-	public boolean isShowDynamicGlobalConfigurationsList() {
-		return true;
 	}
 	
 	public String getDynamicGlobalConfigurationAddButtonDisplayName() {
@@ -141,21 +134,27 @@ public abstract class AbstractConfigurableGlobalConfiguration<T extends Abstract
 	public final boolean isOverrideAllowed(Class<?> configurableDescribableType, String propertyName) {
 		AbstractConfigurableDescribableGlobalConfiguration config = getGlobalConfiguration(configurableDescribableType);
 		if ( config==null ) { return true; }
-		if ( config.isAllowOverride() ) { return true; }
-		return isGlobalConfigurationPropertyBlankOrNotSpecified(configurableDescribableType, propertyName);
+		if ( config.isOverrideAllowed() ) { return true; }
+		return isGlobalConfigurationPropertyBlank(configurableDescribableType, propertyName);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public final <V> V getPropertyValueOrDefaultValueIfOverrideDisallowed(Class<?> configurableDescribableType, String propertyName, V currentValue) {
-		return isOverrideAllowed(configurableDescribableType, propertyName) 
-					? currentValue
-					: (V)getGlobalConfigurationPropertyValue(configurableDescribableType, propertyName, Object.class);
-	}
-	
-	public final <V> V getPropertyValueOrDefaultValueIfOverrideDisallowed(Class<?> globalConfigurationClass, PrintStream log, String propertyName, V currentValue) {
-		V result = getPropertyValueOrDefaultValueIfOverrideDisallowed(globalConfigurationClass, propertyName, currentValue);
-		if ( !ObjectUtils.equals(result, currentValue) && log != null ) {
-			log.println("WARNING: Using default configuration value '"+result+"' for property "+propertyName+" because override is disabled in global configuration");
+	public final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(Class<?> configurableDescribableType, PrintStream log, EnvVars envVars, String propertyName, V currentValue) {
+		V result = null;
+		if ( isOverrideAllowed(configurableDescribableType, propertyName) ) {
+			result = currentValue;
+		} else {
+			result = (V)getGlobalConfigurationPropertyValue(configurableDescribableType, propertyName, Object.class);
+			if ( log != null && !ObjectUtils.equals(result, currentValue)) {
+				if ( getGlobalConfiguration(configurableDescribableType).isFailOnOverride() ) {
+					throw new IllegalArgumentException("Property "+propertyName+" may not be overridden");
+				} else {
+					log.println("WARNING: Using default configuration value '"+result+"' for property "+propertyName+" because override is disabled in global configuration");
+				}
+			}
+		}
+		if ( envVars != null && result instanceof String && StringUtils.isNotBlank((String)result) ) {
+			result = (V)envVars.expand((String)result);
 		}
 		return result;
 	}
@@ -170,10 +169,10 @@ public abstract class AbstractConfigurableGlobalConfiguration<T extends Abstract
 		}
 	}
 	
-	public final boolean isGlobalConfigurationPropertyBlankOrNotSpecified(Class<?> configurableDescribableType, String propertyName) {
+	public final boolean isGlobalConfigurationPropertyBlank(Class<?> configurableDescribableType, String propertyName) {
 		Object value = getGlobalConfigurationPropertyValue(configurableDescribableType, propertyName, Object.class);
 		if ( value instanceof String ) {
-			return StringUtils.isBlank((String)value) || ModelHelper.isNotSpecified((String)value);
+			return StringUtils.isBlank((String)value);
 		} else {
 			return value==null;
 		}
@@ -211,6 +210,13 @@ public abstract class AbstractConfigurableGlobalConfiguration<T extends Abstract
 		});
 	}
 	
+	private DescribableList<AbstractConfigurableDescribableGlobalConfiguration,AbstractDescriptorConfigurableDescribableGlobalConfiguration> addDefaultDescribables(DescribableList<AbstractConfigurableDescribableGlobalConfiguration,AbstractDescriptorConfigurableDescribableGlobalConfiguration> list, List<? extends AbstractDescriptorConfigurableDescribableGlobalConfiguration> descriptorList) {
+        for ( AbstractDescriptorConfigurableDescribableGlobalConfiguration descriptor : descriptorList ) {
+            list.add(descriptor.createDefaultInstanceWithConfiguration());
+        }
+        return list;
+    }
+	
 	protected abstract <D extends AbstractDescriptorConfigurableDescribableGlobalConfiguration> Collection<Class<D>> getDynamicGlobalConfigurationDescriptorTypes();
 	protected abstract <D extends AbstractDescriptorConfigurableDescribableGlobalConfiguration> Collection<Class<D>> getStaticGlobalConfigurationDescriptorTypes();
 	
@@ -233,12 +239,7 @@ public abstract class AbstractConfigurableGlobalConfiguration<T extends Abstract
 	public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
 		try {
 			this.targetTypeToDynamicGlobalConfigurationsMap = null;
-			// Only rebuild if the dynamic global configuration list is shown
-			// to prevent configuration list to be cleared if it is (temporarily)
-			// not shown.
-			if ( isShowDynamicGlobalConfigurationsList() ) {
-				getDynamicGlobalConfigurationsList().rebuildHetero(req, json, getAllDynamicGlobalConfigurationDescriptors(), "dynamicGlobalConfigurationsList");
-			}
+			getDynamicGlobalConfigurationsList().rebuildHetero(req, json, getAllDynamicGlobalConfigurationDescriptors(), "dynamicGlobalConfigurationsList");
 		} catch (IOException e) {
 			throw new FormException("Error updating configuration", e, "dynamicGlobalConfigurationsList");
 		}

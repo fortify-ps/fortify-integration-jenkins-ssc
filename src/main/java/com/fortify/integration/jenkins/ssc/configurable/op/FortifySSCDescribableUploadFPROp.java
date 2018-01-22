@@ -32,7 +32,6 @@ import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
 
 import com.fortify.client.ssc.api.SSCArtifactAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
@@ -51,13 +50,12 @@ import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
-import hudson.util.ListBoxModel;
+import hudson.util.ComboBoxModel;
 
-// TODO Add functionality for aborting if processing is not complete after time-out
 public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescribableOp {
 	private static final long serialVersionUID = 1L;
 	private String fprAntFilter = "**/*.fpr";
-	private int processingTimeOutSeconds = 600;
+	private String processingTimeOutSeconds = "600";
 	private String autoApprove = null;
 	
 	/**
@@ -78,11 +76,11 @@ public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescriba
 	}
 	
 	public String getFprAntFilter() {
-		return getFprAntFilterWithLog(null);
+		return getExpandedFprAntFilter(null, null);
 	}
 	
-	private String getFprAntFilterWithLog(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "fprAntFilter", fprAntFilter);
+	private String getExpandedFprAntFilter(PrintStream log, EnvVars env) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "fprAntFilter", fprAntFilter);
 	}
 
 	@DataBoundSetter
@@ -90,25 +88,25 @@ public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescriba
 		this.fprAntFilter = fprAntFilter;
 	}
 
-	public int getProcessingTimeOutSeconds() {
-		return getProcessingTimeOutSecondsWithLog(null);
+	public String getProcessingTimeOutSeconds() {
+		return getExpandedProcessingTimeOutSeconds(null, null);
 	}
 	
-	private int getProcessingTimeOutSecondsWithLog(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "processingTimeOutSeconds", processingTimeOutSeconds);
+	private String getExpandedProcessingTimeOutSeconds(PrintStream log, EnvVars env) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "processingTimeOutSeconds", processingTimeOutSeconds);
 	}
 
 	@DataBoundSetter
-	public void setProcessingTimeOutSeconds(int processingTimeOutSeconds) {
+	public void setProcessingTimeOutSeconds(String processingTimeOutSeconds) {
 		this.processingTimeOutSeconds = processingTimeOutSeconds;
 	}
 
 	public String getAutoApprove() {
-		return getAutoApproveWithLog(null);
+		return getExpandedAutoApprove(null,null);
 	}
 	
-	private String getAutoApproveWithLog(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "autoApprove", autoApprove);
+	private String getExpandedAutoApprove(PrintStream log, EnvVars env) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "autoApprove", autoApprove);
 	}
 
 	@DataBoundSetter
@@ -123,10 +121,11 @@ public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescriba
 		EnvVars env = run.getEnvironment(listener);
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		
-		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(env, log);
-		final FilePath fprFilePath = getFPRFilePath(workspace, log);
-		final int processingTimeoutSeconds = getProcessingTimeOutSecondsWithLog(log); 
-		final String autoApprove = getAutoApproveWithLog(log);
+		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(log, env);
+		final FilePath fprFilePath = getFPRFilePath(workspace, log, env);
+		//TODO Check really an int
+		final int processingTimeoutSeconds = Integer.parseInt(getExpandedProcessingTimeOutSeconds(log, env));  
+		final String autoApprove = getExpandedAutoApprove(log, env);
 		
 		final SSCArtifactAPI artifactApi = conn.api(SSCArtifactAPI.class);
 		String artifactId = fprFilePath.act(new FileCallable<String>() {
@@ -149,8 +148,8 @@ public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescriba
 		}
 	}
 
-	private FilePath getFPRFilePath(FilePath workspace, PrintStream log) throws IOException, InterruptedException {
-		String fprAntFilter = getFprAntFilterWithLog(log);
+	private FilePath getFPRFilePath(FilePath workspace, PrintStream log, EnvVars env) throws IOException, InterruptedException {
+		String fprAntFilter = getExpandedFprAntFilter(log, env);
 		FilePath[] list = workspace.list(fprAntFilter);
 		if ( list.length == 0 ) {
 			throw new AbortException("No FPR file found with filter '"+fprAntFilter+"'");
@@ -197,8 +196,8 @@ public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescriba
 			return 200;
 		}
 		
-		public ListBoxModel doFillAutoApproveItems(@QueryParameter String isGlobalConfig) {
-			return ModelHelper.createBooleanListBoxModel("true".equals(isGlobalConfig));
+		public ComboBoxModel doFillAutoApproveItems() {
+			return ModelHelper.createBooleanComboBoxModel();
 		}
     }
 }

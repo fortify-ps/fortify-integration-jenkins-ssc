@@ -33,6 +33,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.core.Ordered;
 
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.model.Describable;
 import net.sf.json.JSONObject;
 
@@ -75,29 +76,16 @@ public abstract class AbstractConfigurableDescribable extends AbstractDescribabl
 	 * This method needs to be called by all getter methods for configurable properties.
 	 * If the current instance is the global configuration, or if override is allowed,
 	 * this method will return the given current value. Otherwise, this method will
-	 * return the property value from the global configuration.
-	 *  
-	 * @param propertyName
-	 * @param currentValue
-	 * @return
+	 * return the property value from the global configuration. If log is given, a message
+	 * will be logged if the given current value is overridden with the global configuration
+	 * value. If envVars is given and the property type is String, the property will be
+	 * expanded.
 	 */
-	protected final <V> V getPropertyValueOrDefaultValueIfOverrideDisallowed(String propertyName, V currentValue) {
+	protected final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(PrintStream log, EnvVars envVars, String propertyName, V currentValue) {
 		return isInstanceIsDefaultConfiguration() 
 					? currentValue 
-					: getConfigurableGlobalConfiguration().getPropertyValueOrDefaultValueIfOverrideDisallowed(
-							this.getClass(), propertyName, currentValue);
-	}
-	
-	/**
-	 * Same as {@link #getPropertyValueOrDefaultValueIfOverrideDisallowed(String, Object)},
-	 * but logs a warning if default configuration value is used instead of current value.
-	 * @return
-	 */
-	protected final <V> V getPropertyValueOrDefaultValueIfOverrideDisallowed(PrintStream log, String propertyName, V currentValue) {
-		return isInstanceIsDefaultConfiguration() 
-					? currentValue 
-					: getConfigurableGlobalConfiguration().getPropertyValueOrDefaultValueIfOverrideDisallowed(
-							this.getClass(), log, propertyName, currentValue);
+					: getConfigurableGlobalConfiguration().getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(
+							this.getClass(), log, envVars, propertyName, currentValue);
 	}
 	
 	protected Describable<?> getDefaultConfiguration() {

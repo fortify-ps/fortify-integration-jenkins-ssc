@@ -69,11 +69,11 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractConf
 	}
 	
 	public String getApplicationName() {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed("applicationName", applicationName);
+		return getExpandedApplicationName(null, null);
 	}
 	
-	private String getApplicationNameWithLog(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "applicationName", applicationName);
+	public String getExpandedApplicationName(PrintStream log, EnvVars env) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "applicationName", applicationName);
 	}
 
 	@DataBoundSetter
@@ -82,11 +82,11 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractConf
 	}
 
 	public String getVersionName() {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed("versionName", versionName);
+		return getExpandedVersionName(null, null);
 	}
 	
-	private String getVersionNameWithLog(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "versionName", versionName);
+	public String getExpandedVersionName(PrintStream log, EnvVars env) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "versionName", versionName);
 	}
 
 	@DataBoundSetter
@@ -94,10 +94,10 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractConf
 		this.versionName = versionName;
 	}
 	
-	public JSONMap getApplicationVersion(EnvVars env, PrintStream log, boolean failIfNotFound) throws AbortException {
+	public JSONMap getApplicationVersion(PrintStream log, EnvVars env, boolean failIfNotFound) throws AbortException {
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
-		String applicationName = getExpandedApplicationName(env, log);
-		String versionName = getExpandedVersionName(env, log);
+		String applicationName = getExpandedApplicationName(log, env);
+		String versionName = getExpandedVersionName(log, env);
 		checkNotBlank(applicationName, "Application name cannot be blank");
 		checkNotBlank(versionName, "Version name cannot be blank");
 		JSONMap applicationVersion = conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions()
@@ -108,16 +108,8 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractConf
 		return applicationVersion;
 	}
 	
-	public String getApplicationVersionId(EnvVars env, PrintStream log) throws AbortException {
-		return getApplicationVersion(env, log, true).get("id", String.class);
-	}
-
-	public String getExpandedVersionName(EnvVars env, PrintStream log) {
-		return env.expand(getVersionNameWithLog(log));
-	}
-
-	public String getExpandedApplicationName(EnvVars env, PrintStream log) {
-		return env.expand(getApplicationNameWithLog(log));
+	public String getApplicationVersionId(PrintStream log, EnvVars env) throws AbortException {
+		return getApplicationVersion(log, env, true).get("id", String.class);
 	}
 	
 	private void checkNotBlank(String stringToCheck, String messageIfBlank) throws AbortException {
@@ -159,20 +151,34 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractConf
 			return FortifySSCDescribableApplicationAndVersionName.class;
 		}
 		
-        public ComboBoxModel doFillApplicationNameItems() {
-			final ComboBoxModel items = new ComboBoxModel();
-			SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
-			conn.api(SSCApplicationAPI.class).queryApplications().build()
-					.processAll(new AddNamesToComboBoxModel(items));
+        public ComboBoxModel doFillApplicationNameItems(@QueryParameter String refreshApplicationName) {
+        	final ComboBoxModel items = new ComboBoxModel();
+        	if ( StringUtils.isNotBlank(refreshApplicationName) ) {
+	        	try {
+					SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
+					if ( conn != null ) {
+						conn.api(SSCApplicationAPI.class).queryApplications().build()
+								.processAll(new AddNamesToComboBoxModel(items));
+					}
+	        	} catch ( Exception e ) {
+	        		e.printStackTrace();
+	        	}
+        	}
 			return items;
 		}
 
-		public ComboBoxModel doFillVersionNameItems(@QueryParameter String applicationName) {
+		public ComboBoxModel doFillVersionNameItems(@QueryParameter String refreshVersionName, @QueryParameter String applicationName) {
 			final ComboBoxModel items = new ComboBoxModel();
-			if ( StringUtils.isNotBlank(applicationName) && !applicationName.contains("${") ) {
-				SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
-				conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions().applicationName(applicationName).build()
-						.processAll(new AddNamesToComboBoxModel(items));
+			if ( StringUtils.isNotBlank(refreshVersionName) && StringUtils.isNotBlank(applicationName) && !applicationName.contains("${") ) {
+				try {
+					SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
+					if ( conn != null ) {
+						conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions().applicationName(applicationName).build()
+							.processAll(new AddNamesToComboBoxModel(items));
+					}
+				} catch ( Exception e ) {
+					e.printStackTrace(); // TODO log this instead of printing to console?
+				}
 			}
 			return items;
 		}

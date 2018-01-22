@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+	<j:set var="instance" value="${descriptor.getInstanceOrDefault(instance)}"/>
+	
+    <f:entry field="staticGlobalConfigurationsList">
+		<f:descriptorList descriptors="${descriptor.allStaticGlobalConfigurationDescriptors}" 
+			targetType="${descriptor.targetType}" forceRowSet="true"/>
+	</f:entry>
+    
+</j:jelly>

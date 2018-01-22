@@ -9,27 +9,6 @@ FortifySSCDescribablePublishResultsToJenkinsOp:
  - Update FortifySSCPageAction - index.jelly to display data
  - Add chart support
  
-Allow override checkbox:
- - Change to select 'Allow', 'Always use default', 'Abort if overridden'
- 
-get*(PrintStream log) methods:
- - Add environment to allow expansion of all properties, instead of handling this separately in each describable
- 
-doFill*Items() methods:
- - Handle exceptions (invalid SSC URL, SSC unavailable, ...) by returning empty list and showing error message
-
-Jelly files:
- - Use combobox instead of select to allow variables
- - Create jelly tag library for common patterns (override allowed, global config, ...)
- - Add refresh button to load data from SSC:
-   - Removes the need to call isConnectionAvailable() in global config page
-   - Add 'Refresh' button with name='refreshXXXItems':
-     - onclick: update value to something random
-     - doFill*Items: Add dependency on refreshXXXItems
-     - How to display 'In progress' icon?
-     - Based on initial value of button, don't actually load data from SSC 
-       (to improve performance when loading global config/job config page)
- 
 Add SSC operations:
  - Invoke Audit Assistant
  - Generate report on SSC and optionally download to workspace

@@ -27,15 +27,15 @@ package com.fortify.integration.jenkins.configurable;
 import java.io.PrintStream;
 
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
 
+import hudson.EnvVars;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.util.ListBoxModel;
+import hudson.util.ComboBoxModel;
 
 public abstract class AbstractConfigurableDescribableWithErrorHandler extends AbstractConfigurableDescribable {
 	private static final long serialVersionUID = 1L;
-	private String stopOnFailure = Boolean.TRUE.toString();
+	private String stopOnFailure = "Yes";
 	private String buildResultOnFailure = Result.FAILURE.toString();
 	
 	public AbstractConfigurableDescribableWithErrorHandler() {}
@@ -46,11 +46,11 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 	}
 
 	public String getStopOnFailure() {
-		return getStopOnFailureWithLog(null);
+		return getStopOnFailureWithLog(null, null);
 	}
 	
-	public String getStopOnFailureWithLog(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "stopOnFailure", stopOnFailure);
+	public String getStopOnFailureWithLog(PrintStream log, EnvVars env) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "stopOnFailure", stopOnFailure);
 	}
 
 	@DataBoundSetter
@@ -59,11 +59,11 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 	}
 
 	public String getBuildResultOnFailure() {
-		return getBuildResultOnFailureWithLog(null);
+		return getBuildResultOnFailureWithLog(null, null);
 	}
 	
-	public String getBuildResultOnFailureWithLog(PrintStream log) {
-		return getPropertyValueOrDefaultValueIfOverrideDisallowed(log, "buildResultOnFailure", buildResultOnFailure);
+	public String getBuildResultOnFailureWithLog(PrintStream log, EnvVars env) {
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "buildResultOnFailure", buildResultOnFailure);
 	}
 
 	@DataBoundSetter
@@ -71,12 +71,12 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 		this.buildResultOnFailure = buildResultOnFailure;
 	}
 	
-	public boolean handleException(PrintStream log, Exception e, ErrorData currentErrorData) {
+	public boolean handleException(PrintStream log, EnvVars env, Exception e, ErrorData currentErrorData) {
 		log.println("ERROR: "+e.getMessage());
-		String buildResultOnFailure = getBuildResultOnFailureWithLog(log);
-		String stopOnFailure = getStopOnFailureWithLog(log);
+		String buildResultOnFailure = getBuildResultOnFailureWithLog(log, env);
+		String stopOnFailure = getStopOnFailureWithLog(log, env);
 		currentErrorData.updateFinalBuildResult(buildResultOnFailure);
-		return Boolean.TRUE.toString().equals(stopOnFailure);
+		return ModelHelper.isBooleanComboBoxValueTrue(stopOnFailure);
 	}
 
 	public abstract static class AbstractDescriptorConfigurableDescribableWithErrorHandler extends AbstractDescriptorConfigurableDescribable {
@@ -85,12 +85,12 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 			return 0;
 		}
 		
-		public ListBoxModel doFillStopOnFailureItems(@QueryParameter String isGlobalConfig) {
-			return ModelHelper.createBooleanListBoxModel("true".equals(isGlobalConfig));
+		public ComboBoxModel doFillStopOnFailureItems() {
+			return ModelHelper.createBooleanComboBoxModel();
 		}
 		
-		public ListBoxModel doFillBuildResultOnFailureItems(@QueryParameter String isGlobalConfig) {
-			final ListBoxModel items = ModelHelper.createListBoxModel("true".equals(isGlobalConfig));
+		public ComboBoxModel doFillBuildResultOnFailureItems() {
+			final ComboBoxModel items = new ComboBoxModel();
 			items.add(Result.SUCCESS.toString());
 			items.add(Result.UNSTABLE.toString());
 			items.add(Result.FAILURE.toString());

@@ -24,31 +24,20 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.configurable;
 
-import org.apache.commons.lang.StringUtils;
-
-import hudson.util.ListBoxModel;
+import hudson.util.ComboBoxModel;
 
 public class ModelHelper {
-	private static final String NOT_SPECIFIED = "Not Specified"; // TODO I18N this
 	private ModelHelper() {}
 
-	public static final ListBoxModel createListBoxModel(boolean includeNotSpecified) {
-		ListBoxModel result = new ListBoxModel();
-		if ( includeNotSpecified ) {
-			result.add("Not Specified");
-		}
+	public final static ComboBoxModel createBooleanComboBoxModel() {
+		ComboBoxModel result = new ComboBoxModel();
+		result.add("Yes");
+		result.add("No");
 		return result;
 	}
 	
-	public static final ListBoxModel createBooleanListBoxModel(boolean includeNotSpecified) {
-		ListBoxModel result = createListBoxModel(includeNotSpecified);
-		result.add("Yes", Boolean.TRUE.toString());
-		result.add("No", Boolean.FALSE.toString());
-		return result;
-	}
-	
-	public static final boolean isNotSpecified(String value) {
-		return StringUtils.isBlank(value) || NOT_SPECIFIED.equals(value);
+	public static final boolean isBooleanComboBoxValueTrue(String value) {
+		return "Yes".equalsIgnoreCase(value);
 	}
 	
 }

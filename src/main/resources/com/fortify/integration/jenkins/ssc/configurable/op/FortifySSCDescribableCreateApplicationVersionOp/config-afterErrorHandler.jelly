@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:ff="/lib/fortifyform">
 	<j:set var="instance" value="${descriptor.getInstanceOrDefault(instance)}"/>
 	<f:invisibleEntry>
 		<f:textbox name="isGlobalConfig" value="${isGlobalConfigString}"/>
@@ -13,13 +13,6 @@
 	</style>
 	
 	<f:entry field="issueTemplateName" title="${%IssueTemplateName}">
-    	<j:choose>
-			<j:when test="${instance.isOverrideAllowed('issueTemplateName')}">
-    			<f:select default="${descriptor.defaultIssueTemplateName}"/>
-    		</j:when>
-			<j:otherwise>
-				<f:readOnlyTextbox clazz="readOnly" />
-			</j:otherwise>
-		</j:choose>
+		<ff:comboboxWithOverrideWithRefresh />
     </f:entry>
 </j:jelly>

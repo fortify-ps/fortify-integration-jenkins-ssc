@@ -39,8 +39,10 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 	private String buildResultOnFailure = Result.FAILURE.toString();
 	
 	public AbstractConfigurableDescribableWithErrorHandler(AbstractConfigurableDescribableWithErrorHandler other) {
-		setStopOnFailure(other.getStopOnFailure());
-		setBuildResultOnFailure(other.getBuildResultOnFailure());
+		if ( other != null ) {
+			setStopOnFailure(other.getStopOnFailure());
+			setBuildResultOnFailure(other.getBuildResultOnFailure());
+		}
 	}
 
 	public String getStopOnFailure() {

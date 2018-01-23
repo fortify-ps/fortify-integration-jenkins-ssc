@@ -91,16 +91,19 @@ public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFor
 	{
 		EnvVars env = run.getEnvironment(listener);
 		PrintStream log = listener.getLogger();
-		JSONMap applicationVersion = applicationAndVersionNameJobConfig.getApplicationVersion(log, env, false);
-		if ( applicationVersion == null ) {
-			createApplicationVersion(log, env, applicationAndVersionNameJobConfig.getExpandedApplicationName(log, env), applicationAndVersionNameJobConfig.getExpandedVersionName(log, env));
+		if ( !applicationAndVersionNameJobConfig.doesApplicationVersionExist(log, env) ) {
+			log.println("INFO: Application version does not exist; creating new application version");
+			String expandedApplicationName = applicationAndVersionNameJobConfig.getExpandedApplicationName(log, env);
+			String expandedVersionName = applicationAndVersionNameJobConfig.getExpandedVersionName(log, env);
+			createApplicationVersion(log, env, expandedApplicationName, expandedVersionName);
+			log.println("INFO: Created application version "+expandedApplicationName+":"+expandedVersionName);
 		}
 	}
 	
-	private void createApplicationVersion(PrintStream log, EnvVars env, String expandedApplicationName, String expandedVersionName) throws AbortException {
+	private String createApplicationVersion(PrintStream log, EnvVars env, String expandedApplicationName, String expandedVersionName) throws AbortException {
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		String issueTemplateName = getExpandedIssueTemplateName(log, env);
-		conn.api(SSCApplicationVersionAPI.class).createApplicationVersion()
+		return conn.api(SSCApplicationVersionAPI.class).createApplicationVersion()
 			.issueTemplateName(issueTemplateName)
 			.autoAddRequiredAttributes(true)
 			.applicationName(expandedApplicationName)

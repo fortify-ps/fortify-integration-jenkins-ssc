@@ -28,6 +28,7 @@ import java.io.PrintStream;
 
 import org.kohsuke.stapler.DataBoundSetter;
 
+import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -72,7 +73,11 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 	}
 	
 	public boolean handleException(PrintStream log, EnvVars env, Exception e, ErrorData currentErrorData) {
-		log.println("ERROR: "+e.getMessage());
+		if ( e instanceof AbortException ) {
+			log.println("ERROR: "+e.getMessage());
+		} else {
+			e.printStackTrace(log);
+		}
 		String buildResultOnFailure = getBuildResultOnFailureWithLog(log, env);
 		String stopOnFailure = getStopOnFailureWithLog(log, env);
 		currentErrorData.updateFinalBuildResult(buildResultOnFailure);

@@ -94,23 +94,33 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractConf
 		this.versionName = versionName;
 	}
 	
-	public JSONMap getApplicationVersion(PrintStream log, EnvVars env, boolean failIfNotFound) throws AbortException {
+	public JSONMap getApplicationVersion(PrintStream log, EnvVars env) throws AbortException {
+		JSONMap result = _getApplicationVersion(log, env, true);
+		if ( result == null ) {
+			String applicationName = getExpandedApplicationName(log, env);
+			String versionName = getExpandedVersionName(log, env);
+			throw new IllegalArgumentException("Application version "+applicationName+":"+versionName+" not found");
+		}
+		return result;
+	}
+	
+	private JSONMap _getApplicationVersion(PrintStream log, EnvVars env, boolean useCache, String... fields) throws AbortException {
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		String applicationName = getExpandedApplicationName(log, env);
 		String versionName = getExpandedVersionName(log, env);
 		checkNotBlank(applicationName, "Application name cannot be blank");
 		checkNotBlank(versionName, "Version name cannot be blank");
-		// TODO use cache once application version has been created (or cache manually in this class?)
 		JSONMap applicationVersion = conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions()
-			.applicationName(applicationName).versionName(versionName).useCache(false).build().getUnique();
-		if ( applicationVersion == null && failIfNotFound ) {
-			throw new AbortException("Application version "+applicationName+":"+versionName+" not found");
-		}
+			.applicationName(applicationName).versionName(versionName).useCache(useCache).build().getUnique();
 		return applicationVersion;
 	}
 	
+	public boolean doesApplicationVersionExist(PrintStream log, EnvVars env) throws AbortException {
+		return _getApplicationVersion(log, env, false, "id")!=null;
+	}
+	
 	public String getApplicationVersionId(PrintStream log, EnvVars env) throws AbortException {
-		return getApplicationVersion(log, env, true).get("id", String.class);
+		return getApplicationVersion(log, env).get("id", String.class);
 	}
 	
 	private void checkNotBlank(String stringToCheck, String messageIfBlank) throws AbortException {

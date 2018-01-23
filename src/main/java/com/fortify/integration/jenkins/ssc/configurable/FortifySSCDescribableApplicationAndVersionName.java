@@ -100,8 +100,9 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractConf
 		String versionName = getExpandedVersionName(log, env);
 		checkNotBlank(applicationName, "Application name cannot be blank");
 		checkNotBlank(versionName, "Version name cannot be blank");
+		// TODO use cache once application version has been created (or cache manually in this class?)
 		JSONMap applicationVersion = conn.api(SSCApplicationVersionAPI.class).queryApplicationVersions()
-			.applicationName(applicationName).versionName(versionName).useCache(true).build().getUnique();
+			.applicationName(applicationName).versionName(versionName).useCache(false).build().getUnique();
 		if ( applicationVersion == null && failIfNotFound ) {
 			throw new AbortException("Application version "+applicationName+":"+versionName+" not found");
 		}

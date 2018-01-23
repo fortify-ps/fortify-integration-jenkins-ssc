@@ -51,7 +51,7 @@ public abstract class AbstractFortifySSCDescribableOp extends AbstractConfigurab
 
 	public final void performWithCheck(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		failIfGlobalConfigurationUnavailable(getDescriptor().getDisplayName()+" not enabled in global configuration");
-		listener.getLogger().println("Performing action '"+getDescriptor().getDisplayName()+"'");
+		listener.getLogger().println("Performing operation '"+getDescriptor().getDisplayName()+"'");
 		if ( requiresWorkspace() && workspace == null ) { 
 			throw new AbortException("no workspace for " + build);
 		}

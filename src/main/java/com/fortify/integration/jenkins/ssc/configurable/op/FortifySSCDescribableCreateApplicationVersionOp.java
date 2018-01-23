@@ -33,6 +33,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.api.SSCIssueTemplateAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
@@ -97,8 +98,14 @@ public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFor
 	}
 	
 	private void createApplicationVersion(PrintStream log, EnvVars env, String expandedApplicationName, String expandedVersionName) throws AbortException {
+		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		String issueTemplateName = getExpandedIssueTemplateName(log, env);
-		throw new AbortException("Creating application versions not yet implemented");
+		conn.api(SSCApplicationVersionAPI.class).createApplicationVersion()
+			.issueTemplateName(issueTemplateName)
+			.autoAddRequiredAttributes(true)
+			.applicationName(expandedApplicationName)
+			.versionName(expandedVersionName)
+			.execute();
 	}
 	
 	@Override

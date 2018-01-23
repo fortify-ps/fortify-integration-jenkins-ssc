@@ -1,7 +1,5 @@
 FortifySSCDescribableCreateApplicationVersionOp:
- - Add createApplicationVersion method to ApplicationVersionAPI in Fortify SSC client API
  - Add repeatable to FortifySSCDescribableCreateApplicationVersionOp to add required/optional application version attributes
- - Update FortifySSCDescribableCreateApplicationVersionOp.perform() to call ApplicationVersionAPI.createApplicationVersion
  
 FortifySSCDescribablePublishResultsToJenkinsOp:
  - Collect necessary data for dashboard
@@ -12,11 +10,6 @@ FortifySSCDescribablePublishResultsToJenkinsOp:
 Add SSC operations:
  - Invoke Audit Assistant
  - Generate report on SSC and optionally download to workspace
- 
-Check default values are always applied correctly:
- - Previously default build result was not correctly displayed on job configuration page if 
-   override is allowed (i.e. in select box) but was properly displayed if override not allowed
-   (i.e. in read-only text box). Check whether this is still the case.
 
 Add help-*.html files
 

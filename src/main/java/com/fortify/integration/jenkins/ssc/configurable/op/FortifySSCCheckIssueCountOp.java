@@ -34,45 +34,38 @@ import org.kohsuke.stapler.QueryParameter;
 
 import com.fortify.client.ssc.api.SSCIssueAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
+import com.fortify.integration.jenkins.configurable.AbortWithMessageException;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.ssc.configurable.FortifySSCApplicationAndVersionName;
 import com.fortify.util.rest.json.JSONMap;
 
-import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.ComboBoxModel;
 import hudson.util.FormValidation;
 
 // TODO Add support for selecting SSC filterset
-public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDescribableOp {
+public class FortifySSCCheckIssueCountOp extends AbstractFortifySSCOp {
 	private static final long serialVersionUID = 1L;
-	private String searchString = "";
-	private String operator = ">";
-	private String rhsNumber = "0";
+	private String searchString;
+	private String operator;
+	private String rhsNumber;
 	
 	/**
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableCheckIssueCountOp() { super(null); }
+	public FortifySSCCheckIssueCountOp() {}
 	
-	/**
-	 * Copy constructor
-	 * @param other
-	 */
-	public FortifySSCDescribableCheckIssueCountOp(FortifySSCDescribableCheckIssueCountOp other) {
-		super(other);
-		if ( other != null ) {
-			setSearchString(other.getSearchString());
-			setOperator(other.getOperator());
-			setRhsNumber(other.getRhsNumber());
-		}
+	@Override
+	protected void configureDefaultValuesAfterErrorHandler() {
+		setSearchString("");
+		setOperator(">");
+		setRhsNumber("0");
 	}
 	
 	public String getSearchString() {
@@ -115,7 +108,7 @@ public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDe
 	}
 
 	@Override
-	public void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
+	public void perform(FortifySSCApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
 		EnvVars env = run.getEnvironment(listener);
@@ -130,7 +123,7 @@ public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDe
 			.paramFilter(searchString).maxResults(numberToCompare+1).paramFields("id").useCache(false)
 			.build().getAll().size();
 		if ( compare(numberOfIssues, operator, numberToCompare) ) {
-			throw new AbortException("Number of issues matching '"+searchString+"' "+operator+" "+numberToCompare);
+			throw new AbortWithMessageException("Number of issues matching '"+searchString+"' "+operator+" "+numberToCompare);
 		}
 	}
 
@@ -143,7 +136,7 @@ public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDe
 			case ">":
 				return value1 > value2;
 			default:
-				throw new IllegalArgumentException("Illegal compare operator '"+operator+"'");
+				throw new AbortWithMessageException("Illegal compare operator '"+operator+"'");
 		}
 	}
 	
@@ -151,26 +144,6 @@ public class FortifySSCDescribableCheckIssueCountOp extends AbstractFortifySSCDe
 	@Extension
 	public static final class FortifySSCDescriptorCheckIssueCountOp extends AbstractFortifySSCDescriptorOp {
 		static final String DISPLAY_NAME = "Check Issue Count";
-
-		@Override
-		public FortifySSCDescribableCheckIssueCountOp createDefaultInstanceWithConfiguration() {
-			return new FortifySSCDescribableCheckIssueCountOp(getDefaultConfiguration());
-		}
-		
-		@Override
-		public FortifySSCDescribableCheckIssueCountOp createDefaultInstance() {
-			return new FortifySSCDescribableCheckIssueCountOp();
-		}
-		
-		@Override
-		protected FortifySSCDescribableCheckIssueCountOp getDefaultConfiguration() {
-			return (FortifySSCDescribableCheckIssueCountOp)super.getDefaultConfiguration();
-		}
-		
-		@Override
-		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
-			return FortifySSCDescribableCheckIssueCountOp.class;
-		}
 		
 		@Override
 		public String getDisplayName() {

@@ -26,12 +26,10 @@ package com.fortify.integration.jenkins.ssc.configurable.op;
 
 import java.io.IOException;
 
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableWithErrorHandler;
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.configurable.AbortWithMessageException;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurableWithErrorHandler;
+import com.fortify.integration.jenkins.ssc.configurable.FortifySSCApplicationAndVersionName;
 
-import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
@@ -42,18 +40,13 @@ import hudson.model.TaskListener;
  * @author Ruud Senden
  *
  */
-public abstract class AbstractFortifySSCDescribableOp extends AbstractConfigurableDescribableWithErrorHandler {
+public abstract class AbstractFortifySSCOp extends AbstractConfigurableWithErrorHandler {
 	private static final long serialVersionUID = 1L;
 	
-	public AbstractFortifySSCDescribableOp(AbstractConfigurableDescribableWithErrorHandler other) {
-		super(other);
-	}
-
-	public final void performWithCheck(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+	public final void performWithCheck(FortifySSCApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		failIfGlobalConfigurationUnavailable(getDescriptor().getDisplayName()+" not enabled in global configuration");
-		listener.getLogger().println("Performing operation '"+getDescriptor().getDisplayName()+"'");
 		if ( requiresWorkspace() && workspace == null ) { 
-			throw new AbortException("no workspace for " + build);
+			throw new AbortWithMessageException("no workspace for " + build);
 		}
 		perform(applicationAndVersionNameJobConfig, build, workspace, launcher, listener);
 	}
@@ -68,12 +61,7 @@ public abstract class AbstractFortifySSCDescribableOp extends AbstractConfigurab
 		return true;
 	}
 
-	public abstract void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
+	public abstract void perform(FortifySSCApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
 	
-	public static abstract class AbstractFortifySSCDescriptorOp extends AbstractDescriptorConfigurableDescribableWithErrorHandler {
-		@Override
-		protected AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
-			return FortifySSCGlobalConfiguration.get();
-		}
-	}
+	public static abstract class AbstractFortifySSCDescriptorOp extends AbstractDescriptorConfigurableWithErrorHandler {}
 }

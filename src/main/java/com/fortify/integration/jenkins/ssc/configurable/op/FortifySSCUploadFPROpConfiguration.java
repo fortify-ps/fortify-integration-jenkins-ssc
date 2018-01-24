@@ -24,17 +24,34 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.configurable.op;
 
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableWithErrorHandlerGlobalConfiguration;
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
-public abstract class AbstractFortifySSCDescribableOpGlobalConfiguration extends AbstractConfigurableDescribableWithErrorHandlerGlobalConfiguration {
+import com.fortify.integration.jenkins.ssc.configurable.op.FortifySSCUploadFPROp.FortifySSCDescriptorUploadFPROp;
+
+import hudson.Extension;
+
+public class FortifySSCUploadFPROpConfiguration extends AbstractFortifySSCConfigurationForOp {
 	private static final long serialVersionUID = 1L;
-
-	public static abstract class AbstractFortifySSCDescriptorOpGlobalConfiguration extends AbstractDescriptorConfigurableDescribableWithErrorHandlerGlobalConfiguration {
-		@Override
-		protected AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
-			return FortifySSCGlobalConfiguration.get();
-		}
+	private FortifySSCUploadFPROp target;
+	
+	@DataBoundConstructor
+	public FortifySSCUploadFPROpConfiguration() {}
+	
+	public FortifySSCUploadFPROp getTarget() {
+		return target;
 	}
+
+	@DataBoundSetter
+	public void setTarget(FortifySSCUploadFPROp target) {
+		this.target = target;
+	}
+	
+	@Extension
+	public static final class FortifySSCDescriptorUploadFPROpConfiguration extends AbstractFortifySSCDescriptorConfigurationForOp {
+        @Override
+        public String getDisplayName() {
+        	return FortifySSCDescriptorUploadFPROp.DISPLAY_NAME;
+        }
+    }
 }

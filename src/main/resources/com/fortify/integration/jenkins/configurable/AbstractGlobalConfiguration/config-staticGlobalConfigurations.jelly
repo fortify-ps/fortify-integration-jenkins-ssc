@@ -3,9 +3,8 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
 	<j:set var="instance" value="${descriptor.getInstanceOrDefault(instance)}"/>
 	
-    <f:entry field="staticGlobalConfigurationsList">
+	<f:entry field="staticGlobalConfigurationsList">
 		<f:descriptorList descriptors="${descriptor.allStaticGlobalConfigurationDescriptors}" 
 			targetType="${descriptor.targetType}" forceRowSet="true"/>
 	</f:entry>
-    
 </j:jelly>

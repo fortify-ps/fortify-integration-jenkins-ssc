@@ -31,11 +31,14 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.core.OrderComparator;
 
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribable.AbstractDescriptorConfigurableDescribable;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurable.AbstractDescriptorConfigurable;
 
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.Saveable;
 import hudson.tasks.BuildStepDescriptor;
@@ -46,35 +49,48 @@ import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 
-public abstract class AbstractConfigurableBuilder extends Builder implements SimpleBuildStep, Saveable {
-	private volatile DescribableList<AbstractConfigurableDescribable,AbstractDescriptorConfigurableDescribable> dynamicJobConfigurationsList;
-	private volatile DescribableList<AbstractConfigurableDescribable,AbstractDescriptorConfigurableDescribable> staticJobConfigurationsList;
+/**
+ * <p>This is the {@link Builder} counterpart for {@link AbstractGlobalConfiguration}, maintaining
+ * lists of static and dynamic {@link AbstractConfigurable} instances, to allow these to be configured
+ * on job configuration pages or in pipeline jobs.</p>
+ * 
+ * <p>Concrete implementations will need to provide getter and setter methods annotated with {@link DataBoundSetter} 
+ * to configure the dynamic and static job configurations. Usually these methods have friendly names to be used in 
+ * pipeline jobs. In addition, concrete implementations will need to provide a descriptor that extends from 
+ * {@link AbstractDescriptorBuilder}.</p>
+ * 
+ * @author Ruud Senden
+ *
+ */
+public abstract class AbstractBuilder extends Builder implements SimpleBuildStep, Saveable {
+	private volatile DescribableList<AbstractConfigurable,AbstractDescriptorConfigurable> dynamicJobConfigurationsList;
+	private volatile DescribableList<AbstractConfigurable,AbstractDescriptorConfigurable> staticJobConfigurationsList;
 	
-	public final DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> getDynamicJobConfigurationsList() {
+	public final DescribableList<AbstractConfigurable, AbstractDescriptorConfigurable> getDynamicJobConfigurationsList() {
 		if (dynamicJobConfigurationsList == null) {
-			dynamicJobConfigurationsList = getDescriptor().addDefaultDynamicJobConfigurationsList(new DescribableList<AbstractConfigurableDescribable,AbstractDescriptorConfigurableDescribable>(this));
+			dynamicJobConfigurationsList = getDescriptor().addDefaultDynamicJobConfigurationsList(new DescribableList<AbstractConfigurable,AbstractDescriptorConfigurable>(this));
         }
 		return dynamicJobConfigurationsList;
 	}
 	
-	public final DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> getStaticJobConfigurationsList() {
+	public final DescribableList<AbstractConfigurable, AbstractDescriptorConfigurable> getStaticJobConfigurationsList() {
 		if (staticJobConfigurationsList == null) {
-			staticJobConfigurationsList = new DescribableList<AbstractConfigurableDescribable,AbstractDescriptorConfigurableDescribable>(this);
+			staticJobConfigurationsList = new DescribableList<AbstractConfigurable,AbstractDescriptorConfigurable>(this);
         }
 		return staticJobConfigurationsList;
 	}
 
-	protected void setDynamicJobConfigurationsList(List<? extends AbstractConfigurableDescribable> dynamicJobConfigurations) throws IOException {
+	protected void setDynamicJobConfigurationsList(List<? extends AbstractConfigurable> dynamicJobConfigurations) throws IOException {
 		getDynamicJobConfigurationsList().replaceBy(dynamicJobConfigurations);
 	}
 
-	protected void setStaticJobConfigurationsList(List<? extends AbstractConfigurableDescribable> staticJobConfigurations) throws IOException {
+	protected void setStaticJobConfigurationsList(List<? extends AbstractConfigurable> staticJobConfigurations) throws IOException {
 		getStaticJobConfigurationsList().replaceBy(staticJobConfigurations);
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected <R extends AbstractConfigurableDescribable> R getStaticJobConfiguration(Class<R> type) {
-		for ( AbstractConfigurableDescribable staticConfigurable : getStaticJobConfigurationsList() ) {
+	protected <R extends AbstractConfigurable> R getStaticJobConfiguration(Class<R> type) {
+		for ( AbstractConfigurable staticConfigurable : getStaticJobConfigurationsList() ) {
 			if ( staticConfigurable!=null && staticConfigurable.getClass().equals(type) ) {
 				return (R)staticConfigurable;
 			}
@@ -83,8 +99,8 @@ public abstract class AbstractConfigurableBuilder extends Builder implements Sim
 	}
 	
 	@Override
-	public AbstractDescriptorConfigurableBuilder getDescriptor() {
-		return (AbstractDescriptorConfigurableBuilder)super.getDescriptor();
+	public AbstractDescriptorBuilder getDescriptor() {
+		return (AbstractDescriptorBuilder)super.getDescriptor();
 	}
 
 	@Override
@@ -97,10 +113,26 @@ public abstract class AbstractConfigurableBuilder extends Builder implements Sim
 		return ToStringBuilder.reflectionToString(this);
 	}
 	
-	public static abstract class AbstractDescriptorConfigurableBuilder extends BuildStepDescriptor<Builder> {
-
-		public final AbstractConfigurableBuilder getInstanceOrDefault(AbstractConfigurableBuilder instance) {
+	/**
+	 * Abstract descriptor implementation for {@link AbstractBuilder} instances.
+	 * Concrete implementations will need to extend from this abstract descriptor, and be
+	 * annotated with both {@link Symbol} (to allow easy invocation from pipeline jobs) and
+	 * {@link Extension}.
+	 * 
+	 * @author Ruud Senden
+	 *
+	 */
+	public static abstract class AbstractDescriptorBuilder extends BuildStepDescriptor<Builder> {
+		public final AbstractBuilder getInstanceOrDefault(AbstractBuilder instance) {
 			return instance!=null ? instance : createDefaultInstance();
+		}
+		
+		public AbstractBuilder createDefaultInstance() {
+			try {
+				return (AbstractBuilder) clazz.newInstance();
+			} catch (InstantiationException | IllegalAccessException | SecurityException e) {
+				throw new RuntimeException("Error instantiating "+clazz.getName(), e);
+			}
 		}
 		
 		public String getDynamicJobConfigurationAddButtonDisplayName() {
@@ -111,25 +143,25 @@ public abstract class AbstractConfigurableBuilder extends Builder implements Sim
 			return "Delete";
 		}
 		
-		public final List<? extends AbstractDescriptorConfigurableDescribable> getAllDynamicJobConfigurationDescriptors() {
+		public final List<? extends AbstractDescriptorConfigurable> getAllDynamicJobConfigurationDescriptors() {
 			return getAllJobConfigurationDescriptors(getDynamicJobConfigurationDescriptorTypes(), includeDynamicConfigurationDescriptorsWithoutGlobalConfiguration());
 		}
 
-		public final List<? extends AbstractDescriptorConfigurableDescribable> getAllStaticJobConfigurationDescriptors() {
+		public final List<? extends AbstractDescriptorConfigurable> getAllStaticJobConfigurationDescriptors() {
 			return getAllJobConfigurationDescriptors(getStaticJobConfigurationDescriptorTypes(), includeStaticConfigurationDescriptorsWithoutGlobalConfiguration());
 		}
 
-		private final <D extends AbstractDescriptorConfigurableDescribable> List<D> getAllJobConfigurationDescriptors(Collection<Class<D>> types, boolean includeDescriptorsWithoutGlobalConfiguration) {
+		private final <D extends AbstractDescriptorConfigurable> List<D> getAllJobConfigurationDescriptors(Collection<Class<D>> types, boolean includeDescriptorsWithoutGlobalConfiguration) {
 			List<D> result = new ArrayList<>();
 			for ( Class<D> type : types ) {
 				ExtensionList<D> list = Jenkins.getInstance().getExtensionList(type);
 				result.addAll(list);
 			}
 			if ( !includeDescriptorsWithoutGlobalConfiguration ) {
-				result.removeIf(new Predicate<AbstractDescriptorConfigurableDescribable>() {
+				result.removeIf(new Predicate<AbstractDescriptorConfigurable>() {
 					@Override
-					public boolean test(AbstractDescriptorConfigurableDescribable d) {
-						return !d.isGlobalConfigurationAvailable();
+					public boolean test(AbstractDescriptorConfigurable d) {
+						return !d.isConfigurationAvailable();
 					}
 				});
 			}
@@ -137,10 +169,10 @@ public abstract class AbstractConfigurableBuilder extends Builder implements Sim
 			return result;
 		}
 		
-		private DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> addDefaultDynamicJobConfigurationsList(DescribableList<AbstractConfigurableDescribable, AbstractDescriptorConfigurableDescribable> list) {
-            for ( AbstractDescriptorConfigurableDescribable descriptor :  getAllDynamicJobConfigurationDescriptors() ) {
-                if ( getConfigurableGlobalConfiguration().isEnabledByDefault(descriptor.getGlobalConfigurationTargetType()) ) {
-                    list.add(descriptor.createDefaultInstanceWithConfiguration());
+		private DescribableList<AbstractConfigurable, AbstractDescriptorConfigurable> addDefaultDynamicJobConfigurationsList(DescribableList<AbstractConfigurable, AbstractDescriptorConfigurable> list) {
+            for ( AbstractDescriptorConfigurable descriptor :  getAllDynamicJobConfigurationDescriptors() ) {
+                if ( getConfigurableGlobalConfiguration().isEnabledByDefault(descriptor.getConfigurationTargetType()) ) {
+                    list.add(descriptor.createDefaultInstance());
                 }
             }
             return list;
@@ -155,12 +187,12 @@ public abstract class AbstractConfigurableBuilder extends Builder implements Sim
 		}
 		
 		public final Class<?> getTargetType() {
-			return AbstractConfigurableDescribable.class;
+			return AbstractConfigurable.class;
 		}
 		
 		@Override
 		public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-			AbstractConfigurableBuilder newInstance = (AbstractConfigurableBuilder) super.newInstance(req, formData);
+			AbstractBuilder newInstance = (AbstractBuilder) super.newInstance(req, formData);
 		
 			try {
 				newInstance.getDynamicJobConfigurationsList().rebuildHetero(req, formData, getAllDynamicJobConfigurationDescriptors(), "dynamicJobConfigurationsList");
@@ -179,12 +211,10 @@ public abstract class AbstractConfigurableBuilder extends Builder implements Sim
 			return newInstance;
 		}
 		
-		protected abstract <D extends AbstractDescriptorConfigurableDescribable> Collection<Class<D>> getDynamicJobConfigurationDescriptorTypes();
-		protected abstract <D extends AbstractDescriptorConfigurableDescribable> Collection<Class<D>> getStaticJobConfigurationDescriptorTypes();
-		
-		public abstract AbstractConfigurableBuilder createDefaultInstance();
+		protected abstract <D extends AbstractDescriptorConfigurable> Collection<Class<D>> getDynamicJobConfigurationDescriptorTypes();
+		protected abstract <D extends AbstractDescriptorConfigurable> Collection<Class<D>> getStaticJobConfigurationDescriptorTypes();
 
-		protected abstract AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration();
+		protected abstract AbstractGlobalConfiguration<?> getConfigurableGlobalConfiguration();
 	}
 
 }

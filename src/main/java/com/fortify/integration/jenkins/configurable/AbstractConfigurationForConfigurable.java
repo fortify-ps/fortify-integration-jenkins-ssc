@@ -33,14 +33,23 @@ import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 
 /**
- * TODO: update JavaDoc
- * Subclasses will need to implement a property (field/setter/getter) named 'target' with 
- * the corresponding {@link AbstractConfigurableDescribable} type.
+ * <p>This abstract class holds the configuration for a corresponding
+ * {@link AbstractConfigurable}. It provides some generic settings,
+ * like whether default settings may be overridden in job configurations, and
+ * whether the corresponding {@link AbstractConfigurable} should
+ * be enabled by default in job configurations.</p>
+ * 
+ * <p>Concrete implementations will need to provide a property named 'target'
+ * with the concrete type that holds the default configuration, and the 
+ * corresponding getter and data-bound setter methods. Usuaully this 'target'
+ * property has the same type as our {@link AbstractConfigurable} counterpart,
+ * but in theory any {@link Descriptor} type that also implements the {@link Ordered}
+ * interface can be used.</p>
  * 
  * @author Ruud Senden
  *
  */
-public abstract class AbstractConfigurableDescribableGlobalConfiguration extends AbstractDescribable<AbstractConfigurableDescribableGlobalConfiguration> {
+public abstract class AbstractConfigurationForConfigurable extends AbstractDescribable<AbstractConfigurationForConfigurable> {
 	public static enum AllowOverride { YES, WARN, FAIL }
 	private static final long serialVersionUID = 1L;
 	private boolean enabledByDefault = true;
@@ -77,13 +86,13 @@ public abstract class AbstractConfigurableDescribableGlobalConfiguration extends
 	}
 	
 	@Override
-	public AbstractDescriptorConfigurableDescribableGlobalConfiguration getDescriptor() {
-		return (AbstractDescriptorConfigurableDescribableGlobalConfiguration) super.getDescriptor();
+	public AbstractDescriptorConfigurationForConfigurable getDescriptor() {
+		return (AbstractDescriptorConfigurationForConfigurable) super.getDescriptor();
 	}
 
 	public abstract Describable<?> getTarget();
 
-	public static abstract class AbstractDescriptorConfigurableDescribableGlobalConfiguration extends AbstractDescriptor<AbstractConfigurableDescribableGlobalConfiguration> implements Ordered {
+	public static abstract class AbstractDescriptorConfigurationForConfigurable extends AbstractDescriptor<AbstractConfigurationForConfigurable> implements Ordered {
 		/* This would be nice, but causes Jenkins to fail from starting up
 		@Override
 		public String getDisplayName() {
@@ -122,6 +131,6 @@ public abstract class AbstractConfigurableDescribableGlobalConfiguration extends
 			return getPropertyType("target").clazz;
 		}
 		
-		protected abstract AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration();
+		protected abstract AbstractGlobalConfiguration<?> getConfigurableGlobalConfiguration();
 	}
 }

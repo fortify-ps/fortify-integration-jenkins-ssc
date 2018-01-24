@@ -24,39 +24,17 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.ssc.configurable.op;
 
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurationForConfigurableWithErrorHandler;
+import com.fortify.integration.jenkins.configurable.AbstractGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 
-import com.fortify.integration.jenkins.ssc.configurable.op.FortifySSCDescribablePublishResultsToJenkinsOp.FortifySSCDescriptorPublishResultsToJenkinsOp;
-
-import hudson.Extension;
-
-public class FortifySSCDescribablePublishResultsToJenkinsOpGlobalConfiguration extends AbstractFortifySSCDescribableOpGlobalConfiguration {
+public abstract class AbstractFortifySSCConfigurationForOp extends AbstractConfigurationForConfigurableWithErrorHandler {
 	private static final long serialVersionUID = 1L;
-	private FortifySSCDescribablePublishResultsToJenkinsOp target;
-	
-	@DataBoundConstructor
-	public FortifySSCDescribablePublishResultsToJenkinsOpGlobalConfiguration() {}
-	
-	public FortifySSCDescribablePublishResultsToJenkinsOp getTarget() {
-		return target;
-	}
 
-	@DataBoundSetter
-	public void setTarget(FortifySSCDescribablePublishResultsToJenkinsOp target) {
-		this.target = target;
+	public static abstract class AbstractFortifySSCDescriptorConfigurationForOp extends AbstractDescriptorConfigurationForConfigurableWithErrorHandler {
+		@Override
+		protected AbstractGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
+			return FortifySSCGlobalConfiguration.get();
+		}
 	}
-	
-	@Extension
-	public static final class FortifySSCDescriptorPublishResultsToJenkinsOpGlobalConfiguration extends AbstractFortifySSCDescriptorOpGlobalConfiguration {        
-        @Override
-        public FortifySSCDescribablePublishResultsToJenkinsOpGlobalConfiguration createDefaultInstance() {
-        	return new FortifySSCDescribablePublishResultsToJenkinsOpGlobalConfiguration();
-        }
-        
-        @Override
-        public String getDisplayName() {
-        	return FortifySSCDescriptorPublishResultsToJenkinsOp.DISPLAY_NAME;
-        }
-    }
 }

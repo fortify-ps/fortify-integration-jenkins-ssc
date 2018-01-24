@@ -34,24 +34,38 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.util.ComboBoxModel;
 
-public abstract class AbstractConfigurableDescribableWithErrorHandler extends AbstractConfigurableDescribable {
+/**
+ * <p>This abstract {@link AbstractConfigurable} implementation adds support for
+ * error handling. It provides a method {@link #handleException(PrintStream, EnvVars, Exception, ErrorData)}
+ * that can be called by {@link AbstractBuilder} implementations to determine
+ * whether any remaining operations should be executed or not, and for determining the final
+ * build result.</p>
+ * 
+ * @author Ruud Senden
+ *
+ */
+public abstract class AbstractConfigurableWithErrorHandler extends AbstractConfigurable {
 	private static final long serialVersionUID = 1L;
-	private String stopOnFailure = "Yes";
-	private String buildResultOnFailure = Result.FAILURE.toString();
+	private String stopOnFailure;
+	private String buildResultOnFailure;
 	
-	public AbstractConfigurableDescribableWithErrorHandler(AbstractConfigurableDescribableWithErrorHandler other) {
-		if ( other != null ) {
-			setStopOnFailure(other.getStopOnFailure());
-			setBuildResultOnFailure(other.getBuildResultOnFailure());
-		}
+	public AbstractConfigurableWithErrorHandler() {}
+	
+	@Override
+	protected final void configureDefaultValues() {
+		setStopOnFailure("Yes");
+		setBuildResultOnFailure(Result.FAILURE.toString());
+		configureDefaultValuesAfterErrorHandler();
 	}
+
+	protected void configureDefaultValuesAfterErrorHandler() {}
 
 	public String getStopOnFailure() {
 		return getStopOnFailureWithLog(null, null);
 	}
 	
 	public String getStopOnFailureWithLog(PrintStream log, EnvVars env) {
-		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "stopOnFailure", stopOnFailure, true);
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowedWithoutFail(log, env, "stopOnFailure", stopOnFailure);
 	}
 
 	@DataBoundSetter
@@ -64,7 +78,7 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 	}
 	
 	public String getBuildResultOnFailureWithLog(PrintStream log, EnvVars env) {
-		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(log, env, "buildResultOnFailure", buildResultOnFailure, true);
+		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowedWithoutFail(log, env, "buildResultOnFailure", buildResultOnFailure);
 	}
 
 	@DataBoundSetter
@@ -73,9 +87,10 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 	}
 	
 	public boolean handleException(PrintStream log, EnvVars env, Exception e, ErrorData currentErrorData) {
-		if ( e instanceof AbortException ) {
-			log.println("ERROR: "+e.getMessage());
+		if ( e instanceof AbortException || e instanceof AbortWithMessageException ) {
+			log.println("[ERROR] "+e.getMessage());
 		} else {
+			log.println("[ERROR] Unexpected exception occured");
 			e.printStackTrace(log);
 		}
 		String buildResultOnFailure = getBuildResultOnFailureWithLog(log, env);
@@ -83,8 +98,27 @@ public abstract class AbstractConfigurableDescribableWithErrorHandler extends Ab
 		currentErrorData.updateFinalBuildResult(buildResultOnFailure);
 		return ModelHelper.isBooleanComboBoxValueTrue(stopOnFailure);
 	}
+	
+	/**
+	 * Same as {@link #getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(PrintStream, EnvVars, String, Object)},
+	 * but doesn't throw an exception if overrideFailOnOverride is set to true. This method usually shouldn't
+	 * be called, except for methods that define how to handle errors 
+	 * (i.e. {@link AbstractConfigurableWithErrorHandler}).
+	 * @param log
+	 * @param envVars
+	 * @param propertyName
+	 * @param currentValue
+	 * @param overrideFailOnOverride
+	 * @return
+	 */
+	private final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowedWithoutFail(PrintStream log, EnvVars envVars, String propertyName, V currentValue) {
+		return isInstanceIsDefaultConfiguration() 
+					? currentValue 
+					: getDescriptor().getGlobalConfigurationWithConfigurations().getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(
+							this.getClass(), log, envVars, propertyName, currentValue, true);
+	}
 
-	public abstract static class AbstractDescriptorConfigurableDescribableWithErrorHandler extends AbstractDescriptorConfigurableDescribable {
+	public abstract static class AbstractDescriptorConfigurableWithErrorHandler extends AbstractDescriptorConfigurable {
 		@Override
 		public int getOrder() {
 			return 0;

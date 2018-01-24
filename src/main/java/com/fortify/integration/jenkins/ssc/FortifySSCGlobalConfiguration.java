@@ -13,10 +13,10 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribableGlobalConfiguration.AbstractDescriptorConfigurableDescribableGlobalConfiguration;
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionNameGlobalConfiguration.FortifySSCDescriptorApplicationAndVersionNameGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.configurable.op.AbstractFortifySSCDescribableOpGlobalConfiguration.AbstractFortifySSCDescriptorOpGlobalConfiguration;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurationForConfigurable.AbstractDescriptorConfigurationForConfigurable;
+import com.fortify.integration.jenkins.configurable.AbstractGlobalConfiguration;
+import com.fortify.integration.jenkins.ssc.configurable.FortifySSCApplicationAndVersionNameConfiguration.FortifySSCDescriptorApplicationAndVersionNameConfiguration;
+import com.fortify.integration.jenkins.ssc.configurable.op.AbstractFortifySSCConfigurationForOp.AbstractFortifySSCDescriptorConfigurationForOp;
 
 import hudson.Extension;
 import hudson.util.FormValidation;
@@ -24,7 +24,7 @@ import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
 
 @Extension
-public class FortifySSCGlobalConfiguration extends AbstractConfigurableGlobalConfiguration<FortifySSCGlobalConfiguration> {
+public class FortifySSCGlobalConfiguration extends AbstractGlobalConfiguration<FortifySSCGlobalConfiguration> {
 	private String sscUrl ="";
 	private transient SSCAuthenticatingRestConnection conn = null;
 	
@@ -67,7 +67,7 @@ public class FortifySSCGlobalConfiguration extends AbstractConfigurableGlobalCon
 	@Override
 	public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
 		boolean result = super.configure(req, json);
-		// Update the connection objct, in case sscUrl was changed without cliking the Validate button
+		// Update the connection objcet, in case sscUrl was changed without cliking the Validate button
 		this.conn = SSCAuthenticatingRestConnection.builder().baseUrl(sscUrl).build();
 		save();
 		return result;
@@ -91,20 +91,15 @@ public class FortifySSCGlobalConfiguration extends AbstractConfigurableGlobalCon
 	    }
 	}
 	
-	@Override
-	public FortifySSCGlobalConfiguration createDefaultInstance() {
-		return new FortifySSCGlobalConfiguration();
-	}
-	
 	@SuppressWarnings("unchecked") // TODO How to fix this warning?
 	@Override
-	protected Collection<Class<? extends AbstractDescriptorConfigurableDescribableGlobalConfiguration>> getDynamicGlobalConfigurationDescriptorTypes() {
-		return Arrays.asList(AbstractFortifySSCDescriptorOpGlobalConfiguration.class);
+	protected Collection<Class<? extends AbstractDescriptorConfigurationForConfigurable>> getDynamicGlobalConfigurationDescriptorTypes() {
+		return Arrays.asList(AbstractFortifySSCDescriptorConfigurationForOp.class);
 	}
 
 	@SuppressWarnings("unchecked") // TODO How to fix this warning?
 	@Override
-	protected Collection<Class<? extends AbstractDescriptorConfigurableDescribableGlobalConfiguration>> getStaticGlobalConfigurationDescriptorTypes() {
-		return Arrays.asList(FortifySSCDescriptorApplicationAndVersionNameGlobalConfiguration.class);
+	protected Collection<Class<? extends AbstractDescriptorConfigurationForConfigurable>> getStaticGlobalConfigurationDescriptorTypes() {
+		return Arrays.asList(FortifySSCDescriptorApplicationAndVersionNameConfiguration.class);
 	}
 }

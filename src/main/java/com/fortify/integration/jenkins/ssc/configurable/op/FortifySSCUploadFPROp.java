@@ -35,45 +35,38 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 import com.fortify.client.ssc.api.SSCArtifactAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
+import com.fortify.integration.jenkins.configurable.AbortWithMessageException;
 import com.fortify.integration.jenkins.configurable.ModelHelper;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.ssc.configurable.FortifySSCApplicationAndVersionName;
 import com.fortify.util.rest.json.JSONMap;
 
-import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
-import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ComboBoxModel;
 
-public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescribableOp {
+public class FortifySSCUploadFPROp extends AbstractFortifySSCOp {
 	private static final long serialVersionUID = 1L;
-	private String fprAntFilter = "**/*.fpr";
-	private String processingTimeOutSeconds = "600";
-	private String autoApprove = null;
+	private String fprAntFilter;
+	private String processingTimeOutSeconds;
+	private String autoApprove;
 	
 	/**
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableUploadFPROp() { super(null); }
+	public FortifySSCUploadFPROp() {}
 	
-	/**
-	 * Copy constructor
-	 * @param other
-	 */
-	public FortifySSCDescribableUploadFPROp(FortifySSCDescribableUploadFPROp other) {
-		super(other);
-		if ( other != null ) {
-			setFprAntFilter(other.getFprAntFilter());
-			setProcessingTimeOutSeconds(other.getProcessingTimeOutSeconds());
-		}
+	@Override
+	protected void configureDefaultValuesAfterErrorHandler() {
+		setFprAntFilter("**/*.fpr");
+		setProcessingTimeOutSeconds("600");
 	}
 	
 	public String getFprAntFilter() {
@@ -116,7 +109,7 @@ public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescriba
 	}
 
 	@Override
-	public void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
+	public void perform(FortifySSCApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
 		EnvVars env = run.getEnvironment(listener);
@@ -145,7 +138,7 @@ public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescriba
 		});
 		JSONMap artifact = artifactApi.getArtifactById(artifactId, true);
 		if ( processingTimeoutSeconds>0 && !"PROCESS_COMPLETE".equals(artifact.get("status")) ) {
-			throw new AbortException("Artifact was uploaded but not processed");
+			throw new AbortWithMessageException("Artifact was uploaded but not processed");
 		}
 	}
 
@@ -153,9 +146,9 @@ public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescriba
 		String fprAntFilter = getExpandedFprAntFilter(log, env);
 		FilePath[] list = workspace.list(fprAntFilter);
 		if ( list.length == 0 ) {
-			throw new AbortException("No FPR file found with filter '"+fprAntFilter+"'");
+			throw new AbortWithMessageException("No FPR file found with filter '"+fprAntFilter+"'");
 		} else if ( list.length > 1 ) {
-			throw new AbortException("More than 1 FPR file found with filter '"+fprAntFilter+"'");
+			throw new AbortWithMessageException("More than 1 FPR file found with filter '"+fprAntFilter+"': "+list);
 		} else {
 			return list[0];
 		}
@@ -165,26 +158,6 @@ public class FortifySSCDescribableUploadFPROp extends AbstractFortifySSCDescriba
 	@Extension
 	public static final class FortifySSCDescriptorUploadFPROp extends AbstractFortifySSCDescriptorOp {
 		static final String DISPLAY_NAME = "Upload FPR file";
-
-		@Override
-		public FortifySSCDescribableUploadFPROp createDefaultInstanceWithConfiguration() {
-			return new FortifySSCDescribableUploadFPROp(getDefaultConfiguration());
-		}
-		
-		@Override
-		public FortifySSCDescribableUploadFPROp createDefaultInstance() {
-			return new FortifySSCDescribableUploadFPROp();
-		}
-		
-		@Override
-		protected FortifySSCDescribableUploadFPROp getDefaultConfiguration() {
-			return (FortifySSCDescribableUploadFPROp)super.getDefaultConfiguration();
-		}
-		
-		@Override
-		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
-			return FortifySSCDescribableUploadFPROp.class;
-		}
 		
 		@Override
 		public String getDisplayName() {

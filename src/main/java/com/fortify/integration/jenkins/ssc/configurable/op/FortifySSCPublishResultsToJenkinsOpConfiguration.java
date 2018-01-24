@@ -27,36 +27,31 @@ package com.fortify.integration.jenkins.ssc.configurable.op;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.ssc.configurable.op.FortifySSCDescribableUploadFPROp.FortifySSCDescriptorUploadFPROp;
+import com.fortify.integration.jenkins.ssc.configurable.op.FortifySSCPublishResultsToJenkinsOp.FortifySSCDescriptorPublishResultsToJenkinsOp;
 
 import hudson.Extension;
 
-public class FortifySSCDescribableUploadFPROpGlobalConfiguration extends AbstractFortifySSCDescribableOpGlobalConfiguration {
+public class FortifySSCPublishResultsToJenkinsOpConfiguration extends AbstractFortifySSCConfigurationForOp {
 	private static final long serialVersionUID = 1L;
-	private FortifySSCDescribableUploadFPROp target;
+	private FortifySSCPublishResultsToJenkinsOp target;
 	
 	@DataBoundConstructor
-	public FortifySSCDescribableUploadFPROpGlobalConfiguration() {}
+	public FortifySSCPublishResultsToJenkinsOpConfiguration() {}
 	
-	public FortifySSCDescribableUploadFPROp getTarget() {
+	public FortifySSCPublishResultsToJenkinsOp getTarget() {
 		return target;
 	}
 
 	@DataBoundSetter
-	public void setTarget(FortifySSCDescribableUploadFPROp target) {
+	public void setTarget(FortifySSCPublishResultsToJenkinsOp target) {
 		this.target = target;
 	}
 	
 	@Extension
-	public static final class FortifySSCDescriptorUploadFPROpGlobalConfiguration extends AbstractFortifySSCDescriptorOpGlobalConfiguration {        
-        @Override
-        public FortifySSCDescribableUploadFPROpGlobalConfiguration createDefaultInstance() {
-        	return new FortifySSCDescribableUploadFPROpGlobalConfiguration();
-        }
-        
+	public static final class FortifySSCDescriptorPublishResultsToJenkinsOpConfiguration extends AbstractFortifySSCDescriptorConfigurationForOp {
         @Override
         public String getDisplayName() {
-        	return FortifySSCDescriptorUploadFPROp.DISPLAY_NAME;
+        	return FortifySSCDescriptorPublishResultsToJenkinsOp.DISPLAY_NAME;
         }
     }
 }

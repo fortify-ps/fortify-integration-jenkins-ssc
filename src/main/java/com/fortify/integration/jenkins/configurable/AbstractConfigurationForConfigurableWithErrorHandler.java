@@ -24,10 +24,19 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.configurable;
 
-public abstract class AbstractConfigurableDescribableWithErrorHandlerGlobalConfiguration extends AbstractConfigurableDescribableGlobalConfiguration {
+/**
+ * This is the {@link AbstractConfigurationForConfigurable} counterpart for 
+ * {@link AbstractConfigurableWithErrorHandler}. It doesn't provide any functionality,
+ * but allows for a consistent inheritance hierarchy between {@link AbstractConfigurableWithErrorHandler}
+ * and {@link AbstractConfigurationForConfigurableWithErrorHandler}.
+ *  
+ * @author Ruud Senden
+ *
+ */
+public abstract class AbstractConfigurationForConfigurableWithErrorHandler extends AbstractConfigurationForConfigurable {
 	private static final long serialVersionUID = 1L;
 
-	public static abstract class AbstractDescriptorConfigurableDescribableWithErrorHandlerGlobalConfiguration extends AbstractDescriptorConfigurableDescribableGlobalConfiguration {
+	public static abstract class AbstractDescriptorConfigurationForConfigurableWithErrorHandler extends AbstractDescriptorConfigurationForConfigurable {
 		
 	}
 

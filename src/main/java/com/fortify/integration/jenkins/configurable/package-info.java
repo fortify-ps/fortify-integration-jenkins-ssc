@@ -1,6 +1,6 @@
 /*******************************************************************************
- * (c) Copyright 2017 EntIT Software LLC
- *
+ * (c) Copyright 2017 EntIT Software LLC, a Micro Focus company
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the 
  * "Software"), to deal in the Software without restriction, including without 
@@ -22,28 +22,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  ******************************************************************************/
-package com.fortify.integration.jenkins.configurable;
-
-import hudson.util.ComboBoxModel;
-
 /**
- * Simple helper class for Jenkins Model classes.
- * 
- * @author Ruud Senden
- *
+ * <p>This package provides generic functionality for implementing
+ *    build steps that can be configured with default configurations
+ *    on the Jenkins global configuration page.</p>   
  */
-public class ModelHelper {
-	private ModelHelper() {}
-
-	public final static ComboBoxModel createBooleanComboBoxModel() {
-		ComboBoxModel result = new ComboBoxModel();
-		result.add("Yes");
-		result.add("No");
-		return result;
-	}
-	
-	public static final boolean isBooleanComboBoxValueTrue(String value) {
-		return "Yes".equalsIgnoreCase(value);
-	}
-	
-}
+package com.fortify.integration.jenkins.configurable;

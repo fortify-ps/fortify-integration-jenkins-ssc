@@ -33,38 +33,31 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.action.FortifySSCPublishAction;
-import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.ssc.configurable.FortifySSCApplicationAndVersionName;
 
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 
-public class FortifySSCDescribablePublishResultsToJenkinsOp extends AbstractFortifySSCDescribableOp {
+public class FortifySSCPublishResultsToJenkinsOp extends AbstractFortifySSCOp {
 	private static final long serialVersionUID = 1L;
 	
 	/**
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribablePublishResultsToJenkinsOp() { super(null); }
+	public FortifySSCPublishResultsToJenkinsOp() {}
 	
-	/**
-	 * Copy constructor
-	 * @param other
-	 */
-	public FortifySSCDescribablePublishResultsToJenkinsOp(FortifySSCDescribablePublishResultsToJenkinsOp other) {
-		super(other);
-		if ( other != null ) {
-			// TODO If we add any configurable properties
-		}
+	@Override
+	protected void configureDefaultValuesAfterErrorHandler() {
+		// TODO Once we start adding properties, initialize default values
 	}
 	
 	@Override
-	public void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
+	public void perform(FortifySSCApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
 		EnvVars env = run.getEnvironment(listener);
@@ -77,26 +70,6 @@ public class FortifySSCDescribablePublishResultsToJenkinsOp extends AbstractFort
 	@Extension
 	public static final class FortifySSCDescriptorPublishResultsToJenkinsOp extends AbstractFortifySSCDescriptorOp {
 		static final String DISPLAY_NAME = "Publish results to Jenkins Dashboard";
-
-		@Override
-		public FortifySSCDescribablePublishResultsToJenkinsOp createDefaultInstanceWithConfiguration() {
-			return new FortifySSCDescribablePublishResultsToJenkinsOp(getDefaultConfiguration());
-		}
-		
-		@Override
-		public FortifySSCDescribablePublishResultsToJenkinsOp createDefaultInstance() {
-			return new FortifySSCDescribablePublishResultsToJenkinsOp();
-		}
-		
-		@Override
-		protected FortifySSCDescribablePublishResultsToJenkinsOp getDefaultConfiguration() {
-			return (FortifySSCDescribablePublishResultsToJenkinsOp)super.getDefaultConfiguration();
-		}
-		
-		@Override
-		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
-			return FortifySSCDescribablePublishResultsToJenkinsOp.class;
-		}
 		
 		@Override
 		public String getDisplayName() {

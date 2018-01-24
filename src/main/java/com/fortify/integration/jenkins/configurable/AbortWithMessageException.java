@@ -24,26 +24,25 @@
  ******************************************************************************/
 package com.fortify.integration.jenkins.configurable;
 
-import hudson.util.ComboBoxModel;
+import hudson.AbortException;
 
 /**
- * Simple helper class for Jenkins Model classes.
+ * This exception is to be thrown for all configuration-related errors.
+ * {@link AbstractConfigurableWithErrorHandler} implementations
+ * will print a simple error message on the Jenkins console for exceptions 
+ * that are an instance of either the {@link AbortException} checked 
+ * exception, or the {@link AbortWithMessageException} unchecked exception. 
+ * For all other exception types, the complete stack trace will be printed 
+ * on the console.
  * 
  * @author Ruud Senden
  *
  */
-public class ModelHelper {
-	private ModelHelper() {}
+public class AbortWithMessageException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
 
-	public final static ComboBoxModel createBooleanComboBoxModel() {
-		ComboBoxModel result = new ComboBoxModel();
-		result.add("Yes");
-		result.add("No");
-		return result;
+	public AbortWithMessageException(String message) {
+		super(message);
 	}
-	
-	public static final boolean isBooleanComboBoxValueTrue(String value) {
-		return "Yes".equalsIgnoreCase(value);
-	}
-	
+
 }

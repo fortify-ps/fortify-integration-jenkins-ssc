@@ -34,39 +34,26 @@ import org.kohsuke.stapler.QueryParameter;
 import com.fortify.client.ssc.api.SSCApplicationAPI;
 import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableDescribable;
-import com.fortify.integration.jenkins.configurable.AbstractConfigurableGlobalConfiguration;
+import com.fortify.integration.jenkins.configurable.AbortWithMessageException;
+import com.fortify.integration.jenkins.configurable.AbstractConfigurable;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.json.processor.AddNamesToComboBoxModel;
 import com.fortify.util.rest.json.JSONMap;
 
-import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.Describable;
 import hudson.util.ComboBoxModel;
 
-public class FortifySSCDescribableApplicationAndVersionName extends AbstractConfigurableDescribable {
+public class FortifySSCApplicationAndVersionName extends AbstractConfigurable {
 	private static final long serialVersionUID = 1L;
-	private String applicationName = "";
-	private String versionName = "";
+	private String applicationName;
+	private String versionName;
 	
 	/**
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableApplicationAndVersionName() {}
-	
-	/**
-	 * Copy constructor
-	 * @param other
-	 */
-	public FortifySSCDescribableApplicationAndVersionName(FortifySSCDescribableApplicationAndVersionName other) {
-		if ( other != null ) {
-			setApplicationName(other.getApplicationName());
-			setVersionName(other.getVersionName());
-		}
-	}
+	public FortifySSCApplicationAndVersionName() {}
 	
 	public String getApplicationName() {
 		return getExpandedApplicationName(null, null);
@@ -94,17 +81,17 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractConf
 		this.versionName = versionName;
 	}
 	
-	public JSONMap getApplicationVersion(PrintStream log, EnvVars env) throws AbortException {
+	public JSONMap getApplicationVersion(PrintStream log, EnvVars env) {
 		JSONMap result = _getApplicationVersion(log, env, true);
 		if ( result == null ) {
 			String applicationName = getExpandedApplicationName(log, env);
 			String versionName = getExpandedVersionName(log, env);
-			throw new IllegalArgumentException("Application version "+applicationName+":"+versionName+" not found");
+			throw new AbortWithMessageException("Application version "+applicationName+":"+versionName+" not found");
 		}
 		return result;
 	}
 	
-	private JSONMap _getApplicationVersion(PrintStream log, EnvVars env, boolean useCache, String... fields) throws AbortException {
+	private JSONMap _getApplicationVersion(PrintStream log, EnvVars env, boolean useCache, String... fields) {
 		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		String applicationName = getExpandedApplicationName(log, env);
 		String versionName = getExpandedVersionName(log, env);
@@ -115,51 +102,26 @@ public class FortifySSCDescribableApplicationAndVersionName extends AbstractConf
 		return applicationVersion;
 	}
 	
-	public boolean doesApplicationVersionExist(PrintStream log, EnvVars env) throws AbortException {
+	public boolean doesApplicationVersionExist(PrintStream log, EnvVars env) {
 		return _getApplicationVersion(log, env, false, "id")!=null;
 	}
 	
-	public String getApplicationVersionId(PrintStream log, EnvVars env) throws AbortException {
+	public String getApplicationVersionId(PrintStream log, EnvVars env) {
 		return getApplicationVersion(log, env).get("id", String.class);
 	}
 	
-	private void checkNotBlank(String stringToCheck, String messageIfBlank) throws AbortException {
+	private void checkNotBlank(String stringToCheck, String messageIfBlank) {
 		if ( StringUtils.isBlank(stringToCheck) ) {
-			throw new AbortException(messageIfBlank);
+			throw new AbortWithMessageException(messageIfBlank);
 		}
 	}
 	
 	@Extension
-	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractDescriptorConfigurableDescribable {
+	public static final class FortifySSCDescriptorApplicationAndVersionName extends AbstractDescriptorConfigurable {
 		@Override
 		public String getDisplayName() {
 			// TODO Internationalize this
 			return "Configure application and version name";
-		}
-		
-		@Override
-		protected AbstractConfigurableGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
-			return FortifySSCGlobalConfiguration.get();
-		}
-		
-		@Override
-		public FortifySSCDescribableApplicationAndVersionName createDefaultInstanceWithConfiguration() {
-			return new FortifySSCDescribableApplicationAndVersionName(getDefaultConfiguration());
-		}
-		
-		@Override
-		public FortifySSCDescribableApplicationAndVersionName createDefaultInstance() {
-			return new FortifySSCDescribableApplicationAndVersionName();
-		}
-		
-		@Override
-		protected FortifySSCDescribableApplicationAndVersionName getDefaultConfiguration() {
-			return (FortifySSCDescribableApplicationAndVersionName)super.getDefaultConfiguration();
-		}
-		
-		@Override
-		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
-			return FortifySSCDescribableApplicationAndVersionName.class;
 		}
 		
         public ComboBoxModel doFillApplicationNameItems(@QueryParameter String refreshApplicationName) {

@@ -27,33 +27,28 @@ package com.fortify.integration.jenkins.ssc.configurable.op;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import com.fortify.integration.jenkins.ssc.configurable.op.FortifySSCDescribableCheckIssueCountOp.FortifySSCDescriptorCheckIssueCountOp;
+import com.fortify.integration.jenkins.ssc.configurable.op.FortifySSCCheckIssueCountOp.FortifySSCDescriptorCheckIssueCountOp;
 
 import hudson.Extension;
 
-public class FortifySSCDescribableCheckIssueCountOpGlobalConfiguration extends AbstractFortifySSCDescribableOpGlobalConfiguration {
+public class FortifySSCCheckIssueCountOpConfiguration extends AbstractFortifySSCConfigurationForOp {
 	private static final long serialVersionUID = 1L;
-	private FortifySSCDescribableCheckIssueCountOp target;
+	private FortifySSCCheckIssueCountOp target;
 	
 	@DataBoundConstructor
-	public FortifySSCDescribableCheckIssueCountOpGlobalConfiguration() {}
+	public FortifySSCCheckIssueCountOpConfiguration() {}
 	
-	public FortifySSCDescribableCheckIssueCountOp getTarget() {
+	public FortifySSCCheckIssueCountOp getTarget() {
 		return target;
 	}
 
 	@DataBoundSetter
-	public void setTarget(FortifySSCDescribableCheckIssueCountOp target) {
+	public void setTarget(FortifySSCCheckIssueCountOp target) {
 		this.target = target;
 	}
 	
 	@Extension
-	public static final class FortifySSCDescriptorUploadFPROpGlobalConfiguration extends AbstractFortifySSCDescriptorOpGlobalConfiguration {        
-        @Override
-        public FortifySSCDescribableCheckIssueCountOpGlobalConfiguration createDefaultInstance() {
-        	return new FortifySSCDescribableCheckIssueCountOpGlobalConfiguration();
-        }
-        
+	public static final class FortifySSCDescriptorUploadFPROpConfiguration extends AbstractFortifySSCDescriptorConfigurationForOp {
         @Override
         public String getDisplayName() {
         	return FortifySSCDescriptorCheckIssueCountOp.DISPLAY_NAME;

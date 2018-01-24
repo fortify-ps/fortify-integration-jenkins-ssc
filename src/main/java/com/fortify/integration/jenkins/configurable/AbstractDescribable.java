@@ -32,6 +32,20 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 
+/**
+ * Simple abstract base class for {@link AbstractDescribableImpl} implementations.
+ * This class provides a default {@link #toString()} implementation, and a
+ * method for returning either the given instance, or a new instance if the 
+ * given instance is null. If no instance was previously configured in Jenkins,
+ * the instance variable in Jelly pages will be null. Calling the 
+ * {@link #getInstanceOrDefault(AbstractGlobalConfiguration)} method from
+ * Jelly pages allows those pages to use default values for all properties,
+ * as configured in concrete {@link AbstractDescribable} implementations.
+ * 
+ * @author Ruud Senden
+ *
+ * @param <T> Concrete type that extends this abstract base class
+ */
 public abstract class AbstractDescribable<T extends AbstractDescribable<T>> extends AbstractDescribableImpl<T> implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -42,13 +56,15 @@ public abstract class AbstractDescribable<T extends AbstractDescribable<T>> exte
 	
 	public static abstract class AbstractDescriptor<T extends AbstractDescribable<T>> extends Descriptor<T> {
 		public T getInstanceOrDefault(T instance) {
-			return instance!=null ? instance : createDefaultInstanceWithConfiguration();
+			return instance!=null ? instance : createDefaultInstance();
 		}
 		
-		public T createDefaultInstanceWithConfiguration() {
-			return createDefaultInstance();
-		};
-		
-		public abstract T createDefaultInstance();
+		public final T createDefaultInstance() {
+			try {
+				return clazz.newInstance();
+			} catch (InstantiationException | IllegalAccessException | SecurityException e) {
+				throw new RuntimeException("Error instantiating "+clazz.getName(), e);
+			}
+		}
 	}
 }

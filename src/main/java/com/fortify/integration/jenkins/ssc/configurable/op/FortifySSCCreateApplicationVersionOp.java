@@ -37,7 +37,7 @@ import com.fortify.client.ssc.api.SSCApplicationVersionAPI;
 import com.fortify.client.ssc.api.SSCIssueTemplateAPI;
 import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
 import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
-import com.fortify.integration.jenkins.ssc.configurable.FortifySSCDescribableApplicationAndVersionName;
+import com.fortify.integration.jenkins.ssc.configurable.FortifySSCApplicationAndVersionName;
 import com.fortify.util.rest.json.JSONList;
 import com.fortify.util.rest.json.JSONMap;
 
@@ -46,30 +46,23 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.ComboBoxModel;
 
-public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFortifySSCDescribableOp {
+public class FortifySSCCreateApplicationVersionOp extends AbstractFortifySSCOp {
 	private static final long serialVersionUID = 1L;
-	private String issueTemplateName = getDescriptor().getDefaultIssueTemplateName();
+	private String issueTemplateName;
 	
 	/**
 	 * Default constructor
 	 */
 	@DataBoundConstructor
-	public FortifySSCDescribableCreateApplicationVersionOp() { super(null); }
+	public FortifySSCCreateApplicationVersionOp() {}
 	
-	/**
-	 * Copy constructor
-	 * @param other
-	 */
-	public FortifySSCDescribableCreateApplicationVersionOp(FortifySSCDescribableCreateApplicationVersionOp other) {
-		super(other);
-		if ( other != null ) {
-			setIssueTemplateName(other.getIssueTemplateName());
-		}
+	@Override
+	protected void configureDefaultValuesAfterErrorHandler() {
+		setIssueTemplateName(getDescriptor().getDefaultIssueTemplateName());
 	}
 	
 	public String getIssueTemplateName() {
@@ -86,17 +79,17 @@ public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFor
 	}
 	
 	@Override
-	public void perform(FortifySSCDescribableApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
+	public void perform(FortifySSCApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException 
 	{
 		EnvVars env = run.getEnvironment(listener);
 		PrintStream log = listener.getLogger();
 		if ( !applicationAndVersionNameJobConfig.doesApplicationVersionExist(log, env) ) {
-			log.println("INFO: Application version does not exist; creating new application version");
+			log.println("[INFO] Application version does not exist; creating new application version");
 			String expandedApplicationName = applicationAndVersionNameJobConfig.getExpandedApplicationName(log, env);
 			String expandedVersionName = applicationAndVersionNameJobConfig.getExpandedVersionName(log, env);
 			createApplicationVersion(log, env, expandedApplicationName, expandedVersionName);
-			log.println("INFO: Created application version "+expandedApplicationName+":"+expandedVersionName);
+			log.println("[INFO] Created application version "+expandedApplicationName+":"+expandedVersionName);
 		}
 	}
 	
@@ -120,26 +113,6 @@ public class FortifySSCDescribableCreateApplicationVersionOp extends AbstractFor
 	@Extension
 	public static final class FortifySSCDescriptorCreateApplicationVersionOp extends AbstractFortifySSCDescriptorOp {
 		static final String DISPLAY_NAME = "Create application version if it does not yet exist";
-
-		@Override
-		public FortifySSCDescribableCreateApplicationVersionOp createDefaultInstanceWithConfiguration() {
-			return new FortifySSCDescribableCreateApplicationVersionOp(getDefaultConfiguration());
-		}
-		
-		@Override
-		public FortifySSCDescribableCreateApplicationVersionOp createDefaultInstance() {
-			return new FortifySSCDescribableCreateApplicationVersionOp();
-		}
-		
-		@Override
-		protected FortifySSCDescribableCreateApplicationVersionOp getDefaultConfiguration() {
-			return (FortifySSCDescribableCreateApplicationVersionOp)super.getDefaultConfiguration();
-		}
-		
-		@Override
-		protected Class<? extends Describable<?>> getGlobalConfigurationTargetType() {
-			return FortifySSCDescribableCreateApplicationVersionOp.class;
-		}
 		
 		@Override
 		public String getDisplayName() {

@@ -43,7 +43,7 @@ public final class FortifySSCPageAction implements Action {
 	@Override
 	public String getIconFileName() {
 		PluginWrapper wrapper = Jenkins.getInstance().getPluginManager().getPlugin(Plugin.DummyImpl.class);
-		return "/plugin/"+wrapper.getShortName()+"/icons/SSC-32x32.gif";
+		return wrapper==null?null:"/plugin/"+wrapper.getShortName()+"/icons/SSC-32x32.gif";
 	}
 
 	@Override

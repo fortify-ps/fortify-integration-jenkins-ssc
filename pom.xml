@@ -80,7 +80,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.0-M1</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -94,6 +93,27 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>findbugs</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<xmlOutput>true</xmlOutput>
+							<findbugsXmlOutput>false</findbugsXmlOutput>
+							<failOnError>false</failOnError>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<failOnError>true</failOnError>
+				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>

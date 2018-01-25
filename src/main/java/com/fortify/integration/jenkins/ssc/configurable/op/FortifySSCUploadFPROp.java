@@ -27,6 +27,7 @@ package com.fortify.integration.jenkins.ssc.configurable.op;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
 
 import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.RoleChecker;
@@ -148,7 +149,7 @@ public class FortifySSCUploadFPROp extends AbstractFortifySSCOp {
 		if ( list.length == 0 ) {
 			throw new AbortWithMessageException("No FPR file found with filter '"+fprAntFilter+"'");
 		} else if ( list.length > 1 ) {
-			throw new AbortWithMessageException("More than 1 FPR file found with filter '"+fprAntFilter+"': "+list);
+			throw new AbortWithMessageException("More than 1 FPR file found with filter '"+fprAntFilter+"': "+Arrays.toString(list));
 		} else {
 			return list[0];
 		}

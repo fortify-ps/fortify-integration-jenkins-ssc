@@ -25,17 +25,13 @@
 package com.fortify.integration.jenkins.ssc.configurable.op;
 
 import java.io.IOException;
-import java.io.PrintStream;
 
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import com.fortify.client.ssc.connection.SSCAuthenticatingRestConnection;
-import com.fortify.integration.jenkins.ssc.FortifySSCGlobalConfiguration;
 import com.fortify.integration.jenkins.ssc.action.FortifySSCPublishAction;
 import com.fortify.integration.jenkins.ssc.configurable.FortifySSCApplicationAndVersionName;
 
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -59,10 +55,10 @@ public class FortifySSCPublishResultsToJenkinsOp extends AbstractFortifySSCOp {
 	@Override
 	public void perform(FortifySSCApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> run,
 			FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-		PrintStream log = listener.getLogger();
-		EnvVars env = run.getEnvironment(listener);
-		final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(log, env);
-		SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
+		//PrintStream log = listener.getLogger();
+		//EnvVars env = run.getEnvironment(listener);
+		//final String applicationVersionId = applicationAndVersionNameJobConfig.getApplicationVersionId(log, env);
+		//SSCAuthenticatingRestConnection conn = FortifySSCGlobalConfiguration.get().conn();
 		run.addOrReplaceAction(new FortifySSCPublishAction(run.getParent()));
 	}
 	

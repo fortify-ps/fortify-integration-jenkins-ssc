@@ -114,11 +114,11 @@ public abstract class AbstractConfigurationForConfigurable extends AbstractDescr
 		}
 		
 		public final boolean isStatic() {
-			return getConfigurableGlobalConfiguration().isStatic(getTargetType());
+			return getGlobalConfiguration().isStatic(getTargetType());
 		}
 		
 		public final boolean isDynamic() {
-			return getConfigurableGlobalConfiguration().isDynamic(getTargetType());
+			return getGlobalConfiguration().isDynamic(getTargetType());
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -131,6 +131,6 @@ public abstract class AbstractConfigurationForConfigurable extends AbstractDescr
 			return getPropertyType("target").clazz;
 		}
 		
-		protected abstract AbstractGlobalConfiguration<?> getConfigurableGlobalConfiguration();
+		protected abstract AbstractGlobalConfiguration<?> getGlobalConfiguration();
 	}
 }

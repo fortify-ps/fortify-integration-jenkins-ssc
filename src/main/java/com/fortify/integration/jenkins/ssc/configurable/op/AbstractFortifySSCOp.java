@@ -44,7 +44,7 @@ public abstract class AbstractFortifySSCOp extends AbstractConfigurableWithError
 	private static final long serialVersionUID = 1L;
 	
 	public final void performWithCheck(FortifySSCApplicationAndVersionName applicationAndVersionNameJobConfig, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-		failIfGlobalConfigurationUnavailable(getDescriptor().getDisplayName()+" not enabled in global configuration");
+		failIfConfigurationUnavailable(getDescriptor().getDisplayName()+" not enabled in global configuration");
 		if ( requiresWorkspace() && workspace == null ) { 
 			throw new AbortWithMessageException("no workspace for " + build);
 		}
@@ -55,7 +55,7 @@ public abstract class AbstractFortifySSCOp extends AbstractConfigurableWithError
 	 * By default this method returns true, indicating that this action requires
 	 * a workspace. Operations that don't require a workspace should override this
 	 * method to return false.
-	 * @return
+	 * @return true if this operation requires a workspace, false otherwise
 	 */
 	protected boolean requiresWorkspace() {
 		return true;

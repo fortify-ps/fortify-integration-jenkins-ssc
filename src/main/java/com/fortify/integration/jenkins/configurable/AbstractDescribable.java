@@ -38,8 +38,8 @@ import hudson.model.Descriptor;
  * method for returning either the given instance, or a new instance if the 
  * given instance is null. If no instance was previously configured in Jenkins,
  * the instance variable in Jelly pages will be null. Calling the 
- * {@link #getInstanceOrDefault(AbstractGlobalConfiguration)} method from
- * Jelly pages allows those pages to use default values for all properties,
+ * {@link AbstractDescriptor#getInstanceOrDefault(AbstractDescribable)} 
+ * method from Jelly pages allows those pages to use default values for all properties,
  * as configured in concrete {@link AbstractDescribable} implementations.
  * 
  * @author Ruud Senden

@@ -112,9 +112,9 @@ public abstract class AbstractConfigurableWithErrorHandler extends AbstractConfi
 	 * @return
 	 */
 	private final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowedWithoutFail(PrintStream log, EnvVars envVars, String propertyName, V currentValue) {
-		return isInstanceIsDefaultConfiguration() 
+		return isInstanceIsConfiguration() 
 					? currentValue 
-					: getDescriptor().getGlobalConfigurationWithConfigurations().getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(
+					: getDescriptor().getGlobalConfiguration().getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(
 							this.getClass(), log, envVars, propertyName, currentValue, true);
 	}
 

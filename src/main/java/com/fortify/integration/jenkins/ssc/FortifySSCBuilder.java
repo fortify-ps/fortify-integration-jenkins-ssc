@@ -106,15 +106,15 @@ public class FortifySSCBuilder extends AbstractBuilder {
 
 	/**
 	 * Perform the given operation
-	 * @param describable
-	 * @param build
-	 * @param workspace
-	 * @param launcher
-	 * @param listener
-	 * @param currentErrorData
+	 * @param describable The {@link AbstractFortifySSCOp} operation to perform
+	 * @param run Current {@link Run}
+	 * @param workspace Current workspace
+	 * @param launcher Current {@link Launcher}
+	 * @param listener Current {@link TaskListener}
+	 * @param currentErrorData Current {@link ErrorData}
 	 * @return true if we can continue with the next operation, false otherwise
-	 * @throws InterruptedException
-	 * @throws IOException
+	 * @throws InterruptedException May be thrown by various Jenkins methods
+	 * @throws IOException May be thrown by various Jenkins methods
 	 */
 	protected boolean perform(AbstractConfigurable describable, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, ErrorData currentErrorData) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
@@ -150,12 +150,12 @@ public class FortifySSCBuilder extends AbstractBuilder {
 		
 		@Override
 	    public String getDynamicJobConfigurationAddButtonDisplayName() {
-			return "Enable Operation";
+			return "Add Operation";
 		}
 		
 	    @Override
 		public String getDynamicJobConfigurationDeleteButtonDisplayName() {
-			return "Disable Operation";
+			return "Remove Operation";
 		}
 		
 		@Override

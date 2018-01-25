@@ -69,7 +69,7 @@ import net.sf.json.JSONObject;
  * 
  * @author Ruud Senden
  *
- * @param <T>
+ * @param <T> Concrete type that extends this abstract base class
  */
 public abstract class AbstractGlobalConfiguration<T extends AbstractGlobalConfiguration<T>> extends GlobalConfiguration 
 {
@@ -164,12 +164,12 @@ public abstract class AbstractGlobalConfiguration<T extends AbstractGlobalConfig
 		return isGlobalConfigurationPropertyBlank(configurableDescribableType, propertyName);
 	}
 	
-	public final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(Class<?> configurableDescribableType, PrintStream log, EnvVars envVars, String propertyName, V currentValue) {
+	public final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(Class<?> configurableDescribableType, PrintStream log, EnvVars envVars, String propertyName, V currentValue) throws AbortWithMessageException {
 		return getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(configurableDescribableType, log, envVars, propertyName, currentValue, false);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(Class<?> configurableDescribableType, PrintStream log, EnvVars envVars, String propertyName, V currentValue, boolean overrideFailOnOverride) {
+	public final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(Class<?> configurableDescribableType, PrintStream log, EnvVars envVars, String propertyName, V currentValue, boolean overrideFailOnOverride) throws AbortWithMessageException {
 		V result = null;
 		if ( isOverrideAllowed(configurableDescribableType, propertyName) ) {
 			result = currentValue;

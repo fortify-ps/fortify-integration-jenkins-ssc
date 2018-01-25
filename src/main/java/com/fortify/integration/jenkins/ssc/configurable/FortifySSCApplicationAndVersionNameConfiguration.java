@@ -52,7 +52,7 @@ public class FortifySSCApplicationAndVersionNameConfiguration extends AbstractCo
 	@Extension
 	public static final class FortifySSCDescriptorApplicationAndVersionNameConfiguration extends AbstractDescriptorConfigurationForConfigurable {        
 		@Override
-		protected AbstractGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
+		protected AbstractGlobalConfiguration<?> getGlobalConfiguration() {
 			return FortifySSCGlobalConfiguration.get();
 		}
 		

@@ -123,10 +123,10 @@ public abstract class AbstractConfigurable extends AbstractDescribable<AbstractC
 	 * This method throws an {@link AbortWithMessageException} exception
 	 * with the given message if no global configuration is available,
 	 *  
-	 * @param message
+	 * @param message used when configuration unavailable
 	 */
-	public final void failIfGlobalConfigurationUnavailable(String message) {
-		if ( !isGlobalConfigurationAvailable() ) {
+	public final void failIfConfigurationUnavailable(String message) {
+		if ( !isConfigurationAvailable() ) {
 			throw new AbortWithMessageException(message);
 		}
 	}
@@ -135,20 +135,22 @@ public abstract class AbstractConfigurable extends AbstractDescribable<AbstractC
 	 * This method returns true if global configuration is available,
 	 * false otherwise.
 	 * 
-	 * @return
+	 * @return true if configuration is available, false otherwise
 	 */
-	public final boolean isGlobalConfigurationAvailable() {
+	public final boolean isConfigurationAvailable() {
 		return getDescriptor().isConfigurationAvailable();
 	}
 	
 	
 	/**
-	 * Return whether the current instance is the default configuration.
+	 * Return whether the current instance is the configuration instance.
 	 * Note that this method also returns true if there is no default
 	 * configuration.
-	 * @return
+	 * @return true if the current instance is the default configuration
+	 *         or if there is no configuration instance,
+	 *         false otherwise.
 	 */
-	public final boolean isInstanceIsDefaultConfiguration() {
+	public final boolean isInstanceIsConfiguration() {
 		Describable<?> defaultConfiguration = getDescriptor().getConfiguration();
 		return defaultConfiguration==null 
 				|| !defaultConfiguration.getClass().equals(this.getClass()) 
@@ -160,12 +162,13 @@ public abstract class AbstractConfigurable extends AbstractDescribable<AbstractC
 	 * in job configurations. If the current instance is the default 
 	 * configuration, this method always returns true. Otherwise, the
 	 * global configuration is checked to see whether override is allowed.
-	 * @param propertyName
-	 * @return
+	 * @param propertyName to be checked whether override is allowed
+	 * @return true if override is allowed or if the current instance is 
+	 *         the configuration instance, false otherwise.
 	 */
 	public boolean isOverrideAllowed(String propertyName) {
-		return isInstanceIsDefaultConfiguration() 
-			|| getDescriptor().getGlobalConfigurationWithConfigurations().isOverrideAllowed(this.getClass(), propertyName);
+		return isInstanceIsConfiguration() 
+			|| getDescriptor().getGlobalConfiguration().isOverrideAllowed(this.getClass(), propertyName);
 	}
 	
 	/**
@@ -176,11 +179,19 @@ public abstract class AbstractConfigurable extends AbstractDescribable<AbstractC
 	 * will be logged if the given current value is overridden with the global configuration
 	 * value. If envVars is given and the property type is String, the property will be
 	 * expanded.
+	 * 
+	 * @param <V> Property type
+	 * @param log Jenkins console log
+	 * @param envVars Jenkins {@link EnvVars}
+	 * @param propertyName Property name to be checked whether override is allowed
+	 * @param currentValue Current value of the given property name
+	 * @return Current property value if override allowed, configuration value if override is set to WARN
+	 * @throws AbortWithMessageException if property is overridden when override is set to FAIL
 	 */
-	protected final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(PrintStream log, EnvVars envVars, String propertyName, V currentValue) {
-		return isInstanceIsDefaultConfiguration() 
+	protected final <V> V getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(PrintStream log, EnvVars envVars, String propertyName, V currentValue) throws AbortWithMessageException {
+		return isInstanceIsConfiguration() 
 					? currentValue 
-					: getDescriptor().getGlobalConfigurationWithConfigurations().getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(
+					: getDescriptor().getGlobalConfiguration().getExpandedPropertyValueOrDefaultValueIfOverrideDisallowed(
 							this.getClass(), log, envVars, propertyName, currentValue);
 	}
 	
@@ -195,24 +206,25 @@ public abstract class AbstractConfigurable extends AbstractDescribable<AbstractC
 	public static abstract class AbstractDescriptorConfigurable extends AbstractDescriptor<AbstractConfigurable> implements Ordered {
 		/**
 		 * Get the configuration for our AbstractConfigurable from {@link AbstractGlobalConfiguration}.
-		 * @return
+		 * @return The configuration for our {@link AbstractConfigurable} implementation
 		 */
 		protected final Describable<?> getConfiguration() {
-			return getGlobalConfigurationWithConfigurations().getConfiguration(getConfigurationTargetType());
+			return getGlobalConfiguration().getConfiguration(getConfigurationTargetType());
 		}
 		
 		/**
-		 * Indicate whether global configuration is available.
-		 * @return
+		 * Indicate whether configuration is available.
+		 * @return True if configuration is available, false otherwise
 		 */
 		public final boolean isConfigurationAvailable() {
-			return getGlobalConfigurationWithConfigurations().isGlobalConfigurationAvailable(getConfigurationTargetType());
+			return getGlobalConfiguration().isGlobalConfigurationAvailable(getConfigurationTargetType());
 		}
 		
 		/**
 		 * Get the type of the target property in our {@link AbstractConfigurationForConfigurable}
 		 * counterpart.
-		 * @return
+		 * @return Type of the target property in our {@link AbstractConfigurationForConfigurable}
+		 * counterpart.
 		 */
 		protected final Class<? extends Describable<?>> getConfigurationTargetType() {
 			return getConfigurationForConfigurableDescriptor().getTargetType();
@@ -221,15 +233,15 @@ public abstract class AbstractConfigurable extends AbstractDescribable<AbstractC
 		/**
 		 * Get the concrete {@link AbstractGlobalConfiguration} instance from our
 		 * {@link AbstractConfigurationForConfigurable} counterpart.
-		 * @return
+		 * @return Our {@link AbstractGlobalConfiguration} implementation
 		 */
-		protected final AbstractGlobalConfiguration<?> getGlobalConfigurationWithConfigurations() {
-			return getConfigurationForConfigurableDescriptor().getConfigurableGlobalConfiguration();
+		protected final AbstractGlobalConfiguration<?> getGlobalConfiguration() {
+			return getConfigurationForConfigurableDescriptor().getGlobalConfiguration();
 		}
 		
 		/**
 		 * Get the descriptor for our {@link AbstractConfigurationForConfigurable} counterpart.
-		 * @return
+		 * @return The descriptor for our {@link AbstractConfigurationForConfigurable} counterpart
 		 */
 		protected final AbstractDescriptorConfigurationForConfigurable getConfigurationForConfigurableDescriptor() {
 			return (AbstractDescriptorConfigurationForConfigurable) Jenkins.getInstance().getDescriptorOrDie(getConfigurationForConfigurableType());
@@ -239,7 +251,7 @@ public abstract class AbstractConfigurable extends AbstractDescribable<AbstractC
 		 * This method returns the {@link AbstractConfigurationForConfigurable} counterpart for
 		 * our own type. By default is looks for a class named "[OurOwnClassName]Configuration".
 		 * If you use a different naming scheme, this method must be overridden.
-		 * @return
+		 * @return The {@link AbstractConfigurationForConfigurable} counterpart for our own type
 		 */
 		@SuppressWarnings("unchecked")
 		protected Class<? extends AbstractConfigurationForConfigurable> getConfigurationForConfigurableType() {

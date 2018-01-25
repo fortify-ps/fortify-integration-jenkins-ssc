@@ -33,7 +33,7 @@ public abstract class AbstractFortifySSCConfigurationForOp extends AbstractConfi
 
 	public static abstract class AbstractFortifySSCDescriptorConfigurationForOp extends AbstractDescriptorConfigurationForConfigurableWithErrorHandler {
 		@Override
-		protected AbstractGlobalConfiguration<?> getConfigurableGlobalConfiguration() {
+		protected AbstractGlobalConfiguration<?> getGlobalConfiguration() {
 			return FortifySSCGlobalConfiguration.get();
 		}
 	}

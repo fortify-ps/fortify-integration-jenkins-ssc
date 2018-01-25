@@ -32,7 +32,7 @@
 		<relativePath />
 	</parent>
 	<artifactId>fortify-jenkins-plugin</artifactId>
-	<version>0.1</version>
+	<version>0.2-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 	<properties>
 		<jenkins.version>2.60.3</jenkins.version>
@@ -61,7 +61,7 @@
 	</developers>
 	<scm>
 		<developerConnection>scm:git:https://github.com/rsenden/fortify-integration-jenkins-ssc</developerConnection>
-		<tag>fortify-jenkins-plugin-0.1</tag>
+		<tag>master</tag>
 	</scm>
 	<inceptionYear>2018</inceptionYear>
 

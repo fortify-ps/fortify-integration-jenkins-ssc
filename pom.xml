@@ -60,7 +60,7 @@
 		</developer>
 	</developers>
 	<scm>
-		<developerConnection>scm:git:https://github.com/rsenden/fortify-integration-jenkins-ssc</developerConnection>
+		<developerConnection>scm:git:https://github.com/fortify-ps/fortify-integration-jenkins-ssc</developerConnection>
 		<tag>master</tag>
 	</scm>
 	<inceptionYear>2018</inceptionYear>
@@ -145,7 +145,7 @@
 		</repository>
 		<repository>
 			<id>FortifyMavenRepo</id>
-			<url>https://raw.githubusercontent.com/rsenden/FortifyMavenRepo/master</url>
+			<url>https://raw.githubusercontent.com/fortify-ps/FortifyMavenRepo/master</url>
 			<snapshots>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
@@ -163,8 +163,8 @@
 		<dependencies>
 			<dependency>
 				<groupId>com.fortify.client.api</groupId>
-				<artifactId>client-api-master</artifactId>
-				<version>4.1</version>
+				<artifactId>client-api-root</artifactId>
+				<version>5.1</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -174,7 +174,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.fortify.client.api</groupId>
-			<artifactId>ssc-client-api</artifactId>
+			<artifactId>client-api-ssc</artifactId>
 		</dependency>
 
 		<!-- These dependencies are transitively included by ssc-client-api, but 
